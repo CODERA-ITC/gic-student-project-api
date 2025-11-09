@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -28,4 +29,5 @@ export class UserService {
   async findOne(id: string) {
     return this.userRepo.findOne({ where: { id } });
   }
+
 }

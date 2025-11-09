@@ -12,7 +12,7 @@ import {
 @Entity('projects')
 export class Project extends BaseEntity {
   @Column()
-  title: string;
+  name: string;
 
   @Column({ nullable: true })
   description: string;

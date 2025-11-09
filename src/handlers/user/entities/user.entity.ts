@@ -5,11 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 import { Exclude } from 'class-transformer';
 import { Project } from 'src/handlers/project/entities/project.entity';
 import { BaseEntity } from 'src/database/base.entity';
+import { Department } from 'src/handlers/department/entitites/department.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -28,4 +31,8 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Project, (project) => project.owner)
   projects: Project[];
+
+  @ManyToOne(() => Department, (department) => department.users, { eager: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'dept_id' })
+  department: Department;
 }

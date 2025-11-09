@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './config/database.config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './handlers/user/jwt/jwt.strategy';
+import { DepartmentModule } from './handlers/department/department.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { JwtStrategy } from './handlers/user/jwt/jwt.strategy';
     }),
     ProjectModule,
     UserModule,
-    DatabaseModule, 
+    DatabaseModule,
+    DepartmentModule, 
   ],
 
   controllers: [AppController],
