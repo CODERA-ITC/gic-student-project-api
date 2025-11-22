@@ -11,7 +11,7 @@ export class Department extends BaseEntity {
     code: string;
 
     @Column({ nullable: true })
-    description: String;
+    description: string;
 
     @OneToMany(() => User, (user) => user.department)
     users: User[];
