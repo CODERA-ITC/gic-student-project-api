@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from './entitites/department.entity';
 import { Repository } from 'typeorm';
@@ -23,7 +23,7 @@ export class DepartmentService {
     // =============
     // Read
     // =============
-    async listAll(){
+    async listAllDept(){
         return this.departmentRepo.find();
     }
 
@@ -35,7 +35,8 @@ export class DepartmentService {
     // Update
     // =============
     async updateDept(id: string, dto: UpdateDepartmentDto){
-        await this.departmentRepo.update(id, dto);
+        const result = await this.departmentRepo.update(id, dto);
+        if(result.affected === 0) throw new NotFoundException('Department not found');
         return this.findDeptById(id);
     }
 }

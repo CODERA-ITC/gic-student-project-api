@@ -3,15 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   UseGuards,
   Query,
   HttpCode,
   HttpStatus,
   BadRequestException,
   UnauthorizedException,
+  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -89,7 +87,13 @@ export class UserController {
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   findAll() {
-    return this.userService.findAll();
+    return this.userService.listAllUser();
+  }
+
+  @Get(':id')
+  @ApiOperation({summary: 'Get user by id'})
+  getUserById(@Param('id') id: string){
+    return this.userService.findUserById(id);
   }
 
   @Get('/current')
@@ -98,30 +102,24 @@ export class UserController {
   @ApiOperation({ summary: 'Get current authenticated user' })
   findUserWithCurrent(@CurrentUser() user: any) {
     log('Current User:', user);
-    return this.userService.findOne(user.userId);
+    return this.userService.findUserById(user.userId);
   }
 
-  @Get('/check-exists')
-  @ApiOperation({ summary: 'Check if user exists by email' })
-  async checkUserExists(@Query('email') email: string) {
-    if (!email) {
-      throw new BadRequestException('Email parameter is required');
-    }
+  // @Get('/check-exists')
+  // @ApiOperation({ summary: 'Check if user exists by email' })
+  // async checkUserExists(@Query('email') email: string) {
+  //   if (!email) {
+  //     throw new BadRequestException('Email parameter is required');
+  //   }
 
-    const exists = await this.authService.checkUserExists(email);
-    return {
-      success: true,
-      data: {
-        email,
-        exists,
-        message: exists ? 'User exists' : 'User does not exist',
-      },
-    };
-  }
-
-  // @Get(':id')
-  // @ApiOperation({ summary: 'Get user by ID' })
-  // findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(id);
+  //   const exists = await this.authService.checkUserExists(email);
+  //   return {
+  //     success: true,
+  //     data: {
+  //       email,
+  //       exists,
+  //       message: exists ? 'User exists' : 'User does not exist',
+  //     },
+  //   };
   // }
 }

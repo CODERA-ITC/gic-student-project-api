@@ -35,7 +35,7 @@ export class DepartmentController {
     @Get()
     @ApiOperation({summary: 'Get all departments'})
     get() {
-        return this.departmentService.listAll();
+        return this.departmentService.listAllDept();
     }
 
     @Get(':id')
@@ -44,9 +44,9 @@ export class DepartmentController {
         return this.departmentService.findDeptById(id);
     }
 
-    @Patch()
+    @Patch(':id')
     @ApiOperation({summary: 'Update department information'})
-    editDept(@Query('id') id: string, @Body() dto: UpdateDepartmentDto){
+    editDept(@Param('id') id: string, @Body() dto: UpdateDepartmentDto){
         return this.departmentService.updateDept(id, dto)
     }
 }

@@ -20,11 +20,11 @@ export class AuthService {
   ) {}
 
   async signup(dto: CreateUserDto) {
-    const check_email = await this.userService.findByEmail(dto.email);
+    const check_email = await this.userService.findUserByEmail(dto.email);
     if (check_email) throw new BadRequestException('Email already registered');
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const user = await this.userService.create({
+    const user = await this.userService.createUser({
       ...dto,
       password: hashedPassword,
     });
@@ -34,7 +34,7 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     // First, check if user exists
-    const user = await this.userService.findByEmail(dto.email);
+    const user = await this.userService.findUserByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException('User with this email does not exist');
     }
@@ -66,19 +66,20 @@ export class AuthService {
       refresh_token,
       user: {
         id: user.id,
-        email: user.email,
-        name: user.name,
-        is_admin: user.is_admin,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email
+        //pfp_thumbnail_url (to be use later)
       },
     };
   }
-
+  
   async refresh(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.config.get('JWT_REFRESH_SECRET'),
       });
-      const user = await this.userService.findByEmail(payload.email);
+      const user = await this.userService.findUserByEmail(payload.email);
       if (!user) throw new UnauthorizedException('User not found');
       return this.generateTokens(user);
     } catch {
@@ -88,13 +89,13 @@ export class AuthService {
 
   // Helper method to check if user exists
   async checkUserExists(email: string): Promise<boolean> {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userService.findUserByEmail(email);
     return !!user;
   }
 
   // Method to validate user credentials without logging in
   async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userService.findUserByEmail(email);
     if (!user) {
       return null;
     }

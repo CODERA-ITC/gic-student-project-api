@@ -1,5 +1,4 @@
 import { BaseEntity } from "src/database/base.entity";
-import { User } from "src/handlers/user/entities/user.entity";
 import { Column, Entity, OneToMany } from "typeorm";
 
 @Entity('departments')
@@ -12,7 +11,4 @@ export class Department extends BaseEntity {
 
     @Column({ nullable: true })
     description: string;
-
-    @OneToMany(() => User, (user) => user.department)
-    users: User[];
 }
