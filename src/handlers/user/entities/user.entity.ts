@@ -23,4 +23,7 @@ export class User extends BaseEntity {
 
   @Column()
   bio: string;
+
+  @Column({type: 'text', nullable: true})
+  hashedRefreshToken: string | null;
 }

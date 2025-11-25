@@ -84,10 +84,10 @@ export class UserController {
     }
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Get all users' })
-  findAll() {
-    return this.userService.listAllUser();
+  @Post('/logout/:id')
+  @ApiOperation({summary: 'Log user out and revoke the token'})
+  async logout(@Param('id') id:string){
+    this.authService.revokeToken(id)
   }
 
   @Get(':id')

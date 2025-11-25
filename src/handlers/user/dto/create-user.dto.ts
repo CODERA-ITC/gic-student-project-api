@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'John' })
@@ -38,6 +38,11 @@ export class CreateUserDto {
   @Transform(({ value }) => value?.trim())
   bio?: string;
 
+  @ApiProperty({example: 'Refresh token for easy revoking'})
+  @IsOptional()
+  @IsString()
+  hashedRefreshToken?: string | null;
+  
   //pfp_thumbnail_url
   //pfp_hd_url
 }

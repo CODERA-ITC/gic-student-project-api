@@ -25,11 +25,6 @@ export class UserService {
   // ==============================================================================
   // Read (Decision to use instanceToPlain: avoid exposing password on request)
   // ==============================================================================
-  async listAllUser() {
-    const users = await this.userRepo.find();
-    return users.map(user => instanceToPlain(user)) // Ommit password column
-  }
-
   async findUserByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });
   }
@@ -37,7 +32,7 @@ export class UserService {
   async findUserById(id: string) {
     const user = await this.userRepo.findOne({where: {id}});
     if (!user) throw new NotFoundException('User not found');
-    return instanceToPlain(user);
+    return instanceToPlain(user); //Ommit password field 
   }
 
   // =============
