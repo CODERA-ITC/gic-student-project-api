@@ -8,6 +8,7 @@ import { DatabaseModule } from './config/database.config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './handlers/user/jwt/jwt.strategy';
 import { DepartmentModule } from './handlers/department/department.module';
+import { RoleModule } from './handlers/role/role.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { DepartmentModule } from './handlers/department/department.module';
     ProjectModule,
     UserModule,
     DatabaseModule,
-    DepartmentModule, 
+    DepartmentModule,
+    RoleModule, 
   ],
 
   controllers: [AppController],

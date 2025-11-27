@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from './entitites/department.entity';
 import { Repository } from 'typeorm';
@@ -16,8 +16,18 @@ export class DepartmentService {
     // Create
     // =============
     async createDept(dto: CreateDepartmentDto){
-        const department = this.departmentRepo.create(dto);
-        return this.departmentRepo.save(department);
+        try{
+            const department = this.departmentRepo.create(dto);
+            return await this.departmentRepo.save(department)
+        }catch(error){
+            console.error('Error creating department: ', error.message);
+
+            if (error.code = '23505'){ //postgres unique violation
+                throw new BadRequestException('Department already exists');
+            }
+
+            throw new BadRequestException('Failed to create department. Please try again')
+        }
     }
 
     // =============

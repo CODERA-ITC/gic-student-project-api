@@ -13,22 +13,11 @@ export class DepartmentController {
     @Post('create-dept')
     @ApiOperation({ summary: 'Create a new department' })
     async createDept(@Body() dto: CreateDepartmentDto) {
-        try {
-            const result = await this.departmentService.createDept(dto);
-
-            return {
-                success: true,
-                message: 'Department created successfully',
-                data: result
-            }
-        } catch (error) {
-            console.error('Error: ', error.message)
-
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-
-            throw new BadRequestException('Failed to create department. Please try again')
+        const result = await this.departmentService.createDept(dto)
+        return{
+            success:true,
+            message: 'Department created successfully',
+            data: result
         }
     }
 
