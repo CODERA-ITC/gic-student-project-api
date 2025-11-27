@@ -1,14 +1,36 @@
-import { BaseEntity } from 'src/database/base.entity';
+import { BaseEntity } from 'src/database/base.entity'
+import { Department } from 'src/handlers/department/entitites/department.entity'
+
 import {
-  Entity,
   Column,
-} from 'typeorm';
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm'
+import { Category } from './category.entity'
+import { Tag } from './tag.entity'
 
 @Entity('projects')
 export class Project extends BaseEntity {
   @Column()
-  name: string;
+  name: string
 
   @Column({ nullable: true })
-  description: string;
+  description: string
+
+  @Column()
+  ownerId: string
+
+  @ManyToOne(() => Category, category => category.projects)
+  category: Category
+
+  @ManyToMany(() => Tag, tag => tag.projects)
+  @JoinTable()
+  tags: Tag[]
+
+  @ManyToMany(() => Department, department => department.projects)
+  @JoinTable()
+  department: Department
 }
