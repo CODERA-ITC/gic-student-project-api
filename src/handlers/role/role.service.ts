@@ -1,48 +1,78 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from './entities/role.entity';
 import { Repository } from 'typeorm';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Injectable()
 export class RoleService {
-    constructor(
-        @InjectRepository(Role)
-        private roleRepo: Repository<Role>,
-    ) { }
+  constructor(
+    @InjectRepository(Role)
+    private roleRepo: Repository<Role>,
+  ) { }
 
-    // ==============
-    // Create 
-    // ==============
-    async createRole(dto: CreateRoleDto) {
-        const role = this.roleRepo.create(dto);
-        return this.roleRepo.save(role);
+  async createRole(dto: CreateRoleDto) {
+    try {
+      const role = this.roleRepo.create(dto)
+      return await this.roleRepo.save(role)
+    } catch (error) {
+      console.error('Error creating role: ', error.message);
+
+      if (error.code === '23505') {
+        throw new BadRequestException('Role already exists')
+      }
+
+      throw new BadRequestException('Failed to create role')
+    }
+  }
+
+  async findAllRole() {
+    try {
+      const roles = await this.roleRepo.find({
+        order: { createdAt: 'desc' }
+      })
+
+      return roles;
+    } catch (error) {
+      console.error('Error fetching roles: ', error.message);
+      throw new InternalServerErrorException('Failed to fetch roles')
+    }
+  }
+
+  async findOneRole(id: string) {
+    const role = await this.roleRepo.findOne({ where: { id } });
+
+    if (!role) {
+      throw new NotFoundException(`Role with ID ${id} not found`);
     }
 
-    // =============
-    // Read
-    // =============
-    async listAll(){
-        return this.roleRepo.find();
+    return role;
+  }
+
+  async updateRole(id: string, dto: UpdateRoleDto) {
+    const role = await this.findOneRole(id);
+
+    if (dto.name && dto.name !== role?.name) { //optional chaining for safe access
+      const existing = await this.roleRepo.findOne({ where: { name: dto.name } });
+
+      if (existing) {
+        throw new BadRequestException('Role name already exists');
+      }
     }
 
-    async findRoleById(id: string){
-        return this.roleRepo.findOne({where: {id}})
-    }
+    Object.assign(role, dto);
+    return await this.roleRepo.save(role);
+  }
 
-    // ============
-    // Update
-    // ============
-    async updateRole(id: string, dto: UpdateRoleDto){
-        await this.roleRepo.update(id, dto)
-        return this.findRoleById(id);
-    }
+  async removeRole(id: string) {
+    try {
+      const role = await this.findOneRole(id);
 
-    // ============
-    // Delete
-    // ============
-    async deleteRole(id: string){
-        await this.roleRepo.delete(id);
+      await this.roleRepo.softDelete(role)  
+    } catch (error) {
+      console.error('Error removing roles: ', error.message);
+      throw new InternalServerErrorException('Failed to remove roles')
     }
+  }
 }
