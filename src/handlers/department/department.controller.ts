@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { DepartmentService } from './department.service';
 import { ApiOperation } from '@nestjs/swagger';
 import { CreateDepartmentDto } from './dto/create-department.dto';
@@ -10,7 +10,7 @@ export class DepartmentController {
         private readonly departmentService: DepartmentService
     ) { }
 
-    @Post('create-dept')
+    @Post()
     @ApiOperation({ summary: 'Create a new department' })
     async createDept(@Body() dto: CreateDepartmentDto) {
         const result = await this.departmentService.createDept(dto)
@@ -23,19 +23,44 @@ export class DepartmentController {
 
     @Get()
     @ApiOperation({summary: 'Get all departments'})
-    get() {
-        return this.departmentService.listAllDept();
+    async get() {
+        const result = await this.departmentService.findAllDept();
+        return{
+            success: true,
+            message: 'Departments found',
+            data: result
+        }
     }
 
     @Get(':id')
     @ApiOperation({summary: 'Get department by id'})
-    getOne(@Param('id') id: string){
-        return this.departmentService.findDeptById(id);
+    async getOne(@Param('id') id: string){
+        const result = await this.departmentService.findOneDept(id);
+        return{
+            success: true,
+            message: 'Department found',
+            data: result
+        }
     }
 
     @Patch(':id')
     @ApiOperation({summary: 'Update department information'})
-    editDept(@Param('id') id: string, @Body() dto: UpdateDepartmentDto){
-        return this.departmentService.updateDept(id, dto)
+    async editDept(@Param('id') id: string, @Body() dto: UpdateDepartmentDto){
+        const result = await this.departmentService.updateDept(id, dto);
+        return{
+            success: true,
+            message: 'Department update successfully',
+            data: result
+        }
+    }
+
+    @Delete(':id')
+    @ApiOperation({summary: 'Delete role'})
+    async remove(@Param('id') id: string){
+        await this.departmentService.removeDepartment(id)
+        return{
+            success: true,
+            message: 'Department deleted successfully'
+        }
     }
 }

@@ -25,7 +25,7 @@ export class RoleController {
     const result = await this.roleService.findAllRole();
     return {
       success: true,
-      message: 'Role found',
+      message: 'Roles found',
       data: result
     }
   }
@@ -43,7 +43,7 @@ export class RoleController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Find one role' })
+  @ApiOperation({ summary: 'Edit role' })
   async updateRole(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
     const result = await this.roleService.updateRole(id, dto);
     return {
@@ -54,8 +54,12 @@ export class RoleController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Find one role' })
-  remove(@Param('id') id: string) {
-    this.roleService.removeRole(id);
+  @ApiOperation({ summary: 'Delete role' })
+  async remove(@Param('id') id: string) {
+    await this.roleService.removeRole(id);
+    return {
+      success: true,
+      message: 'Role deleted successfully'
+    }
   }
 }

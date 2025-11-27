@@ -53,7 +53,7 @@ export class RoleService {
   async updateRole(id: string, dto: UpdateRoleDto) {
     const role = await this.findOneRole(id);
 
-    if (dto.name && dto.name !== role?.name) { //optional chaining for safe access
+    if (dto.name && dto.name !== role.name) { 
       const existing = await this.roleRepo.findOne({ where: { name: dto.name } });
 
       if (existing) {
@@ -69,7 +69,7 @@ export class RoleService {
     try {
       const role = await this.findOneRole(id);
 
-      await this.roleRepo.softDelete(role)  
+      await this.roleRepo.softDelete({id: role.id})  
     } catch (error) {
       console.error('Error removing roles: ', error.message);
       throw new InternalServerErrorException('Failed to remove roles')
