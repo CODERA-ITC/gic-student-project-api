@@ -59,7 +59,12 @@ export class AuthService {
   }
 
   private async generateTokens(user: User) {
-    const payload = { sub: user.id, email: user.email };
+    const payload = {
+      id: user.id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname
+    };
 
     const access_token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
@@ -84,10 +89,10 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.config.get('JWT_REFRESH_SECRET'),
       });
-      
+
       const user = await this.userService.findUserByEmail(payload.email);
       if (!user) throw new UnauthorizedException('User not found');
-      
+
       const hashedRefreshToken = user.hashedRefreshToken;
       // Check if refresh token has been revoked
       const tokenMatches = await bcrypt.compare(
@@ -95,22 +100,22 @@ export class AuthService {
         hashedRefreshToken
       );
 
-      if(!tokenMatches) throw new UnauthorizedException('Invalid refresh token');
+      if (!tokenMatches) throw new UnauthorizedException('Invalid refresh token');
 
       // Generate new refresh token 
-      const {access_token, refresh_token: newRefreshToken} = await this.generateTokens(user);
+      const { access_token, refresh_token: newRefreshToken } = await this.generateTokens(user);
 
       // Store the new refresh token
       await this.saveRefreshToken(user.id, newRefreshToken);
 
-      return {access_token, refreshToken: newRefreshToken};
-    } catch(error) {
+      return { access_token, refreshToken: newRefreshToken };
+    } catch (error) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
   }
 
-  async revokeToken(id: string){
-    await this.userService.updateUser(id, {hashedRefreshToken: null})
+  async revokeToken(id: string) {
+    await this.userService.updateUser(id, { hashedRefreshToken: null })
   }
 
   // Helper method to check if user exists
