@@ -3,12 +3,14 @@ import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { take } from 'rxjs'
 import { Project } from './entities/project.entity'
 
 @Injectable()
 export class ProjectService {
-  constructor(@InjectRepository(Project) private projectRepo: Repository<Project>) { }
+  constructor(
+    @InjectRepository(Project)
+    private projectRepo: Repository<Project>,
+  ) { }
 
   async create(dto: CreateProjectDto): Promise<Project> {
     const entity = this.projectRepo.create(dto)

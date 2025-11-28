@@ -1,14 +1,14 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ProjectModule } from './handlers/project/project.module';
-import { UserModule } from './handlers/user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DatabaseModule } from './config/database.config';
-import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './handlers/user/jwt/jwt.strategy';
-import { DepartmentModule } from './handlers/department/department.module';
-import { RoleModule } from './handlers/role/role.module';
+import { Module } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { JwtModule } from '@nestjs/jwt'
+import { AppController } from './app.controller'
+import { AppService } from './app.service'
+import { DatabaseModule } from './config/database.config'
+import { DepartmentModule } from './handlers/department/department.module'
+import { ProjectModule } from './handlers/project/project.module'
+import { RoleModule } from './handlers/role/role.module'
+import { JwtStrategy } from './handlers/user/jwt/jwt.strategy'
+import { UserModule } from './handlers/user/user.module'
 
 @Module({
   imports: [
@@ -25,14 +25,14 @@ import { RoleModule } from './handlers/role/role.module';
         signOptions: { expiresIn: config.get('JWT_EXPIRES') },
       }),
     }),
+    DatabaseModule,
     ProjectModule,
     UserModule,
-    DatabaseModule,
     DepartmentModule,
-    RoleModule, 
+    RoleModule,
   ],
 
   controllers: [AppController],
   providers: [AppService, JwtStrategy],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,27 +1,22 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
-import { ProjectService } from './project.service';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+} from '@nestjs/common'
+import { ProjectService } from './project.service'
 
 @Controller('projects')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    private readonly projectService: ProjectService,
+  ) { }
 
-  @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectService.create(createProjectDto);
-  }
+  // @Post()
+  // create(@Body() createProjectDto: CreateProjectDto) {
+  //   return this.projectService.create(createProjectDto)
+  // }
 
   @Get()
   get() {
-    return "Hello World";
+    return 'Hello World'
   }
 }

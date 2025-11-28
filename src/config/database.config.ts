@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { TypeOrmModule } from '@nestjs/typeorm'
 
 @Module({
   imports: [
@@ -14,16 +14,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: configService.get('DATABASE_USER'),
         password: configService.get('DATABASE_PASSWORD'),
         database:
-          configService.get('DATABASE_NAME') +
-          '-' +
-          configService.get('ENVIRONMENT'),
+          `${configService.get('DATABASE_NAME')
+          }-${configService.get('ENVIRONMENT')}`,
         ssl:
-          configService.get('ENVIRONMENT') === 'local' ||
-          configService.get('ENVIRONMENT') === 'development'
+          configService.get('ENVIRONMENT') === 'local'
+            || configService.get('ENVIRONMENT') === 'development'
             ? false
             : { rejectUnauthorized: false },
-        entities: [__dirname + '/../handlers/**/*.entity.{js,ts}'],
-        migrations: [__dirname + '/../migrations/*.{ts,js}'],
+        entities: [`${__dirname}/../handlers/**/*.entity.{js,ts}`],
+        migrations: [`${__dirname}/../migrations/*.{ts,js}`],
         migrationsRun: true,
         synchronize: true, // Disable synchronization to use migrations only
         //   dropSchema: true, // Drop and recreate schema for development
@@ -35,4 +34,4 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
   ],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }
