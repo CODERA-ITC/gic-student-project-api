@@ -7,11 +7,12 @@ import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), PassportModule],
   controllers: [UserController],
-  providers: [UserService, AuthService, JwtService, JwtAuthGuard],
+  providers: [UserService, AuthService, JwtService, JwtAuthGuard, GoogleStrategy],
   exports: [UserService, AuthService],
 })
-export class UserModule {}
+export class UserModule { }

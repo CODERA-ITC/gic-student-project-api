@@ -7,7 +7,7 @@ import { DatabaseModule } from './config/database.config'
 import { DepartmentModule } from './handlers/department/department.module'
 import { ProjectModule } from './handlers/project/project.module'
 import { RoleModule } from './handlers/role/role.module'
-import { JwtStrategy } from './handlers/user/jwt/jwt.strategy'
+import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
 import { UserModule } from './handlers/user/user.module'
 
 @Module({

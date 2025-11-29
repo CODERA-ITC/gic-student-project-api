@@ -12,6 +12,7 @@ import { LoginDto } from './dto/login.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -47,6 +48,27 @@ export class AuthService {
     const isMatch = await bcrypt.compare(dto.password, user.password);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid password');
+    }
+
+    return this.generateTokens(user);
+  }
+
+  // Handle Google OAuth login/sign up
+  async handleGoogleLogin(googleUser: any){
+    let user = await this.userService.findUserByEmail(googleUser.email);
+    
+    // Create random hash to bypass DTO
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+    if (!user) {
+      user = await this.userService.createUser({
+        email: googleUser.email,
+        firstname: googleUser.firstname,
+        lastname: googleUser.lastname,
+        password: hashedPassword,
+        department_code: 'GIC', //Need to handle this better
+      })
     }
 
     return this.generateTokens(user);

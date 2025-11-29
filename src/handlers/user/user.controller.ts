@@ -10,6 +10,8 @@ import {
   BadRequestException,
   UnauthorizedException,
   Param,
+  Res,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,13 +23,15 @@ import { LoginDto } from './dto/login.dto';
 import { CurrentUser } from './auth/current-user.decorator';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { log } from 'node:console';
+import { GoogleOauthGuard } from './auth/google-oauth.guards';
+import { Request, Response } from 'express';
 @ApiTags('auth')
 @Controller('users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
-  ) {}
+  ) { }
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -84,19 +88,13 @@ export class UserController {
     }
   }
 
-  @Post('/logout/:id')
-  @ApiOperation({summary: 'Log user out and revoke the token'})
-  async logout(@Param('id') id:string){
+  @Post('logout/:id')
+  @ApiOperation({ summary: 'Log user out and revoke the token' })
+  async logout(@Param('id') id: string) {
     this.authService.revokeToken(id)
   }
 
-  @Get(':id')
-  @ApiOperation({summary: 'Get user by id'})
-  getUserById(@Param('id') id: string){
-    return this.userService.findUserById(id);
-  }
-
-  @Get('/current')
+  @Get('current')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user' })
@@ -105,21 +103,32 @@ export class UserController {
     return this.userService.findUserById(user.userId);
   }
 
-  // @Get('/check-exists')
-  // @ApiOperation({ summary: 'Check if user exists by email' })
-  // async checkUserExists(@Query('email') email: string) {
-  //   if (!email) {
-  //     throw new BadRequestException('Email parameter is required');
-  //   }
+  // Redirect user to Google Login Page
+  @Get('google')
+  @UseGuards(GoogleOauthGuard)
+  async auth() { }
 
-  //   const exists = await this.authService.checkUserExists(email);
-  //   return {
-  //     success: true,
-  //     data: {
-  //       email,
-  //       exists,
-  //       message: exists ? 'User exists' : 'User does not exist',
-  //     },
-  //   };
-  // }
+  @Get('google/callback')
+  @UseGuards(GoogleOauthGuard)
+  async googleAuthCallback(
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    const googleUser = req.user as any;
+    const tokens = await this.authService.handleGoogleLogin(googleUser);
+
+    res.cookie('access_token', tokens.access_token, {
+      maxAge: 2592000000,
+      sameSite: 'lax',
+      secure: false,
+    });
+
+    return res.status(HttpStatus.OK).json({ success: true, tokens });
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user by id' })
+  getUserById(@Param('id') id: string) {
+    return this.userService.findUserById(id);
+  }
 }
