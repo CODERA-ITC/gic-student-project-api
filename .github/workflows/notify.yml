@@ -19,5 +19,6 @@ jobs:
             -d "text=📌 *New push on* \`${{ github.ref_name }}\`
           *Repo:* \`${{ github.repository }}\`
           *Actor:* \`${{ github.actor }}\`
+          *Author:* \`${{ github.event.commits[0].author.name }}\`
           *Message:* \`${{ github.event.commits[0].message }}\`
           *View:* https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
