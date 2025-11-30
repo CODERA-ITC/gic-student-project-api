@@ -24,17 +24,7 @@ WORKDIR /app
 COPY --chown=node:node package.json .npmrc ./
 
 # Install dependencies with retry logic and better network handling
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm config set fetch-timeout 600000 && \
-    npm config set fetch-retry-mintimeout 10000 && \
-    npm config set fetch-retry-maxtimeout 60000 && \
-    npm config set fetch-retries 5 && \
-    npm config set engine-strict false && \
-    npm config set maxsockets 10 && \
-    npm config set progress false && \
-    npm config set audit false && \
-    npm cache clean --force && \
-    npm install --production=false --legacy-peer-deps --no-optional --prefer-offline 2>/dev/null || \
+RUN npm install --production=false --legacy-peer-deps --no-optional --prefer-offline 2>/dev/null || \
     npm install --production=false --legacy-peer-deps --no-optional || \
     (sleep 10 && npm install --production=false --legacy-peer-deps --no-optional)
 
