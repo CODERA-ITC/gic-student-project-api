@@ -74,6 +74,26 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
+  // Handle GitHub OAuth login/sign up
+  async handleGitHubLogin(githubUser: any){
+    let user = await this.userService.findUserByEmail(githubUser.email);
+
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+    if(!user){
+      user = await this.userService.createUser({
+        email: githubUser.email,
+        firstname: githubUser.firstname,
+        lastname: githubUser.lastname,
+        password: hashedPassword,
+        department_code: 'GIC' //Need to handle this better
+      })
+    }
+
+    return this.generateTokens(user);
+  }
+
   private async saveRefreshToken(id: string, refreshToken: string) {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10) //hashed token
 

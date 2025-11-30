@@ -25,6 +25,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { log } from 'node:console';
 import { GoogleOauthGuard } from './auth/google-oauth.guards';
 import { Request, Response } from 'express';
+import { GitHubOauthGuard } from './auth/github-oauth.guards';
 @ApiTags('auth')
 @Controller('users')
 export class UserController {
@@ -106,7 +107,7 @@ export class UserController {
   // Redirect user to Google Login Page
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async auth() { }
+  async authGoogle() { }
 
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
@@ -120,10 +121,33 @@ export class UserController {
     res.cookie('access_token', tokens.access_token, {
       maxAge: 2592000000,
       sameSite: 'lax',
-      secure: false,
+      secure: process.env.NODE_ENV === 'production'
     });
 
     return res.status(HttpStatus.OK).json({ success: true, tokens });
+  }
+
+  //Redirect user to GitHub Login Page
+  @Get('github')
+  @UseGuards(GitHubOauthGuard)
+  async authGitHub() { }
+
+  @Get('github/callback')
+  @UseGuards(GitHubOauthGuard)
+  async githubAuthCallBack(
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    const githubUser = req.user as any;
+    const tokens = await this.authService.handleGitHubLogin(githubUser);
+
+    res.cookie('access_token', tokens.access_token, {
+      maxAge: 2592000000,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
+    });
+
+    return res.status(HttpStatus.OK).json({ success: true, tokens })
   }
 
   @Get(':id')
