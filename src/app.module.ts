@@ -9,6 +9,7 @@ import { ProjectModule } from './handlers/project/project.module'
 import { RoleModule } from './handlers/role/role.module'
 import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
 import { UserModule } from './handlers/user/user.module'
+import { SeederModule } from './handlers/seeder/seeder.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserModule } from './handlers/user/user.module'
     UserModule,
     DepartmentModule,
     RoleModule,
+    SeederModule,
   ],
 
   controllers: [AppController],
