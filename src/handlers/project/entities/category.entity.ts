@@ -4,7 +4,7 @@ import { Project } from './project.entity'
 
 @Entity('categories')
 export class Category extends BaseEntity {
-  @Column()
+  @Column({ unique: true })
   name: string
 
   @OneToMany(() => Project, project => project.category)

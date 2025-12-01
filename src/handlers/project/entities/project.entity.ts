@@ -23,6 +23,10 @@ export class Project extends BaseEntity {
   @Column()
   ownerId: string
 
+  // draft, published, rejected, accepted
+  @Column({ default: 'draft' })
+  visiblity: string
+
   @ManyToOne(() => Category, category => category.projects)
   category: Category
 
