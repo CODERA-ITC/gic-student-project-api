@@ -11,7 +11,7 @@ export class SeederService {
     private departmentRepo: Repository<Department>,
     @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
-  ) {}
+  ) { }
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
@@ -27,7 +27,7 @@ export class SeederService {
       { name: 'AI' },
       { name: 'Mobile Development' },
     ], {
-      conflictPaths: ['id'],
+      conflictPaths: ['name'],
     })
 
     return result

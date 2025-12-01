@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, OnModuleInit } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
@@ -10,4 +10,10 @@ import { SeederService } from './seeder.service'
   providers: [SeederService],
   imports: [TypeOrmModule.forFeature([Department, Category])],
 })
-export class SeederModule {}
+export class SeederModule implements OnModuleInit {
+  constructor(private readonly seederService: SeederService) { }
+  onModuleInit() {
+    this.seederService.seedCategories()
+    this.seederService.seedDepartment()
+  }
+}

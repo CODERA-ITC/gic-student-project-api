@@ -7,9 +7,9 @@ import { DatabaseModule } from './config/database.config'
 import { DepartmentModule } from './handlers/department/department.module'
 import { ProjectModule } from './handlers/project/project.module'
 import { RoleModule } from './handlers/role/role.module'
+import { SeederModule } from './handlers/seeder/seeder.module'
 import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
 import { UserModule } from './handlers/user/user.module'
-import { SeederModule } from './handlers/seeder/seeder.module';
 
 @Module({
   imports: [
