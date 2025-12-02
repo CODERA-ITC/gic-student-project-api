@@ -19,12 +19,12 @@ export class CreateProjectDto {
 
   @ApiProperty({ example: 'category-id', required: true })
   @IsString()
-  categoryId: string
+  categoryId: number
 
-  @ApiProperty({ example: 'category-id', required: true })
+  @ApiProperty({ example: 'tag-id', required: false })
   @IsOptional()
   @IsString()
-  tagId?: string
+  tagId?: number
 
   @IsString()
   departmentId: string

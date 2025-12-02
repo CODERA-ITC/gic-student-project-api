@@ -10,6 +10,8 @@ import {
   OneToMany,
 } from 'typeorm'
 import { Category } from './category.entity'
+import { Feature } from './feature.entity'
+import { Image } from './image.entity'
 import { Tag } from './tag.entity'
 
 @Entity('projects')
@@ -23,9 +25,25 @@ export class Project extends BaseEntity {
   @Column()
   ownerId: string
 
+  @Column()
+  thumbnailUrl: string
+
   // draft, published, rejected, accepted
   @Column({ default: 'draft' })
   visiblity: string
+
+  // pending, ongoing, done
+  @Column({ default: 'pending' })
+  status: string
+
+  @OneToMany(() => Feature, feature => feature.project)
+  features: Feature[]
+
+  @OneToMany(() => Image, image => image.project, {
+    cascade: true,
+    eager: true, // auto-load when fetching project
+  })
+  images: Image[]
 
   @ManyToOne(() => Category, category => category.projects)
   category: Category
@@ -37,4 +55,7 @@ export class Project extends BaseEntity {
   @ManyToMany(() => Department, department => department.projects)
   @JoinTable()
   department: Department
+
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  startDate: Date
 }
