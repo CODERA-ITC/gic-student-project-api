@@ -1,9 +1,10 @@
-import type { Repository } from 'typeorm'
+import type { EntityManager, Repository } from 'typeorm'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
+import { User } from '../user/entities/user.entity'
 import { Category } from './entities/category.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
@@ -22,51 +23,59 @@ export class ProjectService {
     private tagRepo: Repository<Tag>,
     @InjectRepository(Department)
     private departmentRepo: Repository<Department>,
+    @InjectEntityManager()
+    private entityManager: EntityManager, // for db transaction
   ) { }
 
   async create(dto: CreateProjectDto): Promise<Project> {
-    try {
-      const project = this.projectRepo.create(dto)
+    // tem shorts for TransactionEntityManager
+    return await this.entityManager.transaction(async (tem) => {
+      // Fetch related entities in parallel
+      const [author, category, department] = await Promise.all([
+        tem.findOneBy(User, { id: dto.userId }),
+        tem.findOneBy(Category, { id: dto.categoryId }),
+        tem.findOneBy(Department, { id: dto.departmentId }),
+      ])
 
-      // Validate and attach category
-      if (dto.categoryId) {
-        const category = await this.categoryRepo.findOneBy({ id: dto.categoryId })
-        if (!category) {
-          throw new HttpException(
-            'Category not found',
-            HttpStatus.BAD_REQUEST,
-          )
-        }
-        project.category = category
+      // Validate all required entities exist
+      if (!author) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+      }
+      if (!category) {
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND)
+      }
+      if (!department) {
+        throw new HttpException('Department not found', HttpStatus.NOT_FOUND)
       }
 
-      // Validate and attach department
-      if (dto.departmentId) {
-        const department = await this.departmentRepo.findOneBy({
-          id: dto.departmentId,
-        })
-        if (!department) {
-          throw new HttpException(
-            'Department not found',
-            HttpStatus.BAD_REQUEST,
-          )
-        }
-        project.department = department
+      // Create and setup project
+      const project = this.projectRepo.create({
+        ...dto,
+        category,
+        department,
+        members: [],
+      })
+
+      const projectMember = this.projectMemberRepo.create({
+        member: author,
+        project,
+        role: 'author',
+      })
+      // Add author as project member
+      try {
+        await tem.save(projectMember)
+      }
+      catch (e) {
+        throw new HttpException(
+          `Failed to add member to project`,
+          HttpStatus.BAD_REQUEST,
+        )
       }
 
-      // const pMember = this.projectMemberRepo.create()
-
-      // Save will insert + handle relations
-      const projectResult = await this.projectRepo.save(project)
-
-      return projectResult
-    }
-    catch (e) {
-      throw new HttpException(
-        e.message || 'Unable to create project',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
+      project.members.push(projectMember)
+      // Save project with all relations
+      return await tem.save(project)
+    })
   }
 
   async findAll() {
@@ -106,33 +115,29 @@ export class ProjectService {
   }
 
   async findOne(id: string) {
-    try {
-      const project = await this.projectRepo.findOneBy({ id })
-      if (!project) {
-        throw new NotFoundException('Project not found')
-      }
-      const members = await this.projectMemberRepo
-        .createQueryBuilder('pm')
-        .leftJoinAndSelect('pm.member', 'user')
-        .where('pm.projectId = :id', { id })
-        .select([
-          'pm.role',
-          'user.id',
-          'user.email',
-          'user.firstname',
-          'user.lastname',
-        ])
-        .getMany()
-
-      return {
-        ...project,
-        members: {
-          ...members,
-        },
-      }
-    }
-    catch (e) {
+    const project = await this.projectRepo.findOneBy({ id })
+    if (!project) {
       throw new NotFoundException('Project not found')
+    }
+
+    const members = await this.projectMemberRepo
+      .createQueryBuilder('pm')
+      .leftJoin('pm.member', 'user')
+      .where('pm.projectId = :id', { id })
+      .select([
+        'pm.role as role',
+      ])
+      .addSelect([
+        'user.id as id',
+        'user.email as email',
+        'user.firstname as firstname',
+        'user.lastname as lastname',
+      ])
+      .getRawMany()
+
+    return {
+      project,
+      members,
     }
   }
 

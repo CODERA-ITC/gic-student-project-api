@@ -59,5 +59,5 @@ export class Project extends BaseEntity {
   startDate: Date
 
   @OneToMany(() => ProjectMember, pm => pm.project)
-  members: User[]
+  members: ProjectMember[]
 }

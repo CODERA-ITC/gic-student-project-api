@@ -19,6 +19,7 @@ export class CreateProjectDto {
 
   @ApiProperty({ example: 1, required: true })
   @IsNumber()
+  @IsNotEmpty()
   categoryId: number
 
   @ApiProperty({ example: 1, required: false })
@@ -26,6 +27,13 @@ export class CreateProjectDto {
   @IsNumber()
   tagId?: number
 
+  @ApiProperty({ example: '1', required: true })
   @IsNumber()
+  @IsNotEmpty()
   departmentId: number
+
+  @ApiProperty({ example: '11111111-1111-1111-1111-111111111111', required: true })
+  @IsString()
+  @IsNotEmpty()
+  userId: string
 }
