@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer'
 
 import { BaseEntity } from 'src/database/base.entity'
+import { Department } from 'src/handlers/department/entitites/department.entity'
 import { Project } from 'src/handlers/project/entities/project.entity'
 import { ProjectMember } from 'src/handlers/project/entities/project_members.entity'
 import {
@@ -17,25 +18,25 @@ export class User extends BaseEntity {
   firstname: string
 
   @Column()
-  lastname: string;
+  lastname: string
 
-  @Column()
-  avatar_url: string;
+  @Column({ nullable: true })
+  avatar_url: string
 
   @Column({ unique: true })
   email: string
 
-  @Column({ unique: true })
-  phone: number
+  @Column({ nullable: true })
+  phone: string
 
   @Exclude()
   @Column()
   password: string
 
-  @Column()
-  department: string
+  @ManyToOne(() => Department, dept => dept.users)
+  department: Department
 
-  @Column()
+  @Column({ nullable: true })
   year: number
 
   @Column('simple-array', { nullable: true })

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
+import { User } from '../user/entities/user.entity'
 
 @Injectable()
 export class SeederService {
@@ -11,6 +12,8 @@ export class SeederService {
     private departmentRepo: Repository<Department>,
     @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) { }
 
   async seedDepartment() {
@@ -29,6 +32,27 @@ export class SeederService {
     ], {
       conflictPaths: ['name'],
     })
+
+    return result
+  }
+
+  async seedUser() {
+    const userId = '11111111-1111-1111-1111-111111111111'
+    const department = await this.departmentRepo.findOneBy({ id: 1 })
+    const user = this.userRepo.create(
+      {
+        id: userId,
+        firstname: 'Test',
+        lastname: 'User',
+        email: 'testuser@gmail.com',
+        phone: '0123456789',
+        password: 'super_secured_pass',
+      },
+    )
+
+    user.department = department!
+
+    const result = await this.userRepo.save(user)
 
     return result
   }

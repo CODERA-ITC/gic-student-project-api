@@ -26,6 +26,6 @@ export class CreateProjectDto {
   @IsNumber()
   tagId?: number
 
-  @IsString()
-  departmentId: string
+  @IsNumber()
+  departmentId: number
 }
