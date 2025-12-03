@@ -2,10 +2,12 @@ import { Exclude } from 'class-transformer'
 
 import { BaseEntity } from 'src/database/base.entity'
 import { Project } from 'src/handlers/project/entities/project.entity'
+import { ProjectMember } from 'src/handlers/project/entities/project_members.entity'
 import {
   Column,
   Entity,
   ManyToMany,
+  ManyToOne,
   OneToMany,
 } from 'typeorm'
 
@@ -42,9 +44,6 @@ export class User extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   hashedRefreshToken: string | null
 
-  @ManyToMany(() => Project, project => project.members)
-  memberProjects: Project[]
-
-  @OneToMany(() => Project, project => project.author)
-  authoredProjects: Project[]
+  @OneToMany(() => ProjectMember, pm => pm.member)
+  projects: Project[]
 }

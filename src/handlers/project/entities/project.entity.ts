@@ -13,6 +13,7 @@ import {
 import { Category } from './category.entity'
 import { Feature } from './feature.entity'
 import { Image } from './image.entity'
+import { ProjectMember } from './project_members.entity'
 import { Tag } from './tag.entity'
 
 @Entity('projects')
@@ -57,10 +58,6 @@ export class Project extends BaseEntity {
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   startDate: Date
 
-  @ManyToMany(() => User, user => user.memberProjects)
-  @JoinTable() // only on ONE side of the many-to-many
+  @OneToMany(() => ProjectMember, pm => pm.project)
   members: User[]
-
-  @ManyToOne(() => User, user => user.authoredProjects, { onDelete: 'CASCADE' })
-  author: User // user that creates the project
 }
