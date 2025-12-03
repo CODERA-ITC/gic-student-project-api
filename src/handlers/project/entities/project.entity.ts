@@ -24,7 +24,7 @@ export class Project extends BaseEntity {
   @Column({ nullable: true })
   description: string
 
-  @Column()
+  @Column({ nullable: true })
   thumbnailUrl: string
 
   // draft, published, rejected, accepted

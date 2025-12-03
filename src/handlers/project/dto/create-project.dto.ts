@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform } from 'class-transformer'
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
+import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator'
 
 export class CreateProjectDto {
   @ApiProperty({ example: 'My First Project' })
@@ -17,13 +17,13 @@ export class CreateProjectDto {
   @Transform(({ value }) => value?.trim())
   description?: string
 
-  @ApiProperty({ example: 'category-id', required: true })
-  @IsString()
+  @ApiProperty({ example: 1, required: true })
+  @IsNumber()
   categoryId: number
 
-  @ApiProperty({ example: 'tag-id', required: false })
+  @ApiProperty({ example: 1, required: false })
   @IsOptional()
-  @IsString()
+  @IsNumber()
   tagId?: number
 
   @IsString()
