@@ -1,10 +1,12 @@
 import {
   Entity,
   Column,
+  OneToMany
 } from 'typeorm';
 
 import { Exclude } from 'class-transformer';
 import { BaseEntity } from 'src/database/base.entity';
+import { Project } from 'src/handlers/project/entities/project.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -38,4 +40,7 @@ export class User extends BaseEntity {
 
   @Column({type: 'text', nullable: true})
   hashedRefreshToken: string | null;
+
+  @OneToMany(() => Project, (project) => project.user)
+  projects: Project[];
 }

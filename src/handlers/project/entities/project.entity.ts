@@ -1,5 +1,6 @@
 import { BaseEntity } from 'src/database/base.entity'
 import { Department } from 'src/handlers/department/entitites/department.entity'
+import { User } from 'src/handlers/user/entities/user.entity'
 
 import {
   Column,
@@ -58,4 +59,7 @@ export class Project extends BaseEntity {
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   startDate: Date
+
+  @ManyToOne(() => User, (user) => user.projects, { onDelete: 'CASCADE' })
+  user: User;
 }
