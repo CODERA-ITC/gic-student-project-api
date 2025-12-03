@@ -19,9 +19,9 @@ export class Category {
 
   @Exclude()
   @UpdateDateColumn({ type: 'timestamptz' })
-  readonly updated_at!: Date
+  readonly updatedAt!: Date
 
   // nestjs built-in soft delete
   @DeleteDateColumn({ type: 'timestamptz' })
-  deleted_at?: Date
+  deletedAt?: Date
 }

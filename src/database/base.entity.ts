@@ -1,23 +1,23 @@
-import { Exclude } from 'class-transformer';
+import { Exclude } from 'class-transformer'
 import {
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from 'typeorm'
 
 export class BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @CreateDateColumn({ type: 'timestamptz' })
-  readonly createdAt!: Date;
+  readonly createdAt!: Date
 
   @Exclude()
   @UpdateDateColumn({ type: 'timestamptz' })
-  readonly updated_at!: Date;
+  readonly updatedAt!: Date
 
   // nestjs built-in soft delete
   @DeleteDateColumn({ type: 'timestamptz' })
-  deleted_at?: Date;
+  deletedAt?: Date
 }
