@@ -24,9 +24,6 @@ export class Project extends BaseEntity {
   description: string
 
   @Column()
-  ownerId: string
-
-  @Column()
   thumbnailUrl: string
 
   // draft, published, rejected, accepted
@@ -60,6 +57,10 @@ export class Project extends BaseEntity {
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   startDate: Date
 
-  @ManyToOne(() => User, (user) => user.projects, { onDelete: 'CASCADE' })
-  user: User;
+  @ManyToMany(() => User, user => user.memberProjects)
+  @JoinTable() // only on ONE side of the many-to-many
+  members: User[]
+
+  @ManyToOne(() => User, user => user.authoredProjects, { onDelete: 'CASCADE' })
+  author: User // user that creates the project
 }

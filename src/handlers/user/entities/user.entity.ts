@@ -1,46 +1,50 @@
-import {
-  Entity,
-  Column,
-  OneToMany
-} from 'typeorm';
+import { Exclude } from 'class-transformer'
 
-import { Exclude } from 'class-transformer';
-import { BaseEntity } from 'src/database/base.entity';
-import { Project } from 'src/handlers/project/entities/project.entity';
+import { BaseEntity } from 'src/database/base.entity'
+import { Project } from 'src/handlers/project/entities/project.entity'
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+} from 'typeorm'
 
 @Entity('users')
 export class User extends BaseEntity {
   @Column()
-  firstname: string;
- 
+  firstname: string
+
   @Column()
-  lastname: string;
+  lastname: string
 
-  @Column({ unique: true }) 
-  email: string;
+  @Column({ unique: true })
+  email: string
 
-  @Column({unique: true})
-  phone: number;
+  @Column({ unique: true })
+  phone: number
 
   @Exclude()
   @Column()
-  password: string;
+  password: string
 
   @Column()
-  department: string;
+  department: string
 
   @Column()
-  year: number;
+  year: number
 
-  @Column("simple-array", {nullable:true})
-  skill: string[];
+  @Column('simple-array', { nullable: true })
+  skill: string[]
 
-  @Column({nullable: true})
-  bio: string;
+  @Column({ nullable: true })
+  bio: string
 
-  @Column({type: 'text', nullable: true})
-  hashedRefreshToken: string | null;
+  @Column({ type: 'text', nullable: true })
+  hashedRefreshToken: string | null
 
-  @OneToMany(() => Project, (project) => project.user)
-  projects: Project[];
+  @ManyToMany(() => Project, project => project.members)
+  memberProjects: Project[]
+
+  @OneToMany(() => Project, project => project.author)
+  authoredProjects: Project[]
 }
