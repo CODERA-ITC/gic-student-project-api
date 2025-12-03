@@ -17,9 +17,21 @@ export class User extends BaseEntity {
   @Column({ unique: true }) 
   email: string;
 
+  @Column({unique: true})
+  phone: number;
+
   @Exclude()
   @Column()
   password: string;
+
+  @Column()
+  department: string;
+
+  @Column()
+  year: number;
+
+  @Column("simple-array", {nullable:true})
+  skill: string[];
 
   @Column({nullable: true})
   bio: string;
