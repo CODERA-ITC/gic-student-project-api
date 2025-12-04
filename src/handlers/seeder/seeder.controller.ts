@@ -24,4 +24,9 @@ export class SeederController {
   seedDepartment() {
     return this.seederService.seedDepartment()
   }
+
+  @Post('/seed-role')
+  seedRole(){
+    return this.seedRole()
+  }
 }

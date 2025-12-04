@@ -4,6 +4,7 @@ import { Repository } from 'typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
 import { User } from '../user/entities/user.entity'
+import { Role } from '../role/entities/role.entity'
 
 @Injectable()
 export class SeederService {
@@ -14,6 +15,8 @@ export class SeederService {
     private categoryRepo: Repository<Category>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    @InjectRepository(Role)
+    private roleRepo: Repository<Role>,
   ) { }
 
   async seedDepartment() {
@@ -55,5 +58,24 @@ export class SeederService {
     const result = await this.userRepo.save(user)
 
     return result
+  }
+
+  async seedRole() {
+    const result = await this.roleRepo.upsert([
+      { 
+        name: 'Admin',
+        description: 'Responsible for managing the system'
+      },
+      {
+        name: 'Teacher',
+        description: 'Manage student projects'
+      },
+      {
+        name: 'Student',
+        description: 'Create and propose project ideas'
+      }
+    ], { conflictPaths: ['name'] })
+
+    return result;
   }
 }
