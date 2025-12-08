@@ -125,12 +125,14 @@ export class UserController {
 
     res.cookie('access_token', tokens.access_token, {
       maxAge: 2592000000,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      secure: true,
+      domain: 'localhost',
+      path: '/', // cookie will attach to whatever hostname the backend is served on
     })
 
     const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-    return res.status(HttpStatus.OK).redirect(`${frontendUrl}/dashboard`)
+    return res.status(HttpStatus.OK).redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`)
   }
 
   // Redirect user to GitHub Login Page
@@ -149,12 +151,14 @@ export class UserController {
 
     res.cookie('access_token', tokens.access_token, {
       maxAge: 2592000000,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      secure: true,
+      domain: 'localhost', // in prod change to frontend real domain
+      path: '/', // cookie will attach to whatever hostname the backend is served on
     })
 
     const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-    return res.status(HttpStatus.OK).redirect(`${frontendUrl}/dashboard`)
+    return res.status(HttpStatus.OK).redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`)
   }
 
   @Get(':id')
