@@ -1,5 +1,4 @@
 import { Exclude } from 'class-transformer'
-import { BaseEntity } from 'src/database/base.entity'
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { Project } from './project.entity'
 

@@ -33,7 +33,7 @@ export class ProjectController {
 
   @Post()
   create(@Body() dto: CreateProjectDto) {
-    return this.projectService.create(dto)
+    return this.projectService.createProjectAndNotify(dto)
   }
 
   @Patch(':id')

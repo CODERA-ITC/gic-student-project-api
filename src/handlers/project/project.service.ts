@@ -9,6 +9,8 @@ import { Category } from './entities/category.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
+import { NotificationService } from '../notification/notification.service'
+import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 
 @Injectable()
 export class ProjectService {
@@ -25,6 +27,9 @@ export class ProjectService {
     private departmentRepo: Repository<Department>,
     @InjectEntityManager()
     private entityManager: EntityManager, // for db transaction
+
+
+    private notificationService: NotificationService,
   ) { }
 
   async create(dto: CreateProjectDto): Promise<Project> {
@@ -73,9 +78,29 @@ export class ProjectService {
       }
 
       project.members.push(projectMember)
+
       // Save project with all relations
       return await tem.save(project)
     })
+  }
+
+  async createProjectAndNotify(projectDto: CreateProjectDto) {
+    const project = await this.create(projectDto);
+
+    try {
+      const notificationDto: CreateNotificationDto = {
+        name: projectDto.name,
+        description: projectDto.description ?? 'New project',
+        status: 'pending',
+      };
+
+      await this.notificationService.notifyTeachers(notificationDto);
+    } catch (error) {
+      // Log the error but don't fail the project creation
+      console.error('Failed to send notification', error);
+    }
+
+    return project;
   }
 
   async findAll() {

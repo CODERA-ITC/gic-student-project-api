@@ -1,5 +1,6 @@
 import { BaseEntity } from "src/database/base.entity";
-import { Column, Entity } from "typeorm";
+import { User } from "src/handlers/user/entities/user.entity";
+import { Column, Entity, OneToOne } from "typeorm";
 
 @Entity('roles')
 export class Role extends BaseEntity { 
@@ -8,4 +9,7 @@ export class Role extends BaseEntity {
 
     @Column({ nullable: true })
     description: string;
+
+    @OneToOne(() => User, user => user.role)
+    user: User;
 } 

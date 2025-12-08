@@ -11,6 +11,7 @@ import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
 import { ProjectController } from './project.controller'
 import { ProjectService } from './project.service'
+import { NotificationModule } from '../notification/notification.module'
 
 @Module({
   controllers: [ProjectController, CategoryController],
@@ -23,7 +24,7 @@ import { ProjectService } from './project.service'
     Feature,
     Image,
     ProjectMember,
-  ])],
+  ]), NotificationModule],
 
 })
 export class ProjectModule { }

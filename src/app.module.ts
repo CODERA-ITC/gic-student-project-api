@@ -10,6 +10,7 @@ import { RoleModule } from './handlers/role/role.module'
 import { SeederModule } from './handlers/seeder/seeder.module'
 import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
 import { UserModule } from './handlers/user/user.module'
+import { NotificationModule } from './handlers/notification/notification.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UserModule } from './handlers/user/user.module'
     DepartmentModule,
     RoleModule,
     SeederModule,
+    NotificationModule,
   ],
 
   controllers: [AppController],
