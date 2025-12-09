@@ -1,11 +1,13 @@
 import type { EntityManager, Repository } from 'typeorm'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
+import type { CreateFeatureDto } from './dto/create-feature.dto'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { User } from '../user/entities/user.entity'
 import { Category } from './entities/category.entity'
+import { Feature } from './entities/feature.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
@@ -249,5 +251,59 @@ export class ProjectService {
     })
 
     return { message: 'Member removed' }
+  }
+
+  // ==============================================================================
+  // Project Feature Service
+  // ==============================================================================
+  
+  async createFeature(dto: CreateFeatureDto): Promise<Feature> {
+    const project = await this.projectRepo.findOneBy({ id: dto.projectId })
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    const feature = this.entityManager.getRepository(Feature).create({
+      name: dto.name,
+      description: dto.description,
+      status: dto.status || 'pending',
+      icon: dto.icon || '',
+      project,
+    })
+
+    return await this.entityManager.save(feature)
+  }
+
+  async findAllFeatures(): Promise<Feature[]> {
+    return await this.entityManager.getRepository(Feature).find({
+      relations: ['project'],
+      order: { createdAt: 'DESC' },
+    })
+  }
+
+  async findOneFeature(id: string): Promise<Feature> {
+    const feature = await this.entityManager.getRepository(Feature).findOne({
+      where: { id },
+      relations: ['project'],
+    })
+
+    if (!feature) {
+      throw new NotFoundException('Feature not found')
+    }
+
+    return feature
+  }
+
+  async findFeaturesByProject(projectId: string): Promise<Feature[]> {
+    const project = await this.projectRepo.findOneBy({ id: projectId })
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    return await this.entityManager.getRepository(Feature).find({
+      where: { project: { id: projectId } },
+      relations: ['project'],
+      order: { createdAt: 'ASC' },
+    })
   }
 }
