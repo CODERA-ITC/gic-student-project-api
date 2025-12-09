@@ -63,19 +63,25 @@ export class NotificationService implements OnModuleDestroy {
   }
 
   async notifyStudent(studentId: string, event: CreateNotificationDto) {
-    const student = await this.userRepo.findOne({ where: { id: studentId } });
+    const student = await this.userRepo.findOne({ where: { id: studentId }});
     if (!student) {
       this.getOrCreateStudentSubject(studentId).next(event);
       throw new Error(`Student with id ${studentId} not found`);
     }
 
     const notification = this.notificationRepo.create({
-      ...event,
-      users: [student],
+      name: event.name,
+      description: event.description,
+      status: event.status,
+      read: event.read ?? false,
     });
-    await this.notificationRepo.save(notification);
-    this.getOrCreateStudentSubject(studentId).next(event);
 
+    // const savedNotification = await this.notificationRepo.save(notification);
+
+    notification.users.push(student)
+    await this.notificationRepo.save(notification);
+
+    this.getOrCreateStudentSubject(studentId).next(event);
     return notification;
   }
 
@@ -108,10 +114,14 @@ export class NotificationService implements OnModuleDestroy {
 
     if (students.length > 0) {
       const notification = this.notificationRepo.create({
-        ...event,
-        users: students,
+        name: event.name,
+        description: event.description,
+        status: event.status,
+        read: event.read ?? false,
       });
-      await this.notificationRepo.save(notification);
+
+      const savedNotification = await this.notificationRepo.save(notification);
+      await this.notificationRepo.save(savedNotification);
     }
 
     this.studentStream.forEach((subject) => {

@@ -31,9 +31,16 @@ export class Project extends BaseEntity {
   @Column({ default: 'draft' })
   visiblity: string
 
-  // pending, ongoing, done
+  // pending, ongoing, done (for tracking project progression)
   @Column({ default: 'pending' })
   status: string
+
+  // handle notification
+  @Column({ nullable: true })
+  notificationId: string;
+
+  @Column({ nullable: true })
+  reviewedBy: string;
 
   @OneToMany(() => Feature, feature => feature.project)
   features: Feature[]

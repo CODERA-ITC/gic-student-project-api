@@ -61,6 +61,7 @@ export class ProjectService {
         category,
         department,
         members: [],
+        visiblity: 'draft'
       })
 
       const projectMember = this.projectMemberRepo.create({
@@ -71,8 +72,7 @@ export class ProjectService {
       // Add author as project member
       try {
         await tem.save(projectMember)
-      }
-      catch (e) {
+      } catch (e) {
         throw new HttpException(
           `Failed to add member to project`,
           HttpStatus.BAD_REQUEST,
@@ -86,23 +86,44 @@ export class ProjectService {
     })
   }
 
-  async createProjectAndNotify(projectDto: CreateProjectDto) {
-    const project = await this.create(projectDto);
+  async submitProjectForReview(projectId: string): Promise<Project> {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: ['members', 'members.member', 'category', 'department']
+    });
+
+    if (!project) {
+      throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (project.visiblity !== 'draft') {
+      throw new HttpException(
+        'Only draft projects can be submitted for review',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    project.visiblity = 'reviewing';
+
+    // use to get author pfp later on 
+    const author = project.members.find(m => m.role === 'author');
 
     try {
       const notificationDto: CreateNotificationDto = {
-        name: projectDto.name,
-        description: projectDto.description ?? 'New project',
-        status: 'pending',
+        name: `${project.name}`,
+        description: `${project.description}`,
+        status: "pending",
+        read: false
       };
 
-      await this.notificationService.notifyTeachers(notificationDto);
+      const notification = await this.notificationService.notifyTeachers(notificationDto);
+
+      project.notificationId = notification.id
     } catch (error) {
-      // Log the error but don't fail the project creation
-      console.error('Failed to send notification', error);
+      console.error('Failed to send notification to teachers: ', error)
     }
 
-    return project;
+    return await this.projectRepo.save(project)
   }
 
   async findAll() {
@@ -305,5 +326,100 @@ export class ProjectService {
       relations: ['project'],
       order: { createdAt: 'ASC' },
     })
+  }
+  // Accept or reject project (Teacher Role)
+  async acceptProject(projectId: string, teacherId: string) {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: { members: { member: true} }
+    });
+
+    console.log(project)
+
+    if (!project) {
+      throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
+    }
+
+    if (project.visiblity !== 'reviewing') {
+      throw new HttpException(
+        'Only projects under review can be accepted',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    project.visiblity = 'accepted';
+    project.reviewedBy = teacherId;
+    await this.projectRepo.save(project);
+
+    if (project.notificationId) {
+      try {
+        await this.notificationService.updateStatus(project.notificationId, 'accepted');
+      } catch (error) {
+        console.error('Failed to update notification status', error)
+      }
+    }
+
+    try {
+      const memberIds = project.members.map(m => m.member.id);
+      console.log('MEMBER IDS ', memberIds)
+      const notificationDto: CreateNotificationDto = {
+        name: 'Project Accepted',
+        description: `Your '${project.name}' prroposal has been accepted!`,
+        status: 'accepted',
+        read: false
+      };
+
+      for (const memberId of memberIds) {
+        await this.notificationService.notifyStudent(memberId, notificationDto)
+      }
+    } catch (error) {
+      console.error('Failed to notify project members: ', error)
+    }
+  }
+
+  async rejectProject(projectId: string, teacherId: string) {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: ['members', 'members.member']
+    });
+
+    if (!project) {
+      throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
+    }
+
+    if (project.visiblity !== 'reviewing') {
+      throw new HttpException(
+        'Only projects under review can be accepted',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    project.visiblity = 'rejected';
+    project.reviewedBy = teacherId;
+    await this.projectRepo.save(project);
+
+    if (project.notificationId) {
+      try {
+        await this.notificationService.updateStatus(project.notificationId, 'rejected');
+      } catch (error) {
+        console.error('Failed to update notification status', error)
+      }
+    }
+
+    try {
+      const memberIds = project.members.map(m => m.member.id);
+      const notificationDto: CreateNotificationDto = {
+        name: 'Project Rejected',
+        description: `Your '${project.name}' prroposal has been rejected! Contact lecturer for further informations`,
+        status: 'rejected',
+        read: false
+      };
+
+      for (const memberId of memberIds) {
+        await this.notificationService.notifyStudent(memberId, notificationDto)
+      }
+    } catch (error) {
+      console.error('Failed to notify project members: ', error)
+    }
   }
 }

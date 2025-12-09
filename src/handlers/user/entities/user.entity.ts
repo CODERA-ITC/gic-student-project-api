@@ -10,6 +10,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -60,5 +61,6 @@ export class User extends BaseEntity {
   projects: Project[]
 
   @ManyToMany(() => Notification, notification => notification.users)
+  @JoinTable()
   notifications: Notification[]
 }

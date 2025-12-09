@@ -25,7 +25,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
         migrations: [`${__dirname}/../migrations/*.{ts,js}`],
         migrationsRun: true,
         synchronize: true, // Disable synchronization to use migrations only
-        // dropSchema: true, // Drop and recreate schema for development
+        dropSchema: true, // Drop and recreate schema for development
         autoLoadEntities: true,
         // Disable all logging to reduce console noise
         logging: false,
