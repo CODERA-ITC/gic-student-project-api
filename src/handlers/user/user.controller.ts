@@ -1,4 +1,4 @@
-import { log } from 'node:console'
+import { log } from 'node:console';
 import {
   BadRequestException,
   Body,
@@ -13,20 +13,20 @@ import {
   Res,
   UnauthorizedException,
   UseGuards,
-} from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { Request, Response } from 'express'
-import { AuthService } from './auth.service'
-import { CurrentUser } from './auth/current-user.decorator'
-import { GitHubOauthGuard } from './auth/github-oauth.guards'
-import { GoogleOauthGuard } from './auth/google-oauth.guards'
-import { JwtAuthGuard } from './auth/jwt-auth.guard'
-import { CreateUserDto } from './dto/create-user.dto'
-import { LoginDto } from './dto/login.dto'
-import { UserService } from './user.service'
+import { Request, Response } from 'express';
+import { AuthService } from './auth.service';
+import { CurrentUser } from './auth/current-user.decorator';
+import { GitHubOauthGuard } from './auth/github-oauth.guards';
+import { GoogleOauthGuard } from './auth/google-oauth.guards';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { CreateUserDto } from './dto/create-user.dto';
+import { LoginDto } from './dto/login.dto';
+import { UserService } from './user.service';
 
 @ApiTags('auth')
 @Controller('users')
@@ -35,28 +35,27 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
   async signup(@Body() dto: CreateUserDto) {
     try {
-      const result = await this.authService.signup(dto)
+      const result = await this.authService.signup(dto);
 
       return {
         success: true,
         message: 'User registered successfully',
         data: result,
-      }
-    }
-    catch (error) {
-      console.error('Signup error:', error.message)
+      };
+    } catch (error) {
+      console.error('Signup error:', error.message);
 
       if (error instanceof BadRequestException) {
-        throw error
+        throw error;
       }
 
-      throw new BadRequestException('Registration failed. Please try again.')
+      throw new BadRequestException('Registration failed. Please try again.');
     }
   }
 
@@ -67,37 +66,36 @@ export class UserController {
     try {
       // Validate input
       if (!dto.email || !dto.password) {
-        throw new BadRequestException('Email and password are required')
+        throw new BadRequestException('Email and password are required');
       }
 
-      const result = await this.authService.login(dto)
+      const result = await this.authService.login(dto);
 
       return {
         success: true,
         message: 'Login successful',
         data: result,
-      }
-    }
-    catch (error) {
+      };
+    } catch (error) {
       // Log the error for debugging
-      console.error('Login error:', error.message)
+      console.error('Login error:', error.message);
 
       if (
-        error instanceof UnauthorizedException
-        || error instanceof BadRequestException
+        error instanceof UnauthorizedException ||
+        error instanceof BadRequestException
       ) {
-        throw error
+        throw error;
       }
 
       // Handle unexpected errors
-      throw new UnauthorizedException('Login failed. Please try again.')
+      throw new UnauthorizedException('Login failed. Please try again.');
     }
   }
 
   @Post('logout/:id')
   @ApiOperation({ summary: 'Log user out and revoke the token' })
   async logout(@Param('id') id: string) {
-    this.authService.revokeToken(id)
+    this.authService.revokeToken(id);
   }
 
   @Get('current')
@@ -105,23 +103,20 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user' })
   findUserWithCurrent(@CurrentUser() user: any) {
-    log('Current User:', user)
-    return this.userService.findUserById(user.userId)
+    log('Current User:', user);
+    return this.userService.findUserById(user.userId);
   }
 
   // Redirect user to Google Login Page
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async authGoogle() { }
+  async authGoogle() {}
 
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
-  async googleAuthCallback(
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
-    const googleUser = req.user as any
-    const tokens = await this.authService.handleGoogleLogin(googleUser)
+  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    const googleUser = req.user as any;
+    const tokens = await this.authService.handleGoogleLogin(googleUser);
 
     res.cookie('access_token', tokens.access_token, {
       maxAge: 2592000000,
@@ -129,25 +124,24 @@ export class UserController {
       secure: true,
       domain: 'localhost',
       path: '/', // cookie will attach to whatever hostname the backend is served on
-    })
+    });
 
-    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-    return res.status(HttpStatus.OK).redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`)
+    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST');
+    return res
+      .status(HttpStatus.OK)
+      .redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`);
   }
 
   // Redirect user to GitHub Login Page
   @Get('github')
   @UseGuards(GitHubOauthGuard)
-  async authGitHub() { }
+  async authGitHub() {}
 
   @Get('github/callback')
   @UseGuards(GitHubOauthGuard)
-  async githubAuthCallBack(
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
-    const githubUser = req.user as any
-    const tokens = await this.authService.handleGitHubLogin(githubUser)
+  async githubAuthCallBack(@Req() req: Request, @Res() res: Response) {
+    const githubUser = req.user as any;
+    const tokens = await this.authService.handleGitHubLogin(githubUser);
 
     res.cookie('access_token', tokens.access_token, {
       maxAge: 2592000000,
@@ -155,15 +149,42 @@ export class UserController {
       secure: true,
       domain: 'localhost', // in prod change to frontend real domain
       path: '/', // cookie will attach to whatever hostname the backend is served on
-    })
+    });
 
-    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-    return res.status(HttpStatus.OK).redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`)
+    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST');
+    return res
+      .status(HttpStatus.OK)
+      .redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`);
+  }
+  //===================================
+  //Search query user controller
+  //===================================
+  @Get('search')
+  @ApiOperation({ summary: 'Search users by name' })
+  async searchUser(@Query('q') q: string) {
+    try {
+      if (!q || q.trim() === '') {
+        return {
+          success: true,
+          message: 'No search query provided',
+          data: [],
+        };
+      }
+      const users = await this.userService.searchUser(q);
+      return {
+        success: true,
+        message: 'Search Completed',
+        data: users,
+      };
+    } catch (error) {
+      console.error('Search error:', error.message);
+      throw new BadRequestException('Search failed. Please try again! ');
+    }
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   getUserById(@Param('id') id: string) {
-    return this.userService.findUserById(id)
+    return this.userService.findUserById(id);
   }
 }

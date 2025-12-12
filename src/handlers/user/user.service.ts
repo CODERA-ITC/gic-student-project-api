@@ -43,4 +43,18 @@ export class UserService {
     if(result.affected === 0) throw new NotFoundException('User not found');
     return this.findUserById(id);
   }
+
+  // ======================
+  // Search query for user
+  //=======================
+  async searchUser(q:string){
+    if(!q || q.trim() === '') return [];
+    return this.userRepo.createQueryBuilder('user')
+    .select(['user.id', 'user.firstname', 'user.lastname', 'user.email'])
+    .where('user.firstname ILIKE :prefix', {prefix: `${q}%`})
+    .orWhere('user.lastname ILIKE :prefix', {prefix: `${q}%`})
+    .orderBy('user.firstname','ASC')
+    .limit(10)
+    .getMany()
+  }
 }
