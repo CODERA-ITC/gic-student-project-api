@@ -162,12 +162,12 @@ export class ProjectService {
           },
           members: {
             id: true,
+            role: true,
             member: {
               id: true,
               email: true,
               firstname: true,
               lastname: true,
-              role: true,
             },
           },
         },
@@ -218,12 +218,12 @@ export class ProjectService {
         },
         members: {
           id: true,
+          role: true,
           member: {
             id: true,
             email: true,
             firstname: true,
             lastname: true,
-            role: true,
           },
         },
       },
@@ -255,16 +255,15 @@ export class ProjectService {
   }
 
   async update(id: string, dto: UpdateProjectDto) {
-    const project = await this.projectRepo.preload({
-      id,
-      ...dto,
-    })
+    const project = await this.findOne(id)
 
     if (!project) {
       throw new NotFoundException('Project not found')
     }
 
-    return this.projectRepo.save(project)
+    const updated = this.projectRepo.create(dto)
+
+    return await this.projectRepo.save(updated)
   }
 
   async softDelete(id: string) {
