@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsUUID } from 'class-validator'
+import { IsArray, IsString, IsUUID } from 'class-validator'
 
 export class AddProjectMemberDto {
     @ApiProperty({
@@ -11,8 +11,8 @@ export class AddProjectMemberDto {
 
     @ApiProperty({
         description: 'ID of the member to add to the project',
-        example: '22222222-2222-2222-2222-222222222222',
+        example: ['22222222-2222-2222-2222-222222222222'],
     })
-    @IsString()
-    memberId: string
+    @IsArray()
+    memberIds: string[]
 }

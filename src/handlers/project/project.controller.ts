@@ -53,6 +53,6 @@ export class ProjectController {
 
   @Post(':id/members')
   addMember(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
-    return this.projectService.addMember(projectId, dto.authorId, dto.memberId)
+    return this.projectService.addMembers(projectId, dto.authorId, dto.memberIds)
   }
 }

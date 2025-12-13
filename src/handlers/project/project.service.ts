@@ -376,6 +376,22 @@ export class ProjectService {
     return result
   }
 
+  async addMembers(projectId: string, authorId: string, memberIds: string[]) {
+    const results = await Promise.allSettled(
+      memberIds.map(id => this.addMember(projectId, authorId, id)),
+    )
+
+    return {
+      success: results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value.project),
+
+      failed: results
+        .filter(r => r.status === 'rejected')
+        .map(r => r.reason),
+    }
+  }
+
   async removeMember(projectId: string, authorId: string, memberId: string) {
     // cannot remove the author himself
     if (authorId === memberId) {
