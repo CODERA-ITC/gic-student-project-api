@@ -35,7 +35,7 @@ export class User extends BaseEntity {
   phone: string
 
   @Exclude()
-  @Column()
+  @Column({ select: false })
   password: string
 
   @ManyToOne(() => Department, dept => dept.users)
@@ -50,7 +50,7 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   bio: string
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, select: false })
   hashedRefreshToken: string | null
 
   @OneToOne(() => Role, role => role.user)
@@ -58,7 +58,7 @@ export class User extends BaseEntity {
   role: Role
 
   @OneToMany(() => ProjectMember, pm => pm.member)
-  projects: Project[]
+  projects: ProjectMember[]
 
   @ManyToMany(() => Notification, notification => notification.users)
   @JoinTable()
