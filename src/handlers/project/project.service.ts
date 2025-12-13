@@ -4,10 +4,13 @@ import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
+import { use } from 'passport'
+import { first, last } from 'rxjs'
 import { Department } from '../department/entitites/department.entity'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
+import { UserService } from '../user/user.service'
 import { ProjectResponseDto } from './dto/project-reponse.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
@@ -22,15 +25,10 @@ export class ProjectService {
     private projectRepo: Repository<Project>,
     @InjectRepository(ProjectMember)
     private projectMemberRepo: Repository<ProjectMember>,
-    @InjectRepository(Category)
-    private categoryRepo: Repository<Category>,
-    @InjectRepository(Tag)
-    private tagRepo: Repository<Tag>,
-    @InjectRepository(Department)
-    private departmentRepo: Repository<Department>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
     @InjectEntityManager()
     private entityManager: EntityManager, // for db transaction
-
     private notificationService: NotificationService,
   ) { }
 
@@ -324,15 +322,69 @@ export class ProjectService {
 
   // Project Member Functions
 
-  async removeMember(projectId: string, userId: string, targetUserId: string) {
+  async addMember(projectId: string, authorId: string, memberId: string) {
+    if (authorId === memberId) {
+      throw new HttpException('Author cannot add himself to the project', HttpStatus.BAD_REQUEST)
+    }
+
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: { members: { member: true } },
+      select: {
+        members: {
+          id: true,
+          role: true,
+          member: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    if (!project) {
+      throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
+    }
+
+    let memberExists = false
+
+    console.log(project.members)
+
+    for (const pm of project.members) {
+      console.log(`a:${pm.member.id}; b:${memberId}; ${pm.member.id === memberId}`)
+      if (pm.member.id === memberId) {
+        memberExists = true
+        break
+      }
+    }
+
+    if (memberExists) {
+      throw new HttpException('Member already exists', HttpStatus.BAD_REQUEST)
+    }
+
+    const user = await this.userRepo.findOneBy({ id: memberId })
+    if (!user) {
+      throw new HttpException('User doesn\'t exist', HttpStatus.BAD_REQUEST)
+    }
+
+    const member = this.projectMemberRepo.create()
+    member.project = project
+    member.member = user
+    member.role = 'member'
+
+    const result = await this.projectMemberRepo.save(member)
+    return result
+  }
+
+  async removeMember(projectId: string, authorId: string, memberId: string) {
     // cannot remove the author himself
-    if (targetUserId === userId) {
+    if (authorId === memberId) {
       throw new BadRequestException('Author cannot remove himself')
     }
 
     await this.projectMemberRepo.delete({
       project: { id: projectId },
-      member: { id: targetUserId },
+      member: { id: memberId },
     })
 
     return { message: 'Member removed' }

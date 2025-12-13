@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
-import { User } from '../user/entities/user.entity'
 import { Role } from '../role/entities/role.entity'
+import { User } from '../user/entities/user.entity'
 
 @Injectable()
 export class SeederService {
@@ -40,11 +40,10 @@ export class SeederService {
   }
 
   async seedUser() {
-    const userId = '11111111-1111-1111-1111-111111111111'
     const department = await this.departmentRepo.findOneBy({ id: 1 })
     const user = this.userRepo.create(
       {
-        id: userId,
+        id: '11111111-1111-1111-1111-111111111111',
         firstname: 'Test',
         lastname: 'User',
         email: 'testuser@gmail.com',
@@ -55,27 +54,48 @@ export class SeederService {
 
     user.department = department!
 
-    const result = await this.userRepo.save(user)
+    const result = await this.userRepo.save(
+      [
+        {
+          id: '11111111-1111-1111-1111-111111111111',
+          firstname: 'Test',
+          lastname: 'User',
+          email: 'testuser@gmail.com',
+          phone: '0123456789',
+          password: 'super_secured_pass',
+          department: department!,
+        },
+        {
+          id: '22222222-2222-2222-2222-222222222222',
+          firstname: 'Test',
+          lastname: 'User',
+          email: 'testuser2@gmail.com',
+          phone: '0123456789',
+          password: 'super_secured_pass',
+          department: department!,
+        },
+      ],
+    )
 
     return result
   }
 
   async seedRole() {
     const result = await this.roleRepo.upsert([
-      { 
+      {
         name: 'Admin',
-        description: 'Responsible for managing the system'
+        description: 'Responsible for managing the system',
       },
       {
         name: 'Teacher',
-        description: 'Manage student projects'
+        description: 'Manage student projects',
       },
       {
         name: 'Student',
-        description: 'Create and propose project ideas'
-      }
+        description: 'Create and propose project ideas',
+      },
     ], { conflictPaths: ['name'] })
 
-    return result;
+    return result
   }
 }

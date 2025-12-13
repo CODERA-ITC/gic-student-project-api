@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
+import { NotificationModule } from '../notification/notification.module'
+import { User } from '../user/entities/user.entity'
 import { CategoryController } from './category.controller'
 import { CategoryService } from './category.service'
 import { Category } from './entities/category.entity'
@@ -11,7 +13,6 @@ import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
 import { ProjectController } from './project.controller'
 import { ProjectService } from './project.service'
-import { NotificationModule } from '../notification/notification.module'
 
 @Module({
   controllers: [ProjectController, CategoryController],
@@ -24,6 +25,7 @@ import { NotificationModule } from '../notification/notification.module'
     Feature,
     Image,
     ProjectMember,
+    User,
   ]), NotificationModule],
 
 })

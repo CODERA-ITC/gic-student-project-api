@@ -7,8 +7,10 @@ import {
   Post,
   Req,
 } from '@nestjs/common'
-import { CreateProjectDto } from './dto/create-project.dto'
+import { audit } from 'rxjs'
+import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
+import { CreateProjectDto } from './dto/create-project.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
 
@@ -24,13 +26,13 @@ export class ProjectController {
   }
 
   @Post('submit/:id')
-  submitProject(@Param('id') id: string){
-    return this.projectService.submitProjectForReview(id);
+  submitProject(@Param('id') id: string) {
+    return this.projectService.submitProjectForReview(id)
   }
 
   @Patch('accept/:id')
-  async acceptProject(@Param('id') projectId: string, @Req() req: any){
-    const teacherId = req.user?.id;
+  async acceptProject(@Param('id') projectId: string, @Req() req: any) {
+    const teacherId = req.user?.id
     return this.projectService.acceptProject(projectId, teacherId)
   }
 
@@ -47,5 +49,10 @@ export class ProjectController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
     return this.projectService.update(id, dto)
+  }
+
+  @Post(':id/members')
+  addMember(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
+    return this.projectService.addMember(projectId, dto.authorId, dto.memberId)
   }
 }
