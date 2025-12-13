@@ -29,7 +29,7 @@ export class Project extends BaseEntity {
 
   // draft, reviewing, rejected, accepted
   @Column({ default: 'draft' })
-  visiblity: string
+  visibility: string
 
   // pending, ongoing, done (for tracking project progression)
   @Column({ default: 'pending' })
@@ -37,17 +37,16 @@ export class Project extends BaseEntity {
 
   // handle notification
   @Column({ nullable: true })
-  notificationId: string;
+  notificationId: string
 
   @Column({ nullable: true })
-  reviewedBy: string;
+  reviewedBy: string
 
   @OneToMany(() => Feature, feature => feature.project)
   features: Feature[]
 
   @OneToMany(() => Image, image => image.project, {
     cascade: true,
-    eager: true, // auto-load when fetching project
   })
   images: Image[]
 
@@ -60,7 +59,7 @@ export class Project extends BaseEntity {
 
   @ManyToMany(() => Department, department => department.projects)
   @JoinTable()
-  department: Department
+  departments: Department[]
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   startDate: Date

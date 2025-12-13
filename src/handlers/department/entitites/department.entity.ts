@@ -21,7 +21,7 @@ export class Department {
   @OneToMany(() => User, user => user.department)
   users: User[]
 
-  @ManyToMany(() => Project, project => project.department)
+  @ManyToMany(() => Project, project => project.departments)
   projects: Project[]
 
   @CreateDateColumn({ type: 'timestamptz' })

@@ -5,6 +5,7 @@ export default antfu({
     typescript: {
         overrides: {
             'ts/consistent-type-imports': ['off'],
+            'ts/consistent-type-definitions': ['off'],
         },
     },
 })

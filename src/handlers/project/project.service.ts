@@ -1,18 +1,19 @@
 import type { EntityManager, Repository } from 'typeorm'
+import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
-import type { CreateFeatureDto } from './dto/create-feature.dto'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
+import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
+import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
+import { ProjectResponseDto } from './dto/project-reponse.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
-import { NotificationService } from '../notification/notification.service'
-import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 
 @Injectable()
 export class ProjectService {
@@ -30,13 +31,12 @@ export class ProjectService {
     @InjectEntityManager()
     private entityManager: EntityManager, // for db transaction
 
-
     private notificationService: NotificationService,
   ) { }
 
-  async create(dto: CreateProjectDto): Promise<Project> {
+  async create(dto: CreateProjectDto): Promise<any> {
     // tem shorts for TransactionEntityManager
-    return await this.entityManager.transaction(async (tem) => {
+    const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
       const [author, category, department] = await Promise.all([
         tem.findOneBy(User, { id: dto.userId }),
@@ -59,9 +59,9 @@ export class ProjectService {
       const project = this.projectRepo.create({
         ...dto,
         category,
-        department,
+        departments: [department],
         members: [],
-        visiblity: 'draft'
+        visibility: 'draft',
       })
 
       const projectMember = this.projectMemberRepo.create({
@@ -72,7 +72,8 @@ export class ProjectService {
       // Add author as project member
       try {
         await tem.save(projectMember)
-      } catch (e) {
+      }
+      catch (e) {
         throw new HttpException(
           `Failed to add member to project`,
           HttpStatus.BAD_REQUEST,
@@ -84,42 +85,58 @@ export class ProjectService {
       // Save project with all relations
       return await tem.save(project)
     })
+
+    const transformed: Partial<ProjectResponseDto> = {
+      id: project.id,
+      name: project.name,
+      category: project.category,
+      members: project.members.map(pm => ({
+        id: pm.member.id,
+        email: pm.member.email,
+        firstname: pm.member.firstname,
+        lastname: pm.member.lastname,
+        role: pm.role,
+      })),
+    }
+
+    return transformed
   }
 
   async submitProjectForReview(projectId: string): Promise<Project> {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['members', 'members.member', 'category', 'department']
-    });
+      relations: ['members', 'members.member', 'category', 'department'],
+    })
 
     if (!project) {
-      throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    if (project.visiblity !== 'draft') {
+    if (project.visibility !== 'draft') {
       throw new HttpException(
         'Only draft projects can be submitted for review',
-        HttpStatus.BAD_REQUEST
-      );
+        HttpStatus.BAD_REQUEST,
+      )
     }
 
-    project.visiblity = 'reviewing';
+    project.visibility = 'reviewing'
 
-    // use to get author pfp later on 
-    const author = project.members.find(m => m.role === 'author');
+    // use to get author pfp later on
+    const author = project.members.find(m => m.role === 'author')
 
     try {
       const notificationDto: CreateNotificationDto = {
         name: `${project.name}`,
         description: `${project.description}`,
-        status: "pending",
-        read: false
-      };
+        status: 'pending',
+        read: false,
+      }
 
-      const notification = await this.notificationService.notifyTeachers(notificationDto);
+      const notification = await this.notificationService.notifyTeachers(notificationDto)
 
       project.notificationId = notification.id
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to send notification to teachers: ', error)
     }
 
@@ -128,32 +145,52 @@ export class ProjectService {
 
   async findAll() {
     try {
-      // const projectWithMembers = await this.projectMemberRepo
-      //   .createQueryBuilder('pm')
-      //   .leftJoinAndSelect('pm.project', 'project')
-      //   .leftJoinAndSelect('pm.member', 'user')
-      //   .select([
-      //     'project.id',
-      //     'project.name',
-
-      //     'pm.role',
-      //     'user.id',
-      //     'user.email',
-      //     'user.firstname',
-      //     'user.lastname',
-      //   ])
-      //   .getMany()
-
-      const projects = await this.projectMemberRepo.find({
+      const projects = await this.projectRepo.find({
         relations: {
-          member: true,
-          project: {
-            images: true,
+          images: true,
+          members: {
+            member: true,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          images: {
+            id: true,
+            url: true,
+          },
+          members: {
+            id: true,
+            member: {
+              id: true,
+              email: true,
+              firstname: true,
+              lastname: true,
+              role: true,
+            },
           },
         },
       })
 
-      return projects
+      const transformed: ProjectResponseDto[] = projects.map(project => ({
+        id: project.id,
+        name: project.name,
+        category: project.category,
+        images: project.images.map(img => ({
+          id: img.id,
+          url: img.url,
+        })),
+        members: project.members.map(pm => ({
+          id: pm.member.id,
+          email: pm.member.email,
+          firstname: pm.member.firstname,
+          lastname: pm.member.lastname,
+          role: pm.role,
+        })),
+      }))
+
+      return transformed
     }
 
     catch (e) {
@@ -163,30 +200,58 @@ export class ProjectService {
   }
 
   async findOne(id: string) {
-    const project = await this.projectRepo.findOneBy({ id })
+    const project = await this.projectRepo.findOne({
+      where: { id },
+      relations: {
+        images: true,
+        members: {
+          member: true,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        images: {
+          id: true,
+          url: true,
+        },
+        members: {
+          id: true,
+          member: {
+            id: true,
+            email: true,
+            firstname: true,
+            lastname: true,
+            role: true,
+          },
+        },
+      },
+    })
+
     if (!project) {
-      throw new NotFoundException('Project not found')
+      throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    const members = await this.projectMemberRepo
-      .createQueryBuilder('pm')
-      .leftJoin('pm.member', 'user')
-      .where('pm.projectId = :id', { id })
-      .select([
-        'pm.role as role',
-      ])
-      .addSelect([
-        'user.id as id',
-        'user.email as email',
-        'user.firstname as firstname',
-        'user.lastname as lastname',
-      ])
-      .getRawMany()
-
-    return {
-      project,
-      members,
+    const transformed = {
+      id: project.id,
+      name: project.name,
+      category: project.category,
+      images: project.images.map(img => ({
+        id: img.id,
+        url: img.url,
+      })),
+      members: project.members.map(pm => ({
+        id: pm.member.id,
+        email: pm.member.email,
+        firstname: pm.member.firstname,
+        lastname: pm.member.lastname,
+        role: pm.role,
+        avatarUrl: pm.member.avatarUrl,
+      })),
     }
+
+    return transformed
   }
 
   async update(id: string, dto: UpdateProjectDto) {
@@ -277,7 +342,7 @@ export class ProjectService {
   // ==============================================================================
   // Project Feature Service
   // ==============================================================================
-  
+
   async createFeature(dto: CreateFeatureDto): Promise<Feature> {
     const project = await this.projectRepo.findOneBy({ id: dto.projectId })
     if (!project) {
@@ -327,12 +392,13 @@ export class ProjectService {
       order: { createdAt: 'ASC' },
     })
   }
+
   // Accept or reject project (Teacher Role)
   async acceptProject(projectId: string, teacherId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: { members: { member: true} }
-    });
+      relations: { members: { member: true } },
+    })
 
     console.log(project)
 
@@ -340,39 +406,41 @@ export class ProjectService {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    if (project.visiblity !== 'reviewing') {
+    if (project.visibility !== 'reviewing') {
       throw new HttpException(
         'Only projects under review can be accepted',
-        HttpStatus.BAD_REQUEST
-      );
+        HttpStatus.BAD_REQUEST,
+      )
     }
 
-    project.visiblity = 'accepted';
-    project.reviewedBy = teacherId;
-    await this.projectRepo.save(project);
+    project.visibility = 'accepted'
+    project.reviewedBy = teacherId
+    await this.projectRepo.save(project)
 
     if (project.notificationId) {
       try {
-        await this.notificationService.updateStatus(project.notificationId, 'accepted');
-      } catch (error) {
+        await this.notificationService.updateStatus(project.notificationId, 'accepted')
+      }
+      catch (error) {
         console.error('Failed to update notification status', error)
       }
     }
 
     try {
-      const memberIds = project.members.map(m => m.member.id);
+      const memberIds = project.members.map(m => m.member.id)
       console.log('MEMBER IDS ', memberIds)
       const notificationDto: CreateNotificationDto = {
         name: 'Project Accepted',
         description: `Your '${project.name}' prroposal has been accepted!`,
         status: 'accepted',
-        read: false
-      };
+        read: false,
+      }
 
       for (const memberId of memberIds) {
         await this.notificationService.notifyStudent(memberId, notificationDto)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to notify project members: ', error)
     }
   }
@@ -380,45 +448,47 @@ export class ProjectService {
   async rejectProject(projectId: string, teacherId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['members', 'members.member']
-    });
+      relations: ['members', 'members.member'],
+    })
 
     if (!project) {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    if (project.visiblity !== 'reviewing') {
+    if (project.visibility !== 'reviewing') {
       throw new HttpException(
         'Only projects under review can be accepted',
-        HttpStatus.BAD_REQUEST
-      );
+        HttpStatus.BAD_REQUEST,
+      )
     }
 
-    project.visiblity = 'rejected';
-    project.reviewedBy = teacherId;
-    await this.projectRepo.save(project);
+    project.visibility = 'rejected'
+    project.reviewedBy = teacherId
+    await this.projectRepo.save(project)
 
     if (project.notificationId) {
       try {
-        await this.notificationService.updateStatus(project.notificationId, 'rejected');
-      } catch (error) {
+        await this.notificationService.updateStatus(project.notificationId, 'rejected')
+      }
+      catch (error) {
         console.error('Failed to update notification status', error)
       }
     }
 
     try {
-      const memberIds = project.members.map(m => m.member.id);
+      const memberIds = project.members.map(m => m.member.id)
       const notificationDto: CreateNotificationDto = {
         name: 'Project Rejected',
         description: `Your '${project.name}' prroposal has been rejected! Contact lecturer for further informations`,
         status: 'rejected',
-        read: false
-      };
+        read: false,
+      }
 
       for (const memberId of memberIds) {
         await this.notificationService.notifyStudent(memberId, notificationDto)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to notify project members: ', error)
     }
   }
