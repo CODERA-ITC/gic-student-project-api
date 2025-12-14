@@ -2,6 +2,7 @@ import type { EntityManager, Repository } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
+import { features } from 'node:process'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { use } from 'passport'
@@ -208,6 +209,7 @@ export class ProjectService {
         members: {
           member: true,
         },
+        features: true,
       },
       select: {
         id: true,
@@ -249,6 +251,12 @@ export class ProjectService {
         lastname: pm.member.lastname,
         role: pm.role,
         avatarUrl: pm.member.avatarUrl,
+      })),
+      features: project.features.map(f => ({
+        id: f.id,
+        name: f.name,
+        description: f.description,
+        status: f.status,
       })),
     }
 
