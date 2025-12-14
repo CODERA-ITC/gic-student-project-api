@@ -11,10 +11,20 @@ export class CreateFeatureDto {
   @IsString()
   name: string
 
+  @ApiProperty({
+    description: 'Feature Description',
+    example: 'THE',
+  })
   @IsNotEmpty()
   @IsString()
   description: string
 
+  @ApiProperty(
+    {
+      description: 'Feature Status: pending, ongoing, done',
+      example: 'pending',
+    },
+  )
   @IsOptional()
   @IsEnum(['pending', 'ongoing', 'done'])
   status?: FeatureStatus

@@ -2,23 +2,18 @@ import type { EntityManager, Repository } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
-import { features } from 'node:process'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
-import { use } from 'passport'
-import { first, last } from 'rxjs'
 import { Department } from '../department/entitites/department.entity'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
-import { UserService } from '../user/user.service'
 import { ProjectResponseDto } from './dto/project-reponse.dto'
 import { UpdateFeatureDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
-import { Tag } from './entities/tag.entity'
 
 @Injectable()
 export class ProjectService {
@@ -452,6 +447,23 @@ export class ProjectService {
     return await this.featureRepo.save(updated)
   }
 
+  async updateFeatureStatus(featureId: string, status: 'ongoing' | 'pending' | 'done') {
+    const feature = await this.featureRepo.findOne({ where: { id: featureId } })
+    if (!feature) {
+      throw new NotFoundException('Feature not found')
+    }
+    if (status === 'done') {
+      feature.status = 'done'
+      feature.doneAt = new Date()
+    }
+    else {
+      feature.status = status
+      feature.doneAt = null
+    }
+
+    return await this.featureRepo.save(feature)
+  }
+
   async deleteFeature(featureId: string) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
@@ -529,7 +541,6 @@ export class ProjectService {
 
     try {
       const memberIds = project.members.map(m => m.member.id)
-      console.log('MEMBER IDS ', memberIds)
       const notificationDto: CreateNotificationDto = {
         name: 'Project Accepted',
         description: `Your '${project.name}' prroposal has been accepted!`,
