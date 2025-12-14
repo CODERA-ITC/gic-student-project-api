@@ -69,7 +69,7 @@ export class ProjectController {
 
   @Patch(':id/features/:featureId/status')
   updateFeatureStatus(@Param('projectId') projectId: string, @Param('featureId') featureId: string, @Body() dto: UpdateFeatureStatusDto) {
-    return this.projectService.updateFeatureStatus(featureId, dto.status)
+    return this.projectService.updateFeatureStatus(featureId, dto)
   }
 
   @Delete(':id/features/:featureId')

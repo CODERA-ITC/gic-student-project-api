@@ -9,7 +9,7 @@ import { CreateNotificationDto } from '../notification/dto/create-notification.d
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
 import { ProjectResponseDto } from './dto/project-reponse.dto'
-import { UpdateFeatureDto } from './dto/update-feature.dto'
+import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { Project } from './entities/project.entity'
@@ -354,10 +354,7 @@ export class ProjectService {
 
     let memberExists = false
 
-    console.log(project.members)
-
     for (const pm of project.members) {
-      console.log(`a:${pm.member.id}; b:${memberId}; ${pm.member.id === memberId}`)
       if (pm.member.id === memberId) {
         memberExists = true
         break
@@ -447,18 +444,26 @@ export class ProjectService {
     return await this.featureRepo.save(updated)
   }
 
-  async updateFeatureStatus(featureId: string, status: 'ongoing' | 'pending' | 'done') {
+  async updateFeatureStatus(featureId: string, dto: UpdateFeatureStatusDto) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
       throw new NotFoundException('Feature not found')
     }
-    if (status === 'done') {
-      feature.status = 'done'
-      feature.doneAt = new Date()
-    }
-    else {
-      feature.status = status
-      feature.doneAt = null
+
+    switch (dto.status) {
+      case FeatureStatus.DONE:
+        if (!dto.doneAt) {
+          throw new BadRequestException('doneAt: ISO8601 string is required for done status')
+        }
+        feature.status = 'done'
+        feature.doneAt = new Date(dto.doneAt)
+        break
+
+      default: {
+        feature.status = dto.status
+        feature.doneAt = null
+        break
+      }
     }
 
     return await this.featureRepo.save(feature)
@@ -512,8 +517,6 @@ export class ProjectService {
       where: { id: projectId },
       relations: { members: { member: true } },
     })
-
-    console.log(project)
 
     if (!project) {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
