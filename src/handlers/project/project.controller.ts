@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -8,9 +9,11 @@ import {
   Req,
 } from '@nestjs/common'
 import { audit } from 'rxjs'
+import { AddProjectFeatureDto } from './dto/add-feature.dto'
 import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
 import { CreateProjectDto } from './dto/create-project.dto'
+import { UpdateFeatureDto } from './dto/update-feature.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
 
@@ -52,7 +55,22 @@ export class ProjectController {
   }
 
   @Post(':id/members')
-  addMember(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
+  addMembers(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
     return this.projectService.addMembers(projectId, dto.authorId, dto.memberIds)
+  }
+
+  @Post(':id/features')
+  createFeature(@Param('id') projectId: string, @Body() dto: CreateFeatureDto) {
+    return this.projectService.createFeature(projectId, dto)
+  }
+
+  @Patch(':id/features/:featureId')
+  updateFeature(@Param('featureId') featureId: string, @Body() dto: UpdateFeatureDto) {
+    return this.projectService.updateFeature(featureId, dto)
+  }
+
+  @Delete(':id/features/:featureId')
+  deleteFeature(@Param('featureId') featureId: string) {
+    return this.projectService.deleteFeature(featureId)
   }
 }

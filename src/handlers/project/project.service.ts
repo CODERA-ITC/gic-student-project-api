@@ -12,6 +12,7 @@ import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { ProjectResponseDto } from './dto/project-reponse.dto'
+import { UpdateFeatureDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { Project } from './entities/project.entity'
@@ -27,6 +28,8 @@ export class ProjectService {
     private projectMemberRepo: Repository<ProjectMember>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    @InjectRepository(Feature)
+    private featureRepo: Repository<Feature>,
     @InjectEntityManager()
     private entityManager: EntityManager, // for db transaction
     private notificationService: NotificationService,
@@ -410,8 +413,8 @@ export class ProjectService {
   // Project Feature Service
   // ==============================================================================
 
-  async createFeature(dto: CreateFeatureDto): Promise<Feature> {
-    const project = await this.projectRepo.findOneBy({ id: dto.projectId })
+  async createFeature(projectId: string, dto: CreateFeatureDto): Promise<Feature> {
+    const project = await this.projectRepo.findOneBy({ id: projectId })
     if (!project) {
       throw new NotFoundException('Project not found')
     }
@@ -425,6 +428,29 @@ export class ProjectService {
     })
 
     return await this.entityManager.save(feature)
+  }
+
+  async updateFeature(featureId: string, dto: UpdateFeatureDto) {
+    const feature = await this.featureRepo.findOne({ where: { id: featureId } })
+    if (!feature) {
+      throw new NotFoundException('Feature not found')
+    }
+
+    const updated = this.featureRepo.create({
+      ...dto,
+      id: featureId,
+    })
+
+    return await this.featureRepo.save(updated)
+  }
+
+  async deleteFeature(featureId: string) {
+    const feature = await this.featureRepo.findOne({ where: { id: featureId } })
+    if (!feature) {
+      throw new NotFoundException('Feature not found')
+    }
+
+    return await this.featureRepo.remove(feature)
   }
 
   async findAllFeatures(): Promise<Feature[]> {
