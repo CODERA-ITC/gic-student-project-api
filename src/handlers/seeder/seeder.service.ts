@@ -74,6 +74,15 @@ export class SeederService {
           password: 'super_secured_pass',
           department: department!,
         },
+        {
+          id: '33333333-3333-3333-3333-333333333333',
+          firstname: 'Test3',
+          lastname: 'User3',
+          email: 'testuser3@gmail.com',
+          phone: '0123456789',
+          password: 'super_secured_pass',
+          department: department!,
+        },
       ],
     )
 
