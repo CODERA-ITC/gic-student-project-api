@@ -156,6 +156,7 @@ export class ProjectService {
             id: true,
             url: true,
           },
+          startDate: true,
           members: {
             id: true,
             role: true,
@@ -184,6 +185,7 @@ export class ProjectService {
           lastname: pm.member.lastname,
           role: pm.role,
         })),
+        academicYear: project.startDate.getFullYear(),
       }))
 
       return transformed
@@ -234,6 +236,7 @@ export class ProjectService {
       id: project.id,
       name: project.name,
       category: project.category,
+      startDate: project.startDate,
       images: project.images.map(img => ({
         id: img.id,
         url: img.url,
@@ -324,6 +327,8 @@ export class ProjectService {
         lastname: pm.member.lastname,
         role: pm.role,
       })),
+      startDate: project.startDate,
+      academicYear: project.startDate.getFullYear(),
     }))
 
     return {
