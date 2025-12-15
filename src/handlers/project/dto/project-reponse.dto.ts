@@ -17,5 +17,7 @@ export class ProjectResponseDto {
         url: string
     }[]
 
+    startDate: string
+
     members: UserResponseDto[]
 }

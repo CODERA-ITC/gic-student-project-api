@@ -4,13 +4,11 @@ import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
-import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { Department } from '../department/entitites/department.entity'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
 import { ProjectPaginateDto } from './dto/paginate-project.dto'
-import { ProjectResponseDto } from './dto/project-reponse.dto'
 import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
@@ -85,7 +83,7 @@ export class ProjectService {
       return await tem.save(project)
     })
 
-    const transformed: Partial<ProjectResponseDto> = {
+    const transformed = {
       id: project.id,
       name: project.name,
       category: project.category,
@@ -96,6 +94,7 @@ export class ProjectService {
         lastname: pm.member.lastname,
         role: pm.role,
       })),
+      startDate: project.startDate.toISOString(),
     }
 
     return transformed
@@ -170,7 +169,7 @@ export class ProjectService {
         },
       })
 
-      const transformed: ProjectResponseDto[] = projects.map(project => ({
+      const transformed: any[] = projects.map(project => ({
         id: project.id,
         name: project.name,
         category: project.category,
@@ -261,15 +260,17 @@ export class ProjectService {
   }
 
   async update(id: string, dto: UpdateProjectDto) {
-    const project = await this.findOne(id)
+    const project = await this.projectRepo.findOneBy({ id })
 
     if (!project) {
       throw new NotFoundException('Project not found')
     }
 
-    const updated = this.projectRepo.create(dto)
+    // const updated = this.projectRepo.create(dto)
 
-    return await this.projectRepo.save(updated)
+    this.projectRepo.merge(project, dto)
+
+    return await this.projectRepo.save(project)
   }
 
   async softDelete(id: string) {
@@ -312,7 +313,7 @@ export class ProjectService {
       .orderBy('p.createdAt', 'DESC')
       .getManyAndCount()
 
-    const transformed: ProjectResponseDto[] = data.map(project => ({
+    const transformed: any[] = data.map(project => ({
       id: project.id,
       name: project.name,
       category: project.category,
@@ -328,7 +329,7 @@ export class ProjectService {
         role: pm.role,
       })),
       startDate: project.startDate,
-      academicYear: project.startDate.getFullYear(),
+      academicYear: project.startDate.getFullYear().toString(),
     }))
 
     return {
