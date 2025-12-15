@@ -10,7 +10,7 @@ export class Category {
   @Column({ unique: true })
   name: string
 
-  @ManyToMany(() => Project, project => project.tags)
+  @OneToMany(() => Project, project => project.category)
   projects: Project[]
 
   @CreateDateColumn({ type: 'timestamptz' })

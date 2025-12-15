@@ -4,10 +4,12 @@ import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
+import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { Department } from '../department/entitites/department.entity'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
+import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { ProjectResponseDto } from './dto/project-reponse.dto'
 import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
@@ -117,9 +119,6 @@ export class ProjectService {
     }
 
     project.visibility = 'reviewing'
-
-    // use to get author pfp later on
-    const author = project.members.find(m => m.role === 'author')
 
     try {
       const notificationDto: CreateNotificationDto = {
@@ -280,26 +279,19 @@ export class ProjectService {
     return project
   }
 
-  async paginate(params: {
-    page?: number
-    limit?: number
-    categoryId?: string
-    search?: string
-  }) {
+  async paginate(
+    params: ProjectPaginateDto,
+  ) {
     const page = params.page ?? 1
     const limit = params.limit ?? 8
     const skip = (page - 1) * limit
 
-    // const test = this.projectRepo.find({
-    //   where: {},
-    //   skip,
-    //   relations: {},
-
-    // })
-
     const qb = this.projectRepo
       .createQueryBuilder('p')
-      .leftJoinAndSelect('p.categories', 'c') // if you have category relation
+      .leftJoinAndSelect('p.category', 'c') // if you have category relation
+      .leftJoinAndSelect('p.images', 'images')
+      .leftJoinAndSelect('p.members', 'pm')
+      .leftJoinAndSelect('pm.member', 'member')
 
     // Filter by category
     if (params.categoryId) {
@@ -308,7 +300,7 @@ export class ProjectService {
 
     // Optional search (e.g., search by project name)
     if (params.search) {
-      qb.andWhere('p.name ILIKE :search', { search: `%${params.search}%` })
+      qb.andWhere('p.name ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
     }
 
     const [data, total] = await qb
@@ -317,8 +309,25 @@ export class ProjectService {
       .orderBy('p.createdAt', 'DESC')
       .getManyAndCount()
 
+    const transformed: ProjectResponseDto[] = data.map(project => ({
+      id: project.id,
+      name: project.name,
+      category: project.category,
+      images: project.images.map(img => ({
+        id: img.id,
+        url: img.url,
+      })),
+      members: project.members.map(pm => ({
+        id: pm.member.id,
+        email: pm.member.email,
+        firstname: pm.member.firstname,
+        lastname: pm.member.lastname,
+        role: pm.role,
+      })),
+    }))
+
     return {
-      data,
+      data: transformed,
       page,
       limit,
       total,

@@ -6,11 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common'
+import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
 import { CreateProjectDto } from './dto/create-project.dto'
+import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
@@ -38,8 +41,8 @@ export class ProjectController {
   }
 
   @Get()
-  findAll() {
-    return this.projectService.findAll()
+  findAll(@Query() pagination: ProjectPaginateDto) {
+    return this.projectService.paginate(pagination)
   }
 
   @Get(':id')
