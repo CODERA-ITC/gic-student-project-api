@@ -8,15 +8,14 @@ import { Department } from '../department/entitites/department.entity'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
+import { createTagDto } from './dto/create-tag.dto'
 import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
-import { createTagDto } from './dto/create-tag.dto'
-import {Tag} from './entities/tag.entity'
-import { features } from 'process'
+import { Tag } from './entities/tag.entity'
 
 @Injectable()
 export class ProjectService {
@@ -162,15 +161,15 @@ export class ProjectService {
             id: true,
             url: true,
           },
-          features:{
+          features: {
             id: true,
             name: true,
             description: true,
-            status: true
+            status: true,
           },
-          tags:{
-            id:true,
-            name: true
+          tags: {
+            id: true,
+            name: true,
           },
           startDate: true,
           members: {
@@ -201,7 +200,7 @@ export class ProjectService {
           lastname: pm.member.lastname,
           role: pm.role,
         })),
-        features: project.features.map(feature =>({
+        features: project.features.map(feature => ({
           id: feature.id,
           name: feature.name,
           description: feature.description,
@@ -252,10 +251,10 @@ export class ProjectService {
             lastname: true,
           },
         },
-        tags:{
+        tags: {
           id: true,
-          name: true
-        }
+          name: true,
+        },
       },
     })
 
@@ -286,10 +285,10 @@ export class ProjectService {
         description: f.description,
         status: f.status,
       })),
-      tags: project.tags.map(tag =>({
+      tags: project.tags.map(tag => ({
         id: tag.id,
         name: tag.name,
-      }))
+      })),
     }
 
     return transformed
@@ -332,8 +331,8 @@ export class ProjectService {
       .leftJoinAndSelect('p.images', 'images')
       .leftJoinAndSelect('p.members', 'pm')
       .leftJoinAndSelect('pm.member', 'member')
-      .leftJoinAndSelect('p.tags','tags')
-      .leftJoinAndSelect('p.features','features')
+      .leftJoinAndSelect('p.tags', 'tags')
+      .leftJoinAndSelect('p.features', 'features')
     // Filter by category
     if (params.categoryId) {
       qb.andWhere('p.categoryId = :cid', { cid: params.categoryId })
@@ -670,23 +669,23 @@ export class ProjectService {
     }
   }
 
-  //================================
+  // ================================
   //      Project Tag Service
-  //================================
+  // ================================
 
-  async createTag(projectId: string, dto: createTagDto): Promise<Tag>{
-    const project = await this.projectRepo.findOneBy({id: projectId})
-    if(!project){
+  async createTag(projectId: string, dto: createTagDto): Promise<Tag> {
+    const project = await this.projectRepo.findOneBy({ id: projectId })
+    if (!project) {
       throw new NotFoundException('Project Not found')
     }
 
     let tag = await this.tagRepo.findOne({
-      where: {name: dto.name},
-      relations: ['projects']
+      where: { name: dto.name },
+      relations: ['projects'],
     })
 
-    if(tag){
-      if(!tag.projects.some(p => p.id === projectId)){
+    if (tag) {
+      if (!tag.projects.some(p => p.id === projectId)) {
         tag.projects.push(project)
         return await this.tagRepo.save(tag)
       }
@@ -695,25 +694,25 @@ export class ProjectService {
 
     tag = this.tagRepo.create({
       name: dto.name,
-      projects: [project]
+      projects: [project],
     })
     return await this.tagRepo.save(tag)
   }
 
-  async deleteTag(tagId: number){
-    const tag = await this.tagRepo.findOne({where: {id: tagId}})
-    if(!tag){
+  async deleteTag(tagId: number) {
+    const tag = await this.tagRepo.findOne({ where: { id: tagId } })
+    if (!tag) {
       throw new NotFoundException('Tag not found')
     }
     return await this.tagRepo.remove(tag)
   }
 
-  async findOneTag(id:number): Promise<Tag>{
+  async findOneTag(id: number): Promise<Tag> {
     const tag = await this.entityManager.getRepository(Tag).findOne({
-      where: {id},
-      relations: ['project']
+      where: { id },
+      relations: ['project'],
     })
-    if(!tag){
+    if (!tag) {
       throw new NotFoundException('Tag not found')
     }
     return tag

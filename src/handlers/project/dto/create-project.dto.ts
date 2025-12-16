@@ -37,7 +37,7 @@ export class CreateProjectDto {
   @IsNotEmpty()
   userId: string
 
-  @ApiProperty({ required: false ,example: '2025-12-16'})
+  @ApiProperty({ required: false, example: '2025-12-16T10:30:00Z' })
   @IsOptional()
   @IsISO8601()
   startDate: string
