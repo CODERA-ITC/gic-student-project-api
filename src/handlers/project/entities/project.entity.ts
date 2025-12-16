@@ -42,7 +42,11 @@ export class Project extends BaseEntity {
   @Column({ nullable: true })
   reviewedBy: string
 
-  @OneToMany(() => Feature, feature => feature.project)
+  @OneToMany(
+    () => Feature,
+    feature => feature.project,
+    { cascade: true },
+  )
   features: Feature[]
 
   @OneToMany(() => Image, image => image.project, {

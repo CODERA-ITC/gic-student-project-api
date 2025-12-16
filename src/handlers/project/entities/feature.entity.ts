@@ -15,7 +15,7 @@ export class Feature extends BaseEntity {
     @Column({ default: 'pending', type: 'enum', enum: ['pending', 'ongoing', 'done'] })
     status: FeatureStatus
 
-    @Column()
+    @Column({ nullable: true })
     icon: string
 
     @ManyToOne(() => Project, project => project.features)

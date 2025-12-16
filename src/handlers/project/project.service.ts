@@ -2,6 +2,7 @@ import type { EntityManager, Repository } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
+import { features } from 'node:process'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
@@ -65,6 +66,9 @@ export class ProjectService {
         visibility: 'draft',
       })
 
+      const features = this.featureRepo.create(dto.features)
+      project.features = features
+
       const projectMember = this.projectMemberRepo.create({
         member: author,
         project,
@@ -80,7 +84,6 @@ export class ProjectService {
           HttpStatus.BAD_REQUEST,
         )
       }
-
       project.members.push(projectMember)
 
       // Save project with all relations
@@ -99,6 +102,13 @@ export class ProjectService {
         role: pm.role,
       })),
       startDate: project.startDate.toISOString(),
+      features: project.features.map(feature => ({
+        id: feature.id,
+        name: feature.name,
+        description: feature.description,
+        status: feature.status,
+        icon: feature.icon,
+      })),
     }
 
     return transformed
