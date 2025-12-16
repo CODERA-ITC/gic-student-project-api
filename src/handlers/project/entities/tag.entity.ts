@@ -1,6 +1,6 @@
 import { Exclude } from 'class-transformer'
 import { BaseEntity } from 'src/database/base.entity'
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany,ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { Project } from './project.entity'
 
 @Entity('tags')

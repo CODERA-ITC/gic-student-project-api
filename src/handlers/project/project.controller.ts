@@ -17,6 +17,7 @@ import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
+import { createTagDto } from './dto/create-tag.dto'
 
 @Controller('projects')
 export class ProjectController {
@@ -78,5 +79,15 @@ export class ProjectController {
   @Delete(':id/features/:featureId')
   deleteFeature(@Param('id') projectId: string, @Param('featureId') featureId: string) {
     return this.projectService.deleteFeature(featureId)
+  }
+
+  @Post(':id/tag')
+  createTag(@Param('id') projectId: string, @Body() dto: createTagDto){
+    return this.projectService.createTag(projectId,dto)
+  }
+
+  @Delete(':id/tag/:tagId')
+  deleteTag(@Param('id') projectId: string, @Param('tagId') tagId: number){
+    return this.projectService.deleteTag(tagId)
   }
 }
