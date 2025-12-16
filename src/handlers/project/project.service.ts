@@ -16,6 +16,7 @@ import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { createTagDto } from './dto/create-tag.dto'
 import {Tag} from './entities/tag.entity'
+import { features } from 'process'
 
 @Injectable()
 export class ProjectService {
@@ -151,6 +152,7 @@ export class ProjectService {
             member: true,
           },
           tags: true,
+          features: true,
         },
         select: {
           id: true,
@@ -159,6 +161,12 @@ export class ProjectService {
           images: {
             id: true,
             url: true,
+          },
+          features:{
+            id: true,
+            name: true,
+            description: true,
+            status: true
           },
           tags:{
             id:true,
@@ -192,6 +200,12 @@ export class ProjectService {
           firstname: pm.member.firstname,
           lastname: pm.member.lastname,
           role: pm.role,
+        })),
+        features: project.features.map(feature =>({
+          id: feature.id,
+          name: feature.name,
+          description: feature.description,
+          status: feature.status,
         })),
         tags: project.tags.map(tag => ({
           id: tag.id,
@@ -319,7 +333,7 @@ export class ProjectService {
       .leftJoinAndSelect('p.members', 'pm')
       .leftJoinAndSelect('pm.member', 'member')
       .leftJoinAndSelect('p.tags','tags')
-
+      .leftJoinAndSelect('p.features','features')
     // Filter by category
     if (params.categoryId) {
       qb.andWhere('p.categoryId = :cid', { cid: params.categoryId })
@@ -350,6 +364,12 @@ export class ProjectService {
         firstname: pm.member.firstname,
         lastname: pm.member.lastname,
         role: pm.role,
+      })),
+      features: project.features?.map(feature => ({
+        id: feature.id,
+        name: feature.name,
+        description: feature.description,
+        status: feature.status,
       })),
       tags: project.tags?.map(tag => ({
         id: tag.id,
