@@ -2,14 +2,13 @@ import type { EntityManager, Repository } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
-import { features } from 'node:process'
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
-import { createTagDto } from './dto/create-tag.dto'
+import { CreateTagDto } from './dto/create-tag.dto'
 import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
@@ -683,7 +682,7 @@ export class ProjectService {
   //      Project Tag Service
   // ================================
 
-  async createTag(projectId: string, dto: createTagDto): Promise<Tag> {
+  async createTag(projectId: string, dto: CreateTagDto): Promise<Tag> {
     const project = await this.projectRepo.findOneBy({ id: projectId })
     if (!project) {
       throw new NotFoundException('Project Not found')

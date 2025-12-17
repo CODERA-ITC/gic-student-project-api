@@ -13,10 +13,12 @@ import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
 import { ProjectController } from './project.controller'
 import { ProjectService } from './project.service'
+import { TagController } from './tag.controller'
+import { TagService } from './tag.service'
 
 @Module({
-  controllers: [ProjectController, CategoryController],
-  providers: [ProjectService, CategoryService],
+  controllers: [ProjectController, CategoryController, TagController],
+  providers: [ProjectService, CategoryService, TagService],
   imports: [TypeOrmModule.forFeature([
     Project,
     Category,

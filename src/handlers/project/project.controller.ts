@@ -13,11 +13,11 @@ import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
 import { CreateProjectDto } from './dto/create-project.dto'
+import { CreateTagDto } from './dto/create-tag.dto'
 import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
-import { createTagDto } from './dto/create-tag.dto'
 
 @Controller('projects')
 export class ProjectController {
@@ -82,12 +82,12 @@ export class ProjectController {
   }
 
   @Post(':id/tag')
-  createTag(@Param('id') projectId: string, @Body() dto: createTagDto){
-    return this.projectService.createTag(projectId,dto)
+  createTag(@Param('id') projectId: string, @Body() dto: CreateTagDto) {
+    return this.projectService.createTag(projectId, dto)
   }
 
   @Delete(':id/tag/:tagId')
-  deleteTag(@Param('id') projectId: string, @Param('tagId') tagId: number){
+  deleteTag(@Param('id') projectId: string, @Param('tagId') tagId: number) {
     return this.projectService.deleteTag(tagId)
   }
 }
