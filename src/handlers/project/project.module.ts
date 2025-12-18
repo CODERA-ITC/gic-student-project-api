@@ -7,7 +7,6 @@ import { CategoryController } from './category.controller'
 import { CategoryService } from './category.service'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
-import { Image } from './entities/image.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
@@ -15,6 +14,7 @@ import { ProjectController } from './project.controller'
 import { ProjectService } from './project.service'
 import { TagController } from './tag.controller'
 import { TagService } from './tag.service'
+import { Image } from '../image/entities/image.entity'
 
 @Module({
   controllers: [ProjectController, CategoryController, TagController],

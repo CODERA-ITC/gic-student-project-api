@@ -11,11 +11,14 @@ import { SeederModule } from './handlers/seeder/seeder.module'
 import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
 import { UserModule } from './handlers/user/user.module'
 import { NotificationModule } from './handlers/notification/notification.module';
+import { ImageModule } from './handlers/image/image.module';
+import awsConfig from './config/aws.config'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [awsConfig],
       envFilePath: '.env',
     }),
 
@@ -34,6 +37,7 @@ import { NotificationModule } from './handlers/notification/notification.module'
     RoleModule,
     SeederModule,
     NotificationModule,
+    ImageModule,
   ],
 
   controllers: [AppController],
