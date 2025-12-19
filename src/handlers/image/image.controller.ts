@@ -16,7 +16,7 @@ export class ImageController {
     if (!file) {
       throw new BadRequestException('File not found');
     }
-    return this.imageService.uploadFile(file, projectId);
+    return this.imageService.uploadImage(file, projectId);
   }
 
   // @Delete('/:imageId')

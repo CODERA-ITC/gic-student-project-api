@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
 import { extname } from 'path';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class ImageService {
@@ -14,8 +15,8 @@ export class ImageService {
     const region = configService.get<string>('aws.region');
     const accessKeyId = configService.get<string>('aws.accessKey');
     const secretAccessKey = configService.get<string>('aws.secretAccessKey');
-    const bucketName = configService.get<string>('aws.s3BucketName')
-    
+    const bucketName = configService.get<string>('aws.s3BucketName');
+
     if (!region || !accessKeyId || !secretAccessKey || !bucketName) {
       throw new Error('Missing required AWS configuration');
     }
@@ -31,17 +32,36 @@ export class ImageService {
     this.bucket = bucketName;
   }
 
-  async uploadFile(file: Express.Multer.File, projectId: string): Promise<string> {
-    const key = `project-images/original/${projectId}/${uuid()}${extname(file.originalname)}`;
+  async uploadImage(file: Express.Multer.File, projectId: string): Promise<{ originalKey: string, thumbnailKey: string }> {
+    if (!file) throw new BadRequestException('File not found');
 
-    const command = new PutObjectCommand({
+    const fileExt = extname(file.originalname);
+    const baseName = uuid();
+
+    const originalKey = `project-images/original/${projectId}/${baseName}${fileExt}`;
+    const thumbnailKey = `project-images/thumbnail/${projectId}/${baseName}${fileExt}`;
+
+    const originalCommand = new PutObjectCommand({
       Bucket: this.bucket,
-      Key: key,
+      Key: originalKey,
       Body: file.buffer,
       ContentType: file.mimetype
-    })
+    });
+    await this.s3Client.send(originalCommand);
 
-    await this.s3Client.send(command);
-    return key;
+    const thumbnailBuffer = await sharp(file.buffer).jpeg({ quality: 70 }).toBuffer();
+
+    const thumbnailCommand = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: thumbnailKey,
+      Body: thumbnailBuffer,
+      ContentType: file.mimetype
+    });
+    await this.s3Client.send(thumbnailCommand);
+
+    return {
+      originalKey,
+      thumbnailKey
+    }
   }
 }
