@@ -129,7 +129,7 @@ export class UserController {
     const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST');
     return res
       .status(HttpStatus.OK)
-      .redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`);
+      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`);
   }
 
   // Redirect user to GitHub Login Page
@@ -154,7 +154,7 @@ export class UserController {
     const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST');
     return res
       .status(HttpStatus.OK)
-      .redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`);
+      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`);
   }
   //===================================
   //Search query user controller
