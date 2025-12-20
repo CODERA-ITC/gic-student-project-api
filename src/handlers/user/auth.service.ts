@@ -13,6 +13,7 @@ import { CreateUserDto } from '../user/dto/create-user.dto'
 import { UserService } from '../user/user.service'
 import { LoginDto } from './dto/login.dto'
 import { User } from './entities/user.entity'
+import { RoleService } from '../role/role.service'
 
 @Injectable()
 export class AuthService {
@@ -69,6 +70,7 @@ export class AuthService {
         lastname: googleUser.lastname,
         password: hashedPassword,
         department_code: 'GIC', // Need to handle this better
+        role: 'STUDENT'
       })
     }
 
@@ -89,6 +91,7 @@ export class AuthService {
         lastname: githubUser.lastname,
         password: hashedPassword,
         department_code: 'GIC', // Need to handle this better
+        role: 'STUDENT'
       })
     }
 
@@ -107,6 +110,7 @@ export class AuthService {
       email: user.email,
       firstname: user.firstname,
       lastname: user.lastname,
+      role: user.role.name
     }
 
     const access_token = this.jwtService.sign(payload, {

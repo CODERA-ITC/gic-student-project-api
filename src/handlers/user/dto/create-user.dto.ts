@@ -11,7 +11,7 @@ export class CreateUserDto {
   firstname: string;
 
   @ApiProperty({ example: 'Doe' })
-  @IsNotEmpty({ message: "Please enter your lastname" })
+  @IsOptional()
   @MaxLength(100)
   @Transform(({ value }) => value?.trim())
   lastname: string;
@@ -42,6 +42,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   hashedRefreshToken?: string | null;
+
+  role: string;
   
   //pfp_thumbnail_url
   //pfp_hd_url

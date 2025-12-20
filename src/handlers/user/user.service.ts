@@ -6,19 +6,27 @@ import { Not, Repository } from 'typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './entities/user.entity'
+import { Role } from '../role/entities/role.entity'
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    @InjectRepository(Role)
+    private roleRepo: Repository<Role>
   ) { }
 
   // =============
   // Create
   // =============
   async createUser(dto: CreateUserDto) {
-    const user = this.userRepo.create(dto)
+    const {role: roleName, ...userData} = dto
+    const user = this.userRepo.create(userData)
+
+    const role = await this.roleRepo.findOneOrFail({where: {name: 'STUDENT'}})
+    user.role = role;
+
     return this.userRepo.save(user)
   }
 
@@ -37,7 +45,6 @@ export class UserService {
         email: true,
         password: true,
         hashedRefreshToken: true,
-
       },
     })
   }
@@ -53,7 +60,8 @@ export class UserService {
   // Update
   // =============
   async updateUser(id: string, dto: UpdateUserDto) {
-    const result = await this.userRepo.update(id, dto)
+    const {role: roleName, ...userData} = dto
+    const result = await this.userRepo.update(id, userData)
     if (result.affected === 0)
       throw new NotFoundException('User not found')
     return this.findUserById(id)

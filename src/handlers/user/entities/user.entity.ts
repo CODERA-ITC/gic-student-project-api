@@ -22,7 +22,7 @@ export class User extends BaseEntity {
   @Column()
   firstname: string
 
-  @Column()
+  @Column({nullable: true})
   lastname: string
 
   @Column({ nullable: true })
@@ -53,8 +53,7 @@ export class User extends BaseEntity {
   @Column({ type: 'text', nullable: true, select: false })
   hashedRefreshToken: string | null
 
-  @OneToOne(() => Role, role => role.user)
-  @JoinColumn()
+  @ManyToOne(() => Role, role => role.users)
   role: Role
 
   @OneToMany(() => ProjectMember, pm => pm.member)

@@ -92,15 +92,15 @@ export class SeederService {
   async seedRole() {
     const result = await this.roleRepo.upsert([
       {
-        name: 'Admin',
+        name: 'ADMIN',
         description: 'Responsible for managing the system',
       },
       {
-        name: 'Teacher',
+        name: 'TEACHER',
         description: 'Manage student projects',
       },
       {
-        name: 'Student',
+        name: 'STUDENT',
         description: 'Create and propose project ideas',
       },
     ], { conflictPaths: ['name'] })

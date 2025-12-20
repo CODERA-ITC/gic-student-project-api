@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
@@ -91,7 +91,16 @@ export class ImageService {
     return tranformed;
   }
 
-  // async getSignedUrl(key: string): Promise<string>{
-  //   const command 
+  async getSignedUrl(key: string): Promise<string>{
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key
+    });
+    
+    return getSignedUrl(this.s3Client, command, {expiresIn: 3600});
+  }
+
+  // async deleteImage(imageId: string){
+  //   const image = await this.imageRepo.find({where: {id: imageId}, relations: ['project']})
   // }
 }

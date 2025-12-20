@@ -50,6 +50,16 @@ export class RoleService {
     return role;
   }
 
+  async findRoleByName(name: string){
+    const role = await this.roleRepo.findOne({where: {name}});
+
+    if(!role){
+      throw new NotFoundException('Role not found')
+    }
+
+    return role;
+  }
+
   async updateRole(id: string, dto: UpdateRoleDto) {
     const role = await this.findOneRole(id);
 
