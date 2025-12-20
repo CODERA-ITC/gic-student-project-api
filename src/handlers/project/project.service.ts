@@ -168,7 +168,7 @@ export class ProjectService {
           category: true,
           images: {
             id: true,
-            thumbnail_url: true, //Change from url to thumbnail_url for findAll
+            thumbnailUrl: true, //Change from url to thumbnail_url for findAll
           },
           features: {
             id: true,
@@ -200,7 +200,7 @@ export class ProjectService {
         category: project.category,
         images: project.images.map(img => ({
           id: img.id,
-          url: img.thumbnail_url,
+          url: img.thumbnailUrl,
         })),
         members: project.members.map(pm => ({
           id: pm.member.id,
@@ -248,7 +248,7 @@ export class ProjectService {
         category: true,
         images: {
           id: true,
-          original_url: true, //Change from url to original_url
+          originalUrl: true, //Change from url to original_url
         },
         members: {
           id: true,
@@ -278,7 +278,7 @@ export class ProjectService {
       startDate: project.startDate,
       images: project.images.map(img => ({
         id: img.id,
-        url: img.original_url,
+        url: img.originalUrl,
       })),
       members: project.members.map(pm => ({
         id: pm.member.id,
@@ -364,7 +364,7 @@ export class ProjectService {
       category: project.category,
       images: project.images.map(img => ({
         id: img.id,
-        url: img.thumbnail_url,
+        url: img.thumbnailUrl,
       })),
       members: project.members.map(pm => ({
         id: pm.member.id,

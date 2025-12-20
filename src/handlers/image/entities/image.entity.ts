@@ -5,10 +5,10 @@ import { Column, Entity, ManyToOne } from "typeorm";
 @Entity('images')
 export class Image extends BaseEntity {
     @Column()
-    original_url: string;
+    originalUrl: string;
 
     @Column()
-    thumbnail_url: string;
+    thumbnailUrl: string;
 
     @ManyToOne(() => Project, project => project.images, {
         onDelete: 'CASCADE',

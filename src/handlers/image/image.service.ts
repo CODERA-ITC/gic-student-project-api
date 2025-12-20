@@ -1,17 +1,28 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
 import { extname } from 'path';
 import * as sharp from 'sharp';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Image } from './entities/image.entity';
+import { Repository } from 'typeorm';
+import { Project } from '../project/entities/project.entity';
 
 @Injectable()
 export class ImageService {
   private s3Client: S3Client;
   private bucket: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectRepository(Image)
+    private imageRepo: Repository<Image>,
+
+    @InjectRepository(Project)
+    private projectRepo: Repository<Project>,
+  ) {
     const region = configService.get<string>('aws.region');
     const accessKeyId = configService.get<string>('aws.accessKey');
     const secretAccessKey = configService.get<string>('aws.secretAccessKey');
@@ -32,7 +43,7 @@ export class ImageService {
     this.bucket = bucketName;
   }
 
-  async uploadImage(file: Express.Multer.File, projectId: string): Promise<{ originalKey: string, thumbnailKey: string }> {
+  async uploadImage(file: Express.Multer.File, projectId: string) {
     if (!file) throw new BadRequestException('File not found');
 
     const fileExt = extname(file.originalname);
@@ -59,9 +70,28 @@ export class ImageService {
     });
     await this.s3Client.send(thumbnailCommand);
 
-    return {
-      originalKey,
-      thumbnailKey
+    const project = await this.projectRepo.findOne({ where: { id: projectId } });
+    if (!project) throw new NotFoundException('Project not found');
+
+
+    const images = this.imageRepo.create({
+      originalUrl: originalKey,
+      thumbnailUrl: thumbnailKey,
+      project: project
+    })
+
+    const {project: p, ...image} = await this.imageRepo.save(images);
+
+    const tranformed = {
+      ...image,
+      projectId: p.id
     }
+
+
+    return tranformed;
   }
+
+  // async getSignedUrl(key: string): Promise<string>{
+  //   const command 
+  // }
 }
