@@ -35,7 +35,7 @@ export class AuthService {
       password: hashedPassword,
     })
 
-    console.log("SIGN UP: ", user)
+    console.log('SIGN UP: ', user)
     return this.generateTokens(user)
   }
 
@@ -46,7 +46,7 @@ export class AuthService {
       throw new UnauthorizedException('User with this email does not exist')
     }
 
-    console.log("LOG IN: ", user)
+    console.log('LOG IN: ', user)
 
     // Then validate password
     const isMatch = await bcrypt.compare(dto.password, user.password)
@@ -71,8 +71,8 @@ export class AuthService {
         firstname: googleUser.firstname,
         lastname: googleUser.lastname,
         password: hashedPassword,
-        department_code: 'GIC', // Need to handle this better
-        role: {name: 'STUDENT'}
+        departmentCode: 'GIC', // Need to handle this better
+        role: { name: 'STUDENT' },
       })
     }
 
@@ -92,8 +92,8 @@ export class AuthService {
         firstname: githubUser.firstname,
         lastname: githubUser.lastname,
         password: hashedPassword,
-        department_code: 'GIC', // Need to handle this better
-        role: {name: 'STUDENT'}
+        departmentCode: 'GIC', // Need to handle this better
+        role: { name: 'STUDENT' },
       })
     }
 
@@ -112,7 +112,7 @@ export class AuthService {
       email: user.email,
       firstname: user.firstname,
       lastname: user.lastname,
-      role: user.role.name
+      role: user.role.name,
     }
 
     const access_token = this.jwtService.sign(payload, {

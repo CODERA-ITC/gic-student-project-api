@@ -1,29 +1,28 @@
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
-import {Type} from 'class-transformer';
+import { Type } from 'class-transformer'
+import { IsInt, IsOptional, IsString, Min } from 'class-validator'
 
-export class QueryUserDto{
+export class QueryUserDto {
+    @IsOptional()
+    @IsString()
+    search?: string // filter
 
     @IsOptional()
     @IsString()
-    search?: string; //filter
+    sortBy?: string // sorting field
 
     @IsOptional()
     @IsString()
-    sortBy?: string; // sorting field
+    order?: 'ASC' | 'DESC' // sort direction
 
     @IsOptional()
-    @IsString()
-    order?: 'ASC' | 'DESC'; // sort direction
-
-    @IsOptional()
-    @Type(()=> Number)
+    @Type(() => Number)
     @IsInt()
     @Min(1)
-    limit?: number; // limit results
+    limit?: number // limit results
 
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(0)
-    page?: number; //pagination (page index)
+    page?: number // pagination (page index)
 }

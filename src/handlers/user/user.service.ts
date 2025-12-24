@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { instanceToPlain } from 'class-transformer'
 
 import { Not, Repository } from 'typeorm'
+import { Department } from '../department/entitites/department.entity'
+import { Role } from '../role/entities/role.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './entities/user.entity'
-import { Role } from '../role/entities/role.entity'
 
 @Injectable()
 export class UserService {
@@ -14,18 +15,22 @@ export class UserService {
     @InjectRepository(User)
     private userRepo: Repository<User>,
     @InjectRepository(Role)
-    private roleRepo: Repository<Role>
+    private roleRepo: Repository<Role>,
+    @InjectRepository(Department)
+    private departmentRepo: Repository<Department>,
   ) { }
 
   // =============
   // Create
   // =============
   async createUser(dto: CreateUserDto) {
-    const {role: roleName, ...userData} = dto
+    const { role: roleName, ...userData } = dto
     const user = this.userRepo.create(userData)
 
-    const role = await this.roleRepo.findOneOrFail({where: {name: 'STUDENT'}})
-    user.role = role;
+    const department = await this.departmentRepo.findOneOrFail({ where: { code: dto.departmentCode } })
+    const role = await this.roleRepo.findOneOrFail({ where: { name: 'STUDENT' } })
+    user.role = role
+    user.department = department
 
     return this.userRepo.save(user)
   }
@@ -34,7 +39,14 @@ export class UserService {
   // Read (Decision to use instanceToPlain: avoid exposing password on request)
   // ==============================================================================
   async findUserByEmail(email: string) {
-    return this.userRepo.findOne({ where: { email } })
+    return this.userRepo.findOne(
+      {
+        where: {
+          email,
+        },
+        relations: ['role'],
+      },
+    )
   }
 
   async findUserByEmailWithSecrets(email: string) {
@@ -44,14 +56,14 @@ export class UserService {
         id: true,
         email: true,
         password: true,
-        hashedRefreshToken: true
+        hashedRefreshToken: true,
       },
-      relations: ['role']
+      relations: ['role'],
     })
   }
 
   async findUserById(id: string) {
-    const user = await this.userRepo.findOne({ where: { id } })
+    const user = await this.userRepo.findOne({ where: { id }, relations: ['role'] })
     if (!user)
       throw new NotFoundException('User not found')
     return instanceToPlain(user) // Ommit password field
@@ -61,7 +73,7 @@ export class UserService {
   // Update
   // =============
   async updateUser(id: string, dto: UpdateUserDto) {
-    const {role: roleName, ...userData} = dto
+    const { role: roleName, ...userData } = dto
     const result = await this.userRepo.update(id, userData)
     if (result.affected === 0)
       throw new NotFoundException('User not found')

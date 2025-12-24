@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import * as bcrypt from 'bcrypt'
 import { Repository } from 'typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
@@ -41,19 +42,11 @@ export class SeederService {
 
   async seedUser() {
     const department = await this.departmentRepo.findOneBy({ id: 1 })
-    const user = this.userRepo.create(
-      {
-        id: '11111111-1111-1111-1111-111111111111',
-        firstname: 'Test',
-        lastname: 'User',
-        email: 'testuser@gmail.com',
-        phone: '0123456789',
-        password: 'super_secured_pass',
-      },
-    )
+    const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
+    const studentRole = await this.roleRepo.findOne({ where: { name: 'STUDENT' } })
+    const adminRole = await this.roleRepo.findOne({ where: { name: 'ADMIN' } })
 
-    user.department = department!
-
+    const hashedPassword = await bcrypt.hash('@password123', 10)
     const result = await this.userRepo.save(
       [
         {
@@ -62,8 +55,10 @@ export class SeederService {
           lastname: 'User',
           email: 'testuser@gmail.com',
           phone: '0123456789',
-          password: 'super_secured_pass',
+          password: hashedPassword,
           department: department!,
+          role: studentRole!,
+
         },
         {
           id: '22222222-2222-2222-2222-222222222222',
@@ -71,17 +66,31 @@ export class SeederService {
           lastname: 'User',
           email: 'testuser2@gmail.com',
           phone: '0123456789',
-          password: 'super_secured_pass',
+          password: hashedPassword,
           department: department!,
+          role: studentRole!,
+
         },
         {
           id: '33333333-3333-3333-3333-333333333333',
-          firstname: 'Test3',
-          lastname: 'User3',
-          email: 'testuser3@gmail.com',
+          firstname: 'John',
+          lastname: 'Yakult',
+          email: 'admin123@gmail.com',
           phone: '0123456789',
-          password: 'super_secured_pass',
+          password: hashedPassword,
           department: department!,
+          role: adminRole!,
+        },
+        {
+          id: '44444444-4444-4444-4444-444444444444',
+          firstname: 'Cool',
+          lastname: 'Teacher',
+          email: 'teacher123@gmail.com',
+          phone: '0123456789',
+          password: hashedPassword,
+          department: department!,
+          role: teacherRole!,
+
         },
       ],
     )
