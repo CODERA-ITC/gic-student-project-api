@@ -42,6 +42,9 @@ export class Project extends BaseEntity {
   @Column({ nullable: true })
   reviewedBy: string
 
+  @Column({ default: 0 })
+  viewCount: number
+
   @OneToMany(
     () => Feature,
     feature => feature.project,

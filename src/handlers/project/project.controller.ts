@@ -3,13 +3,17 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
+import { CurrentUser } from '../user/auth/current-user.decorator'
+import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
 import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
 import { CreateProjectDto } from './dto/create-project.dto'
@@ -89,5 +93,40 @@ export class ProjectController {
   @Delete(':id/tag/:tagId')
   deleteTag(@Param('id') projectId: string, @Param('tagId') tagId: number) {
     return this.projectService.deleteTag(tagId)
+  }
+
+  //
+  @Post(':id/view')
+  @UseGuards(JwtAuthGuard)
+  async trackView(
+    @Param('id') projectId: string,
+    @CurrentUser() user: any,
+    @Headers('authorization') authHeader: string,
+  ) {
+    const token = authHeader?.replace('Bearer', '');
+    await this.projectService.trackProjectView(projectId, user.id)
+    return { message: 'View tracked successfully' }
+  }
+
+  //===========================================
+  // Get the total view count for a project
+  //===========================================
+  @Get(':id/view-count')
+  async getViewCount(@Param('id') projectId: string) {
+    const viewCount = await this.projectService.getProjectViewCount(projectId)
+    return { projectId, viewCount }
+  }
+
+  //=================================================
+  // Check if the current user has viewed a project
+  //=================================================
+  @Get(':id/has-viewed')
+  @UseGuards(JwtAuthGuard)
+  async hasViewed(
+    @Param('id') projectId: string,
+    @CurrentUser() user: any,
+  ) {
+    const hasViewed = await this.projectService.hasUserViewedProject(projectId, user.id)
+    return { projectId, hasViewed }
   }
 }
