@@ -44,8 +44,9 @@ export class UserService {
         id: true,
         email: true,
         password: true,
-        hashedRefreshToken: true,
+        hashedRefreshToken: true
       },
+      relations: ['role']
     })
   }
 

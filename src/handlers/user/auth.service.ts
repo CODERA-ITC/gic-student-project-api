@@ -13,7 +13,6 @@ import { CreateUserDto } from '../user/dto/create-user.dto'
 import { UserService } from '../user/user.service'
 import { LoginDto } from './dto/login.dto'
 import { User } from './entities/user.entity'
-import { RoleService } from '../role/role.service'
 
 @Injectable()
 export class AuthService {
@@ -36,6 +35,7 @@ export class AuthService {
       password: hashedPassword,
     })
 
+    console.log("SIGN UP: ", user)
     return this.generateTokens(user)
   }
 
@@ -45,6 +45,8 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User with this email does not exist')
     }
+
+    console.log("LOG IN: ", user)
 
     // Then validate password
     const isMatch = await bcrypt.compare(dto.password, user.password)
@@ -70,7 +72,7 @@ export class AuthService {
         lastname: googleUser.lastname,
         password: hashedPassword,
         department_code: 'GIC', // Need to handle this better
-        role: 'STUDENT'
+        role: {name: 'STUDENT'}
       })
     }
 
@@ -91,7 +93,7 @@ export class AuthService {
         lastname: githubUser.lastname,
         password: hashedPassword,
         department_code: 'GIC', // Need to handle this better
-        role: 'STUDENT'
+        role: {name: 'STUDENT'}
       })
     }
 

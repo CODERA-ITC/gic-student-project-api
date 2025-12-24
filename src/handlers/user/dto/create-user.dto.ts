@@ -43,7 +43,7 @@ export class CreateUserDto {
   @IsString()
   hashedRefreshToken?: string | null;
 
-  role: string;
+  role: object;
   
   //pfp_thumbnail_url
   //pfp_hd_url

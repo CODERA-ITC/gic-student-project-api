@@ -78,7 +78,7 @@ export class UserController {
       };
     } catch (error) {
       // Log the error for debugging
-      console.error('Login error:', error.message);
+      console.error('Login error:', error);
 
       if (
         error instanceof UnauthorizedException ||
@@ -88,7 +88,7 @@ export class UserController {
       }
 
       // Handle unexpected errors
-      throw new UnauthorizedException('Login failed. Please try again.');
+      throw new UnauthorizedException(error);
     }
   }
 
