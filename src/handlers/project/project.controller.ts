@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Headers,
   Param,
   Patch,
@@ -101,9 +102,7 @@ export class ProjectController {
   async trackView(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
-    @Headers('authorization') authHeader: string,
   ) {
-    const token = authHeader?.replace('Bearer', '');
     await this.projectService.trackProjectView(projectId, user.id)
     return { message: 'View tracked successfully' }
   }
@@ -128,5 +127,47 @@ export class ProjectController {
   ) {
     const hasViewed = await this.projectService.hasUserViewedProject(projectId, user.id)
     return { projectId, hasViewed }
+  }
+
+  //========================================================
+  //PROJECT LIKE CONTROLLER
+  //========================================================
+
+  //================================
+  // Toggle like/unlike on a project
+  //================================ 
+  @Post(':id/like')
+  @UseGuards(JwtAuthGuard)
+  async toggleLike(
+    @Param('id') projectId: string,
+    @CurrentUser() user: any,
+  ) {
+    const result = await this.projectService.trackProjectLike(projectId, user.id)
+    return {
+      message: result.liked ? 'Project liked successfully' : 'Project unliked successfully',
+      liked: result.liked
+    }
+  }
+
+  //==================================
+  //Get total like count for a project
+  //==================================
+  @Get(':id/like-count')
+  async getLikeCount(@Param('id') projectId: string) {
+    const likeCount = await this.projectService.getProjectLikeCount(projectId)
+    return { projectId, likeCount }
+  }
+
+  //=========================================
+  //Check if current user has liked a project
+  //=========================================
+  @Get(':id/has-liked')
+  @UseGuards(JwtAuthGuard)
+  async hasLiked(
+    @Param('id') projectId: string,
+    @CurrentUser() user: any,
+  ) {
+    const hasLiked = await this.projectService.hasUserLikedProject(projectId, user.id)
+    return { projectId, hasLiked }
   }
 }

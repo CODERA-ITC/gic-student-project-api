@@ -17,6 +17,7 @@ import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
 import { ProjectView } from './entities/project-view.entity'
+import { ProjectLike } from './entities/project-like.entity'
 
 @Injectable()
 export class ProjectService {
@@ -33,6 +34,8 @@ export class ProjectService {
     private tagRepo: Repository<Tag>,
     @InjectRepository(ProjectView)
     private projectViewRepo: Repository<ProjectView>,
+    @InjectRepository(ProjectLike)
+    private projectLikeRepo: Repository<ProjectLike>,
     @InjectEntityManager()
     private entityManager: EntityManager, // for db transaction
     private notificationService: NotificationService,
@@ -791,4 +794,91 @@ export class ProjectService {
     return !!view
   }
 
+  //========================================================
+  //PROJECT LIKE SERVICE
+  //========================================================
+
+  //==================================================
+  //Toggle like on a project (like/unlike)
+  //==================================================
+  async trackProjectLike(projectId: string, userId: string): Promise<{ liked: boolean }> {
+    // Check if project exists
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+    })
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    // Check if user already liked this project
+    const existingLike = await this.projectLikeRepo.findOne({
+      where: {
+        user: { id: userId },
+        project: { id: projectId }
+      },
+    })
+
+    if (existingLike) {
+      // Unlike: Remove the like record
+      await this.projectLikeRepo.remove(existingLike)
+
+      // Decrement the like count
+      await this.projectRepo.decrement(
+        { id: projectId },
+        'likeCount',
+        1,
+      )
+
+      return { liked: false }
+    } else {
+      // Like: Create new like record
+      const user = await this.userRepo.findOne({ where: { id: userId } })
+      if (!user) {
+        throw new NotFoundException('User not found')
+      }
+
+      const projectLike = this.projectLikeRepo.create({
+        user,
+        project,
+      })
+      await this.projectLikeRepo.save(projectLike)
+
+      // Increment the like count
+      await this.projectRepo.increment(
+        { id: projectId },
+        'likeCount',
+        1,
+      )
+
+      return { liked: true }
+    }
+  }
+
+  //===============================
+  //Get total likes for a project
+  //===============================
+  async getProjectLikeCount(projectId: string): Promise<number> {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      select: ['id', 'likeCount'],
+    })
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+    return project.likeCount
+  }
+
+
+  //====================================
+  //Check if a user has liked a project
+  //====================================
+  async hasUserLikedProject(projectId: string, userId: string): Promise<boolean> {
+    const like = await this.projectLikeRepo.findOne({
+      where: {
+        user: { id: userId },
+        project: { id: projectId }
+      },
+    })
+    return !!like
+  }
 }

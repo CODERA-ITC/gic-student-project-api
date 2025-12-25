@@ -16,6 +16,7 @@ import { TagController } from './tag.controller'
 import { TagService } from './tag.service'
 import { Image } from '../image/entities/image.entity'
 import { ProjectView } from './entities/project-view.entity'
+import { ProjectLike } from './entities/project-like.entity'
 
 @Module({
   controllers: [ProjectController, CategoryController, TagController],
@@ -30,6 +31,7 @@ import { ProjectView } from './entities/project-view.entity'
     ProjectMember,
     User,
     ProjectView,
+    ProjectLike,
   ]), NotificationModule],
 
 })

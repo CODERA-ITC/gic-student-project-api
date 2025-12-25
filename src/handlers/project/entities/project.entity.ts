@@ -15,6 +15,7 @@ import { Feature } from './feature.entity'
 import { ProjectMember } from './project_members.entity'
 import { Tag } from './tag.entity'
 import { Image } from 'src/handlers/image/entities/image.entity'
+import { ProjectLike } from './project-like.entity'
 
 @Entity('projects')
 export class Project extends BaseEntity {
@@ -45,6 +46,9 @@ export class Project extends BaseEntity {
   @Column({ default: 0 })
   viewCount: number
 
+  @Column({ default: 0 })
+  likeCount: number
+
   @OneToMany(
     () => Feature,
     feature => feature.project,
@@ -65,6 +69,9 @@ export class Project extends BaseEntity {
 
   @OneToMany(() => Image, image => image.project)
   images: Image[]
+
+  @OneToMany(() => ProjectLike, like => like.project)
+  likes: ProjectLike[]
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   startDate: Date

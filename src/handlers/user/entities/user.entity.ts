@@ -3,6 +3,7 @@ import { Exclude } from 'class-transformer'
 import { BaseEntity } from 'src/database/base.entity'
 import { Department } from 'src/handlers/department/entitites/department.entity'
 import { Notification } from 'src/handlers/notification/entities/notification.entity'
+import { ProjectLike } from 'src/handlers/project/entities/project-like.entity'
 import { Project } from 'src/handlers/project/entities/project.entity'
 import { ProjectMember } from 'src/handlers/project/entities/project_members.entity'
 import { Role } from 'src/handlers/role/entities/role.entity'
@@ -22,7 +23,7 @@ export class User extends BaseEntity {
   @Column()
   firstname: string
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   lastname: string
 
   @Column({ nullable: true })
@@ -40,6 +41,9 @@ export class User extends BaseEntity {
 
   @ManyToOne(() => Department, dept => dept.users)
   department: Department
+
+  @OneToMany(() => ProjectLike, like => like.user)
+  projectLikes: ProjectLike[]
 
   @Column({ nullable: true })
   year: number
