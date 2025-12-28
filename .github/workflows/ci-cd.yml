@@ -1,0 +1,71 @@
+name: Build & Deploy NestJs Docker
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    env:  
+      PROJECT_PATH: "${{ secrets.PROJECT_PATH }}"
+
+    steps:
+      - name: Pull code from main 
+        run: |
+          echo "STAGE=PULL" >> $GITHUB_ENV
+
+          cd "$PROJECT_PATH/gic-student-project-api"
+          git checkout main
+          git pull origin main
+      - name: Login Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" \
+          | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build image
+        run: |
+          echo "STAGE=Build" >> $GITHUB_ENV
+
+          cd "$PROJECT_PATH/gic-student-project-api"
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/gic-student-project-api:latest .
+
+      - name: Push image
+        run: |
+          echo "STAGE=Build" >> $GITHUB_ENV
+
+          docker push ${{ secrets.DOCKER_USERNAME }}/gic-student-project-api:latest
+
+      - name: Restart container
+        run: |
+          echo "STAGE=Deployment" >> $GITHUB_ENV
+          cd $PROJECT_PATH
+          docker compose stop app
+          docker compose up --build -d app
+
+
+      - name: Set status
+        if: always()
+        run: echo "STATUS=${{ job.status }}" >> $GITHUB_ENV
+
+      - name: Notify Telegram
+        if: always()
+        run: |
+          if [ "$STATUS" = "success" ]; then
+            ICON="✅"
+            TEXT="Stage: $STAGE successful"
+          else
+            ICON="❌"
+            TEXT="Stage: $STAGE failed"
+          fi
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "reply_to_message_id=97" \
+            -d "parse_mode=Markdown" \
+            -d "text=📌 $ICON $TEXT; Status: $STATUS\`
+          *Repo:* \`${{ github.repository }}\`
+          *Actor:* \`${{ github.actor }}\`
+          *Message:* \`${{ github.event.commits[0].message }}" \
+          > /dev/null 2>&1
