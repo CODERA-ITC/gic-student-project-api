@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform } from 'class-transformer'
-import { IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator'
+import { IsArray, IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator'
 import { CreateFeatureDto } from './create-feature.dto'
 
 export class CreateProjectDto {
@@ -33,10 +33,10 @@ export class CreateProjectDto {
   @IsNotEmpty()
   departmentId: number
 
-  @ApiProperty({ example: '11111111-1111-1111-1111-111111111111', required: true })
+  @ApiProperty({ description: 'Author id', example: '11111111-1111-1111-1111-111111111111', required: true })
   @IsString()
   @IsNotEmpty()
-  userId: string
+  authorId: string
 
   @ApiProperty({ required: false, example: '2025-12-16T10:30:00Z' })
   @IsOptional()
@@ -46,4 +46,18 @@ export class CreateProjectDto {
   @ApiProperty({ required: false, example: [] })
   @IsOptional()
   features: CreateFeatureDto[]
+
+  @ApiProperty({ description: 'List of member ids', required: false, example: ['22222222-2222-2222-2222-222222222222'] })
+  @IsArray()
+  members: string[]
+
+  @ApiProperty({ description: 'List of technologies used (string)', required: false, example: ['VueJs'] })
+  @IsOptional()
+  @IsArray()
+  technologies: string[]
+
+  @ApiProperty({ example: '2024-2025', required: false })
+  @IsOptional()
+  @IsString()
+  academicYear: string
 }

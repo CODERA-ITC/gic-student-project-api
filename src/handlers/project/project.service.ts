@@ -39,14 +39,14 @@ export class ProjectService {
     @InjectEntityManager()
     private entityManager: EntityManager, // for db transaction
     private notificationService: NotificationService,
-  ) { }
+  ) {}
 
   async create(dto: CreateProjectDto): Promise<any> {
     // tem shorts for TransactionEntityManager
     const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
       const [author, category, department] = await Promise.all([
-        tem.findOneBy(User, { id: dto.userId }),
+        tem.findOneBy(User, { id: dto.authorId }),
         tem.findOneBy(Category, { id: dto.categoryId }),
         tem.findOneBy(Department, { id: dto.departmentId }),
       ])
@@ -95,28 +95,15 @@ export class ProjectService {
       return await tem.save(project)
     })
 
-    const transformed = {
-      id: project.id,
-      name: project.name,
-      category: project.category,
-      members: project.members.map(pm => ({
-        id: pm.member.id,
-        email: pm.member.email,
-        firstname: pm.member.firstname,
-        lastname: pm.member.lastname,
-        role: pm.role,
-      })),
-      startDate: project.startDate.toISOString(),
-      features: project.features.map(feature => ({
-        id: feature.id,
-        name: feature.name,
-        description: feature.description,
-        status: feature.status,
-        icon: feature.icon,
-      })),
-    }
 
-    return transformed
+    try {
+      await this.addMembers(project.id, dto.members)
+    } catch (e) {}
+
+    const result = await this.findOne(project.id)
+
+
+    return result
   }
 
   async submitProjectForReview(projectId: string): Promise<Project> {
@@ -253,6 +240,9 @@ export class ProjectService {
         name: true,
         category: true,
         viewCount: true,
+        technologies: true,
+        academicYear: true,
+        isFeatured: true,
         images: {
           id: true,
           originalUrl: true, //Change from url to original_url
@@ -284,6 +274,9 @@ export class ProjectService {
       category: project.category,
       startDate: project.startDate,
       viewCount: project.viewCount,
+      isFeatured: project.isFeatured,
+      academicYear: project.academicYear,
+      technologies: project.technologies,
       images: project.images.map(img => ({
         id: img.id,
         url: img.originalUrl,
@@ -320,7 +313,9 @@ export class ProjectService {
 
     // const updated = this.projectRepo.create(dto)
 
-    this.projectRepo.merge(project, dto)
+    const { members, authorId, categoryId, tagId, ...updated } = dto
+
+    this.projectRepo.merge(project, updated)
 
     return await this.projectRepo.save(project)
   }
@@ -406,11 +401,7 @@ export class ProjectService {
 
   // Project Member Functions
 
-  async addMember(projectId: string, authorId: string, memberId: string) {
-    if (authorId === memberId) {
-      throw new HttpException('Author cannot add himself to the project', HttpStatus.BAD_REQUEST)
-    }
-
+  async addMember(projectId: string, memberId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
       relations: { members: { member: true } },
@@ -457,15 +448,15 @@ export class ProjectService {
     return result
   }
 
-  async addMembers(projectId: string, authorId: string, memberIds: string[]) {
+  async addMembers(projectId: string, memberIds: string[]) {
     const results = await Promise.allSettled(
-      memberIds.map(id => this.addMember(projectId, authorId, id)),
+      memberIds.map(id => this.addMember(projectId, id)),
     )
 
     return {
       success: results
         .filter(r => r.status === 'fulfilled')
-        .map(r => r.value.project),
+        .map(r => r.value.project)[0],
 
       failed: results
         .filter(r => r.status === 'rejected')

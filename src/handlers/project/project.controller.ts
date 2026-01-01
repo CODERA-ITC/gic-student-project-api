@@ -28,7 +28,7 @@ import { ProjectService } from './project.service'
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
-  ) { }
+  ) {}
 
   @Post()
   create(@Body() createProjectDto: CreateProjectDto) {
@@ -63,7 +63,7 @@ export class ProjectController {
 
   @Post(':id/members')
   addMembers(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
-    return this.projectService.addMembers(projectId, dto.authorId, dto.memberIds)
+    return this.projectService.addMembers(projectId, dto.memberIds)
   }
 
   @Post(':id/features')
