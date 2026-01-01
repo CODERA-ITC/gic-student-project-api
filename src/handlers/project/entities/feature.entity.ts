@@ -1,10 +1,13 @@
-import { BaseEntity } from 'src/database/base.entity'
-import { Column, Entity, ManyToOne } from 'typeorm'
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { Project } from './project.entity'
 
 export type FeatureStatus = 'pending' | 'ongoing' | 'done'
+
 @Entity('features')
-export class Feature extends BaseEntity {
+export class Feature {
+    @PrimaryGeneratedColumn()
+    id: number
+
     @Column()
     name: string
 
@@ -23,4 +26,14 @@ export class Feature extends BaseEntity {
 
     @Column({ nullable: true, type: 'timestamptz' })
     doneAt: Date | null
+
+    @CreateDateColumn({ type: 'timestamptz' })
+    readonly createdAt!: Date
+
+    @UpdateDateColumn({ type: 'timestamptz' })
+    readonly updatedAt!: Date
+
+    // nestjs built-in soft delete
+    @DeleteDateColumn({ type: 'timestamptz' })
+    deletedAt?: Date
 }

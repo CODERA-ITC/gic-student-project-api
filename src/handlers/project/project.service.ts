@@ -499,7 +499,7 @@ export class ProjectService {
     return await this.entityManager.save(feature)
   }
 
-  async updateFeature(featureId: string, dto: UpdateFeatureDto) {
+  async updateFeature(featureId: number, dto: UpdateFeatureDto) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
       throw new NotFoundException('Feature not found')
@@ -513,7 +513,7 @@ export class ProjectService {
     return await this.featureRepo.save(updated)
   }
 
-  async updateFeatureStatus(featureId: string, dto: UpdateFeatureStatusDto) {
+  async updateFeatureStatus(featureId: number, dto: UpdateFeatureStatusDto) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
       throw new NotFoundException('Feature not found')
@@ -538,7 +538,7 @@ export class ProjectService {
     return await this.featureRepo.save(feature)
   }
 
-  async deleteFeature(featureId: string) {
+  async deleteFeature(featureId: number) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
       throw new NotFoundException('Feature not found')
@@ -554,9 +554,9 @@ export class ProjectService {
     })
   }
 
-  async findOneFeature(id: string): Promise<Feature> {
+  async findOneFeature(featureId: number): Promise<Feature> {
     const feature = await this.entityManager.getRepository(Feature).findOne({
-      where: { id },
+      where: { id: featureId },
       relations: ['project'],
     })
 

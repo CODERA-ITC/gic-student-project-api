@@ -43,8 +43,17 @@ export class CreateProjectDto {
   @IsISO8601()
   startDate: string
 
-  @ApiProperty({ required: false, example: [] })
+  @ApiProperty({
+    required: false,
+    example: <CreateFeatureDto[]>[{
+      name: 'coolest feature ever',
+      status: 'pending',
+      icon: 'bruh',
+      description: 'bogo sort',
+    }],
+  })
   @IsOptional()
+  @IsArray()
   features: CreateFeatureDto[]
 
   @ApiProperty({ description: 'List of member ids', required: false, example: ['22222222-2222-2222-2222-222222222222'] })
