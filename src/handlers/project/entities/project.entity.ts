@@ -1,7 +1,6 @@
 import { BaseEntity } from 'src/database/base.entity'
 import { Department } from 'src/handlers/department/entitites/department.entity'
-import { User } from 'src/handlers/user/entities/user.entity'
-
+import { Image } from 'src/handlers/image/entities/image.entity'
 import {
   Column,
   Entity,
@@ -12,10 +11,9 @@ import {
 } from 'typeorm'
 import { Category } from './category.entity'
 import { Feature } from './feature.entity'
+import { ProjectLike } from './project-like.entity'
 import { ProjectMember } from './project_members.entity'
 import { Tag } from './tag.entity'
-import { Image } from 'src/handlers/image/entities/image.entity'
-import { ProjectLike } from './project-like.entity'
 
 @Entity('projects')
 export class Project extends BaseEntity {
@@ -78,4 +76,16 @@ export class Project extends BaseEntity {
 
   @OneToMany(() => ProjectMember, pm => pm.project)
   members: ProjectMember[]
+
+  @Column({ nullable: true })
+  academicYear: string
+
+  @Column({ type: 'simple-array', default: [] })
+  technologies: string[]
+
+  @Column({ default: false })
+  isFeatured: boolean
+
+  @Column({ nullable: true })
+  repoUrl: string
 }
