@@ -187,33 +187,48 @@ export class ProjectService {
         },
       })
 
-      const transformed: any[] = projects.map(project => ({
-        id: project.id,
-        name: project.name,
-        category: project.category,
-        images: project.images.map(img => ({
-          id: img.id,
-          url: img.thumbnailUrl,
-        })),
-        members: project.members.map(pm => ({
-          id: pm.member.id,
-          email: pm.member.email,
-          firstname: pm.member.firstname,
-          lastname: pm.member.lastname,
-          role: pm.role,
-        })),
-        features: project.features.map(feature => ({
-          id: feature.id,
-          name: feature.name,
-          description: feature.description,
-          status: feature.status,
-        })),
-        tags: project.tags.map(tag => ({
-          id: tag.id,
-          name: tag.name,
-        })),
-        academicYear: project.startDate.getFullYear(),
-      }))
+      const transformed: any[] = projects.map((project) => {
+        const pmA = project.members.find(m => m.role === 'author')
+        let authorInfo = {};
+        if (pmA) {
+          authorInfo = {
+            id: pmA.member.id,
+            email: pmA.member.email,
+            firstname: pmA.member.firstname,
+            lastname: pmA.member.lastname,
+            role: pmA.role,
+          }
+        }
+
+        return {
+          id: project.id,
+          name: project.name,
+          category: project.category,
+          images: project.images.map(img => ({
+            id: img.id,
+            url: img.thumbnailUrl,
+          })),
+          author: authorInfo,
+          members: project.members.filter(m => m.role === 'member').map(pm => ({
+            id: pm.member.id,
+            email: pm.member.email,
+            firstname: pm.member.firstname,
+            lastname: pm.member.lastname,
+            role: pm.role,
+          })),
+          features: project.features.map(feature => ({
+            id: feature.id,
+            name: feature.name,
+            description: feature.description,
+            status: feature.status,
+          })),
+          tags: project.tags.map(tag => ({
+            id: tag.id,
+            name: tag.name,
+          })),
+          academicYear: project.startDate.getFullYear(),
+        }
+      })
 
       return transformed
     }
@@ -355,40 +370,54 @@ export class ProjectService {
       qb.andWhere('p.name ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
     }
 
-    const [data, total] = await qb
+    const [projects, total] = await qb
       .skip(skip)
       .take(limit)
       .orderBy('p.createdAt', 'DESC')
       .getManyAndCount()
 
-    const transformed: any[] = data.map(project => ({
-      id: project.id,
-      name: project.name,
-      category: project.category,
-      images: project.images.map(img => ({
-        id: img.id,
-        url: img.thumbnailUrl,
-      })),
-      members: project.members.map(pm => ({
-        id: pm.member.id,
-        email: pm.member.email,
-        firstname: pm.member.firstname,
-        lastname: pm.member.lastname,
-        role: pm.role,
-      })),
-      features: project.features?.map(feature => ({
-        id: feature.id,
-        name: feature.name,
-        description: feature.description,
-        status: feature.status,
-      })),
-      tags: project.tags?.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-      })),
-      startDate: project.startDate,
-      academicYear: project.startDate.getFullYear().toString(),
-    }))
+    const transformed: any[] = projects.map((project) => {
+      const pmA = project.members.find(m => m.role === 'author')
+      let authorInfo = {}
+      if (pmA) {
+        authorInfo = {
+          id: pmA.member.id,
+          email: pmA.member.email,
+          firstname: pmA.member.firstname,
+          lastname: pmA.member.lastname,
+          role: pmA.role,
+        }
+      }
+
+      return {
+        id: project.id,
+        name: project.name,
+        category: project.category,
+        images: project.images.map(img => ({
+          id: img.id,
+          url: img.thumbnailUrl,
+        })),
+        author: authorInfo,
+        members: project.members.filter(m => m.role === 'member').map(pm => ({
+          id: pm.member.id,
+          email: pm.member.email,
+          firstname: pm.member.firstname,
+          lastname: pm.member.lastname,
+          role: pm.role,
+        })),
+        features: project.features.map(feature => ({
+          id: feature.id,
+          name: feature.name,
+          description: feature.description,
+          status: feature.status,
+        })),
+        tags: project.tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+        })),
+        academicYear: project.startDate.getFullYear(),
+      }
+    })
 
     return {
       data: transformed,
