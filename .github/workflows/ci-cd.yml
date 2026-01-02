@@ -67,5 +67,5 @@ jobs:
             -d "text=📌 $ICON $TEXT; Status: $STATUS\`
           *Repo:* \`${{ github.repository }}\`
           *Actor:* \`${{ github.actor }}\`
-          *Message:* \`${{ github.event.commits[0].message }}" \
+          *Message:* \`${{ github.event.head_commit.message }}" \
           > /dev/null 2>&1
