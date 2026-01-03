@@ -1,0 +1,44 @@
+ARG NODE_VERSION=22-alpine
+ARG PORT=3000
+
+# ------------------------
+# Dependencies stage
+# ------------------------
+FROM node:${NODE_VERSION} AS deps
+WORKDIR /app
+
+COPY package.json package-lock.json .npmrc ./
+
+# npm ci is faster & deterministic
+RUN npm ci --legacy-peer-deps --no-optional
+
+# ------------------------
+# Build stage
+# ------------------------
+FROM node:${NODE_VERSION} AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN npm run build
+
+# Remove dev deps AFTER build
+RUN npm prune --production && npm cache clean --force
+
+# ------------------------
+# Production stage
+# ------------------------
+FROM node:${NODE_VERSION} AS production
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=${PORT}
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+
+USER node
+EXPOSE ${PORT}
+
+CMD ["node", "dist/main"]
