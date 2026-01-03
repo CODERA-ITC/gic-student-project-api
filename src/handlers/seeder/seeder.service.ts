@@ -18,7 +18,7 @@ export class SeederService {
     private userRepo: Repository<User>,
     @InjectRepository(Role)
     private roleRepo: Repository<Role>,
-  ) { }
+  ) {}
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
@@ -47,6 +47,81 @@ export class SeederService {
     const adminRole = await this.roleRepo.findOne({ where: { name: 'ADMIN' } })
 
     const hashedPassword = await bcrypt.hash('@password123', 10)
+
+    const users = [
+      {
+        firstname: 'Sarah',
+        lastname: 'Chen',
+        skill: ['Frontend Developer'],
+        avatarUrl: 'https://randomuser.me/api/portraits/women/1.jpg',
+        password: hashedPassword,
+        department: department!,
+        role: studentRole!,
+        email: 'sarahchen@gmail.com',
+        bio: 'hello i am very sad',
+        year: 4,
+      },
+      {
+        firstname: 'Alex',
+        lastname: 'Kumar',
+        name: 'Alex Kumar',
+        avatarUrl: 'https://randomuser.me/api/portraits/men/2.jpg',
+        password: hashedPassword,
+        department: department!,
+        role: studentRole!,
+        email: 'alexkumar@gmail.com',
+        bio: 'hello i am very sad',
+        year: 5,
+      },
+      {
+        firstname: 'Maya',
+        lastname: 'Rodriguez',
+        avatarUrl: 'https://randomuser.me/api/portraits/women/3.jpg',
+        password: hashedPassword,
+        department: department!,
+        role: studentRole!,
+        email: 'mayarodri@gmail.com',
+        bio: 'Dattebayo UwU',
+        year: 4,
+      },
+      {
+        firstname: 'David',
+        lastname: 'Park',
+        skill: ['DevOps Engineer', 'Terrorist'],
+        avatarUrl: 'https://randomuser.me/api/portraits/men/4.jpg',
+        password: hashedPassword,
+        department: department!,
+        role: studentRole!,
+        email: 'davidpark@gmail.com',
+        bio: 'hello i am very sad',
+        year: 4,
+      },
+      {
+        firstname: 'Emma',
+        lastname: 'Thompson',
+        skill: ['Product Manager'],
+        avatarUrl: 'https://randomuser.me/api/portraits/women/5.jpg',
+        password: hashedPassword,
+        department: department!,
+        role: studentRole!,
+        email: 'emmat@gmail.com',
+        bio: 'hello i am very sad',
+        year: 3,
+      },
+      {
+        firstname: 'James',
+        lastname: 'Wilson',
+        skill: ['Full Stack Developer'],
+        avatarUrl: 'https://randomuser.me/api/portraits/men/6.jpg',
+        password: hashedPassword,
+        department: department!,
+        role: studentRole!,
+        email: 'jameswilson@yahoo.com',
+        bio: 'Ground control to major tom',
+        year: 4,
+      },
+    ]
+
     const result = await this.userRepo.save(
       [
         {
@@ -92,6 +167,8 @@ export class SeederService {
           role: teacherRole!,
 
         },
+
+        ...users,
       ],
     )
 
