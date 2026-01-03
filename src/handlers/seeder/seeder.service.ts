@@ -6,6 +6,7 @@ import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
 import { Role } from '../role/entities/role.entity'
 import { User } from '../user/entities/user.entity'
+import { Tag } from '../project/entities/tag.entity'
 
 @Injectable()
 export class SeederService {
@@ -18,6 +19,8 @@ export class SeederService {
     private userRepo: Repository<User>,
     @InjectRepository(Role)
     private roleRepo: Repository<Role>,
+    @InjectRepository(Tag)
+    private tagRepo: Repository<Tag>,
   ) {}
 
   async seedDepartment() {
@@ -192,5 +195,61 @@ export class SeederService {
     ], { conflictPaths: ['name'] })
 
     return result
+  }
+
+  async seedTags() {
+    await this.tagRepo.upsert(
+      [
+        { name: 'JavaScript' },
+        { name: 'TypeScript' },
+        { name: 'Python' },
+        { name: 'Go' },
+        { name: 'Rust' },
+        { name: 'Java' },
+        { name: 'CSharp' },
+        { name: 'PHP' },
+
+        { name: 'React' },
+        { name: 'Vue' },
+        { name: 'Angular' },
+        { name: 'NextJS' },
+        { name: 'Nuxt' },
+        { name: 'Svelte' },
+        { name: 'Flutter' },
+        { name: 'ReactNative' },
+
+        { name: 'NodeJS' },
+        { name: 'NestJS' },
+        { name: 'Express' },
+        { name: 'Fastify' },
+        { name: 'SpringBoot' },
+        { name: 'Django' },
+        { name: 'Flask' },
+
+        { name: 'PostgreSQL' },
+        { name: 'MySQL' },
+        { name: 'MongoDB' },
+        { name: 'Redis' },
+        { name: 'SQLite' },
+
+        { name: 'Docker' },
+        { name: 'Kubernetes' },
+        { name: 'CI/CD' },
+        { name: 'GitHub Actions' },
+        { name: 'AWS' },
+        { name: 'GCP' },
+        { name: 'Azure' },
+
+        { name: 'REST' },
+        { name: 'GraphQL' },
+        { name: 'WebSocket' },
+        { name: 'Microservices' },
+        { name: 'Monorepo' },
+        { name: 'Clean Architecture' },
+        { name: 'TDD' },
+        { name: 'Testing' },
+      ],
+      { conflictPaths: ['name'] },
+    )
   }
 }

@@ -62,6 +62,20 @@ export class ProjectService {
         throw new HttpException('Department not found', HttpStatus.NOT_FOUND)
       }
 
+
+      let tags: Tag[] = []
+      if (dto.tagIds) {
+        const tagIds = dto.tagIds.slice(0, 5) // get first 5 ids
+        const tagPromises: Promise<Tag | null>[] = []
+        for (const id of tagIds) {
+          tagPromises.push(this.tagRepo.findOneBy({ id }))
+        }
+
+        tags = (await Promise.all(tagPromises)).filter(p => p !== null)
+      }
+
+      const features = this.featureRepo.create(dto.features)
+
       // Create and setup project
       const project = this.projectRepo.create({
         ...dto,
@@ -69,10 +83,9 @@ export class ProjectService {
         departments: [department],
         members: [],
         visibility: 'draft',
+        tags,
+        features,
       })
-
-      const features = this.featureRepo.create(dto.features)
-      project.features = features
 
       const projectMember = this.projectMemberRepo.create({
         member: author,
@@ -97,7 +110,7 @@ export class ProjectService {
 
 
     try {
-      await this.addMembers(project.id, dto.members)
+      await this.addMembers(project.id, dto.memberIds)
     } catch (e) {}
 
     const result = await this.findOne(project.id)
@@ -328,7 +341,7 @@ export class ProjectService {
 
     // const updated = this.projectRepo.create(dto)
 
-    const { members, authorId, categoryId, tagId, ...updated } = dto
+    const { memberIds, authorId, categoryId, tagIds, ...updated } = dto
 
     this.projectRepo.merge(project, updated)
 
@@ -755,9 +768,6 @@ export class ProjectService {
     return tag
   }
 
-  //==================================
-  //Track project view count
-  //==================================
   async trackProjectView(projectId: string, userId: string): Promise<void> {
     // Check if project exists
     const project = await this.projectRepo.findOne({
@@ -814,13 +824,6 @@ export class ProjectService {
     return !!view
   }
 
-  //========================================================
-  //PROJECT LIKE SERVICE
-  //========================================================
-
-  //==================================================
-  //Toggle like on a project (like/unlike)
-  //==================================================
   async trackProjectLike(projectId: string, userId: string): Promise<{ liked: boolean }> {
     // Check if project exists
     const project = await this.projectRepo.findOne({

@@ -67,7 +67,24 @@ export class UserService {
     const user = await this.userRepo.findOne({ where: { id }, relations: ['role'] })
     if (!user)
       throw new NotFoundException('User not found')
-    return instanceToPlain(user) // Ommit password field
+
+    const transformed = {
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      bio: user.bio,
+      year: user.year,
+      skill: user.skill,
+      avatar: user.avatarUrl,
+      department: {
+        id: user.department.id,
+        name: user.department.name,
+        code: user.department.code,
+      },
+    }
+
+    return transformed
   }
 
   // =============
@@ -117,7 +134,7 @@ export class UserService {
       .orderBy('u.createdAt', 'DESC')
       .getManyAndCount()
 
-    const transformed: any[] = users.map((u) => ({
+    const transformed: any[] = users.map(u => ({
       id: u.id,
       firstname: u.firstname,
       lastname: u.lastname,
@@ -129,6 +146,7 @@ export class UserService {
       department: {
         id: u.department.id,
         name: u.department.name,
+        code: u.department.code,
       },
     }))
 

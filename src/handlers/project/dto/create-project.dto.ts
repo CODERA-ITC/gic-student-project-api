@@ -23,10 +23,10 @@ export class CreateProjectDto {
   @IsNotEmpty()
   categoryId: number
 
-  @ApiProperty({ example: 1, required: false })
+  @ApiProperty({ example: [1], required: false, description: 'List of tag ids' })
   @IsOptional()
-  @IsNumber()
-  tagId?: number
+  @IsArray()
+  tagIds: number[]
 
   @ApiProperty({ example: '1', required: true })
   @IsNumber()
@@ -58,7 +58,7 @@ export class CreateProjectDto {
 
   @ApiProperty({ description: 'List of member ids', required: false, example: ['22222222-2222-2222-2222-222222222222'] })
   @IsArray()
-  members: string[]
+  memberIds: string[]
 
   @ApiProperty({ description: 'List of technologies used (string)', required: false, example: ['VueJs'] })
   @IsOptional()
