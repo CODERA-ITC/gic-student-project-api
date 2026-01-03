@@ -64,9 +64,10 @@ export class UserService {
   }
 
   async findUserById(id: string) {
-    const user = await this.userRepo.findOne({ where: { id }, relations: ['role'] })
+    const user = await this.userRepo.findOne({ where: { id }, relations: ['role', 'department'] })
     if (!user)
       throw new NotFoundException('User not found')
+
 
     const transformed = {
       id: user.id,

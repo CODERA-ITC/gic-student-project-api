@@ -189,6 +189,6 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   getUserById(@Param('id') id: string) {
-    return this.userService.findUserById(id);
+    return this.userService.findUserById(id)
   }
 }
