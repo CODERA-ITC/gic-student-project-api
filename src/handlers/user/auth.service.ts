@@ -22,7 +22,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
   async signup(dto: CreateUserDto) {
     const check_email = await this.userService.findUserByEmail(dto.email)
@@ -35,7 +35,6 @@ export class AuthService {
       password: hashedPassword,
     })
 
-    console.log('SIGN UP: ', user)
     return this.generateTokens(user)
   }
 
@@ -45,8 +44,6 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User with this email does not exist')
     }
-
-    console.log('LOG IN: ', user)
 
     // Then validate password
     const isMatch = await bcrypt.compare(dto.password, user.password)

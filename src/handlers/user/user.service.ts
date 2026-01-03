@@ -68,7 +68,6 @@ export class UserService {
     if (!user)
       throw new NotFoundException('User not found')
 
-
     const transformed = {
       id: user.id,
       firstname: user.firstname,
@@ -78,6 +77,11 @@ export class UserService {
       year: user.year,
       skill: user.skill,
       avatar: user.avatarUrl,
+      role: {
+        id: user.role.id,
+        name: user.role.name,
+        description: user.role.description,
+      },
       department: {
         id: user.department.id,
         name: user.department.name,
