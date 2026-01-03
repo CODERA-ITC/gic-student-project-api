@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { BadRequestException, Delete, Injectable, NotFoundException } from '@nestjs/common';
+import { DeleteObject$, DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
@@ -44,63 +44,167 @@ export class ImageService {
   }
 
   async uploadImage(file: Express.Multer.File, projectId: string) {
-    if (!file) throw new BadRequestException('File not found');
+    if (!file) {
+      throw new BadRequestException('File not found');
+    }
+
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      select: ['id']
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
 
     const fileExt = extname(file.originalname);
     const baseName = uuid();
-
     const originalKey = `project-images/original/${projectId}/${baseName}${fileExt}`;
     const thumbnailKey = `project-images/thumbnail/${projectId}/${baseName}${fileExt}`;
 
-    const originalCommand = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: originalKey,
-      Body: file.buffer,
-      ContentType: file.mimetype
-    });
-    await this.s3Client.send(originalCommand);
+    const [thumbnailBuffer] = await Promise.all([
+      sharp(file.buffer)
+        .jpeg({ quality: 70 })
+        .toBuffer(),
+    ]);
 
-    const thumbnailBuffer = await sharp(file.buffer).jpeg({ quality: 70 }).toBuffer();
+    await Promise.all([
+      this.s3Client.send(new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: originalKey,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ACL: 'private'
+      })),
+      this.s3Client.send(new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: thumbnailKey,
+        Body: thumbnailBuffer,
+        ContentType: 'image/jpeg',
+        ACL: 'private'
+      }))
+    ]);
 
-    const thumbnailCommand = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: thumbnailKey,
-      Body: thumbnailBuffer,
-      ContentType: file.mimetype
-    });
-    await this.s3Client.send(thumbnailCommand);
-
-    const project = await this.projectRepo.findOne({ where: { id: projectId } });
-    if (!project) throw new NotFoundException('Project not found');
-
-
-    const images = this.imageRepo.create({
+    const image = await this.imageRepo.save({
       originalUrl: originalKey,
       thumbnailUrl: thumbnailKey,
-      project: project
-    })
+      project: { id: projectId },
+    });
 
-    const {project: p, ...image} = await this.imageRepo.save(images);
-
-    const tranformed = {
-      ...image,
-      projectId: p.id
-    }
-
-
-    return tranformed;
+    return {
+      id: image.id,
+      originalUrl: image.originalUrl,
+      thumbnailUrl: image.thumbnailUrl,
+      projectId,
+      createdAt: image.createdAt,
+      updatedAt: image.updatedAt,
+    };
   }
 
-  async getSignedUrl(key: string): Promise<string>{
+  async deleteImage(imageId: string): Promise<void> {
+    const image = await this.imageRepo.findOne({
+      where: { id: imageId }
+    });
+
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+
+    await Promise.all([
+      this.deleteFromS3(image.originalUrl),
+      this.deleteFromS3(image.thumbnailUrl),
+    ]);
+
+    await this.imageRepo.remove(image);
+  }
+
+  // View image from our private bucket
+  async getSignedUrl(key: string): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key
     });
-    
-    return getSignedUrl(this.s3Client, command, {expiresIn: 3600});
+
+    return getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
   }
 
-  // async deleteImage(imageId: string){
-  //   const image = await this.imageRepo.find({where: {id: imageId}, relations: ['project']})
-  // }
+  // Get viewable image
+  async getImageUrl(imageId: string) {
+    const image = await this.imageRepo.findOne({
+      where: { id: imageId },
+      relations: ['project']
+    })
+
+    if (!image) {
+      throw new NotFoundException('Image Not Found')
+    }
+
+    const [originalUrl, thumbnailUrl] = await Promise.all([
+      this.getSignedUrl(image.originalUrl),
+      this.getSignedUrl(image.thumbnailUrl)
+    ]);
+
+    return {
+      id: image.id,
+      originalUrl,
+      thumbnailUrl,
+      projectId: image.project.id,
+      expiresIn: 3600
+    }
+  }
+
+  private async deleteFromS3(key: string) {
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: key
+      });
+
+      await this.s3Client.send(command)
+      console.log(`Deleted from s3: ${key}`)
+    } catch (error) {
+      console.error(`Error deleting ${key} from s3:`, error);
+      throw new BadRequestException(`Failed to delete image from storage`);
+    }
+  }
+
+  async getImagesByProject(projectId: string) {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      select: ['id']
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project Not Found');
+    }
+
+    const images = await this.imageRepo.find({
+      where: { project: { id: projectId } },
+      order: { createdAt: 'desc' }
+    });
+
+    const imagesWithUrls = await Promise.all(
+      images.map(async (image) => {
+        const [originalUrl, thumbnailUrl] = await Promise.all([
+          this.getSignedUrl(image.originalUrl),
+          this.getSignedUrl(image.thumbnailUrl),
+        ]);
+
+        return {
+          id: image.id,
+          originalUrl,
+          thumbnailUrl,
+          createdAt: image.createdAt,
+          updatedAt: image.updatedAt,
+        };
+      }),
+    );
+
+    return {
+      projectId,
+      images: imagesWithUrls,
+      total: images.length,
+      expiresIn: 3600,
+    };
+  }
 }

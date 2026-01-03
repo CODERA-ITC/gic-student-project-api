@@ -19,15 +19,21 @@ export class ImageController {
     return this.imageService.uploadImage(file, projectId);
   }
 
-  // @Delete('/:imageId')
-  // @ApiOperation({ summary: 'Delete an image' })
-  // async deleteImage(@Param('imageId') imageId: string) {
-  //   return this.imageService.deleteImage(imageId);
-  // }
+  @Delete('/:imageId')
+  @ApiOperation({ summary: 'Delete an image' })
+  async deleteImage(@Param('imageId') imageId: string) {
+    return this.imageService.deleteImage(imageId);
+  }
 
-  // @Get('/:projectId')
-  // @ApiOperation({ summary: '' })
-  // async getImages(@Param('projectId') projectId: string) {
-  //   return this.imageService.getImageByProject(projectId);
-  // }
+  @Get('/project/:projectId')
+  @ApiOperation({ summary: 'Get all images for a project' })
+  async getProjectImages(@Param('projectId') projectId: string) {
+    return this.imageService.getImagesByProject(projectId);
+  }
+
+  @Get('/:imageId')
+  @ApiOperation({ summary: 'Get image with viewable URLs' })
+  async getImage(@Param('imageId') imageId: string) {
+    return this.imageService.getImageUrl(imageId);
+  }
 }
