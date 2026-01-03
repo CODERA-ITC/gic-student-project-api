@@ -1,5 +1,5 @@
 import { BadRequestException, Delete, Injectable, NotFoundException } from '@nestjs/common';
-import { DeleteObject$, DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObject$, DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
@@ -7,7 +7,7 @@ import { extname } from 'path';
 import * as sharp from 'sharp';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Image } from './entities/image.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Project } from '../project/entities/project.entity';
 
 @Injectable()
@@ -101,6 +101,69 @@ export class ImageService {
     };
   }
 
+  async bulkUploadImage(files: Express.Multer.File[], projectId: string) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files provided');
+    }
+
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      select: ['id']
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const uploadPromises = files.map(async (file) => {
+      const fileExt = extname(file.originalname);
+      const baseName = uuid();
+      const originalKey = `project-images/original/${projectId}/${baseName}${fileExt}`;
+      const thumbnailKey = `project-images/thumbnail/${projectId}/${baseName}${fileExt}`;
+
+      const thumbnailBuffer = await sharp(file.buffer)
+        .jpeg({ quality: 70 })
+        .toBuffer();
+
+      await Promise.all([
+        this.s3Client.send(new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: originalKey,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+          ACL: 'private'
+        })),
+        this.s3Client.send(new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: thumbnailKey,
+          Body: thumbnailBuffer,
+          ContentType: 'image/jpeg',
+          ACL: 'private'
+        }))
+      ]);
+
+      return this.imageRepo.save({
+        originalUrl: originalKey,
+        thumbnailUrl: thumbnailKey,
+        project: { id: projectId },
+      });
+    });
+
+    const uploadedImages = await Promise.all(uploadPromises);
+
+    return {
+      projectId,
+      images: uploadedImages.map(image => ({
+        id: image.id,
+        originalUrl: image.originalUrl,
+        thumbnailUrl: image.thumbnailUrl,
+        createdAt: image.createdAt,
+        updatedAt: image.updatedAt,
+      })),
+      total: uploadedImages.length,
+    };
+  }
+
   async deleteImage(imageId: string): Promise<void> {
     const image = await this.imageRepo.findOne({
       where: { id: imageId }
@@ -116,6 +179,31 @@ export class ImageService {
     ]);
 
     await this.imageRepo.remove(image);
+  }
+
+  async bulkDeleteImages(imageIds: string[]): Promise<void> {
+    if (!imageIds || imageIds.length === 0) {
+      throw new BadRequestException('No image IDs provided');
+    }
+
+    const images = await this.imageRepo.find({
+      where: { id: In(imageIds) }
+    });
+
+    if (images.length === 0) {
+      throw new NotFoundException('No images found');
+    }
+
+    const keysToDelete = images.flatMap(image => [
+      { Key: image.originalUrl },
+      { Key: image.thumbnailUrl },
+    ]);
+
+    if (keysToDelete.length > 0) {
+      await this.bulkDeleteFromS3(keysToDelete);
+    }
+
+    await this.imageRepo.remove(images);
   }
 
   // View image from our private bucket
@@ -165,6 +253,35 @@ export class ImageService {
     } catch (error) {
       console.error(`Error deleting ${key} from s3:`, error);
       throw new BadRequestException(`Failed to delete image from storage`);
+    }
+  }
+
+  private async bulkDeleteFromS3(objects: { Key: string }[]): Promise<void> {
+    try {
+      const batchSize = 1000;
+
+      for (let i = 0; i < objects.length; i += batchSize) {
+        const batch = objects.slice(i, i + batchSize);
+
+        const command = new DeleteObjectsCommand({
+          Bucket: this.bucket,
+          Delete: {
+            Objects: batch,
+            Quiet: true,
+          },
+        });
+
+        const result = await this.s3Client.send(command);
+        if (result.Errors && result.Errors.length > 0) {
+          console.error('Failed to delete some object: ', result.Errors)
+          throw new BadRequestException('Some images failed to delete from storage');
+        }
+
+        console.log(`Bulk deleted ${batch.length} objects from S3`);
+      }
+    } catch (error) {
+      console.error('Error bulk deleting from S3:', error);
+      throw new BadRequestException(`Failed to delete images from storage: ${error.message}`);
     }
   }
 

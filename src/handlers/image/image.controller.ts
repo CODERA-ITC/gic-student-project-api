@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Param, Delete, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Body, UploadedFiles } from '@nestjs/common';
 import { ImageService } from './image.service';
-import { ApiOperation } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('image')
 export class ImageController {
@@ -35,5 +35,31 @@ export class ImageController {
   @ApiOperation({ summary: 'Get image with viewable URLs' })
   async getImage(@Param('imageId') imageId: string) {
     return this.imageService.getImageUrl(imageId);
+  }
+
+  @Delete('/bulk')
+  @ApiOperation({ summary: 'Delete multiple images' })
+  async bulkDeleteImages(@Body('imageIds') imageIds: string[]) {
+    if (!imageIds || imageIds.length === 0) {
+      throw new BadRequestException('No image IDs provided');
+    }
+
+    await this.imageService.bulkDeleteImages(imageIds);
+    return { message: `${imageIds.length} images deleted successfully` };
+  }
+
+  @Post('/bulk-upload/:projectId')
+  @ApiOperation({ summary: 'Upload multiple images to a project' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files', 5))
+  async bulkUploadImages(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Param('projectId') projectId: string,
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files provided');
+    }
+
+    return this.imageService.bulkUploadImage(files, projectId);
   }
 }
