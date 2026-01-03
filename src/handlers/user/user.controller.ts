@@ -27,6 +27,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserService } from './user.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('auth')
 @Controller('users')
@@ -57,6 +58,11 @@ export class UserController {
 
       throw new BadRequestException('Registration failed. Please try again.');
     }
+  }
+
+  @Get()
+  findAll(@Query() pagination: PaginationDto) {
+    return this.userService.paginate(pagination)
   }
 
   @Post('login')
@@ -156,9 +162,7 @@ export class UserController {
       .status(HttpStatus.OK)
       .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`);
   }
-  //===================================
-  //Search query user controller
-  //===================================
+
   @Get('search')
   @ApiOperation({ summary: 'Search users by name' })
   async searchUser(@Query('q') q: string) {

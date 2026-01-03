@@ -8,6 +8,7 @@ import { Role } from '../role/entities/role.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './entities/user.entity'
+import { PaginationDto } from 'src/common/dto/pagination.dto'
 
 @Injectable()
 export class UserService {
@@ -18,7 +19,7 @@ export class UserService {
     private roleRepo: Repository<Role>,
     @InjectRepository(Department)
     private departmentRepo: Repository<Department>,
-  ) { }
+  ) {}
 
   // =============
   // Create
@@ -93,5 +94,50 @@ export class UserService {
       .orderBy('user.firstname', 'ASC')
       .limit(10)
       .getMany()
+  }
+
+  async paginate(params: PaginationDto) {
+    const page = params.page ?? 1
+    const limit = params.limit ?? 10
+    const skip = (page - 1) * limit
+
+    const qb = this.userRepo
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.department', 'department')
+
+    // Optional search (e.g., search by project name)
+    if (params.search) {
+      qb.andWhere('u.firstname ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
+        .orWhere('u.lastname ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
+    }
+
+    const [users, total] = await qb
+      .skip(skip)
+      .take(limit)
+      .orderBy('u.createdAt', 'DESC')
+      .getManyAndCount()
+
+    const transformed: any[] = users.map((u) => ({
+      id: u.id,
+      firstname: u.firstname,
+      lastname: u.lastname,
+      email: u.email,
+      bio: u.bio,
+      year: u.year,
+      skill: u.skill,
+      avatar: u.avatarUrl,
+      department: {
+        id: u.department.id,
+        name: u.department.name,
+      },
+    }))
+
+    return {
+      data: transformed,
+      page,
+      limit,
+      total,
+      lastPage: Math.ceil(total / limit),
+    }
   }
 }
