@@ -306,6 +306,7 @@ export class ProjectService {
       technologies: project.technologies,
       visibility: project.visibility,
       repoUrl: project.repoUrl,
+      demoUrl: project.demoUrl,
       viewCount: project.viewCount,
       likeCount: project.likeCount,
       images: project.images.map(img => ({
@@ -413,6 +414,7 @@ export class ProjectService {
         category: project.category,
         visibility: project.visibility,
         repoUrl: project.repoUrl,
+        demoUrl: project.demoUrl,
         isFeatured: project.isFeatured,
         technologies: project.technologies,
         viewCount: project.viewCount,

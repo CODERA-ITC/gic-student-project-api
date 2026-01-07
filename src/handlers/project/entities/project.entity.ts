@@ -88,4 +88,7 @@ export class Project extends BaseEntity {
 
   @Column({ nullable: true })
   repoUrl: string
+
+  @Column({ nullable: true })
+  demoUrl: string
 }

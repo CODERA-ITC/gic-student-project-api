@@ -69,4 +69,14 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   academicYear: string
+
+  @ApiProperty({ example: 'https://github.com/CODERA-ITC/gic-student-project-web', required: false })
+  @IsOptional()
+  @IsString()
+  repoUrl: string
+
+  @ApiProperty({ example: 'https://github.com/darororo/Ecommerce/deployments/github-pages', required: false })
+  @IsOptional()
+  @IsString()
+  demoUrl: string
 }
