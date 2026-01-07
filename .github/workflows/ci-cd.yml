@@ -49,6 +49,19 @@ jobs:
         if: always()
         run: echo "STATUS=${{ job.status }}" >> $GITHUB_ENV
 
+        - name: Count total commits across all branches
+        id: commit_count_all
+        run: |
+          COUNT=$(git rev-list --count --all)
+          echo "commit_count=$COUNT" >> $GITHUB_OUTPUT
+
+      - name: Count commits on the current branch (HEAD)
+        id: commit_count_head
+        run: |
+          COUNT=$(git rev-list --count HEAD)
+          echo "commit_count=$COUNT" >> $GITHUB_OUTPUT
+
+
       - name: Notify Telegram
         if: always()
         run: |
@@ -67,5 +80,6 @@ jobs:
             -d "text=📌 $ICON $TEXT; Status: $STATUS\`
           *Repo:* \`${{ github.repository }}\`
           *Actor:* \`${{ github.actor }}\`
-          *Message:* \`${{ github.event.head_commit.message }}" \
+          *Message:* \`${{ github.event.head_commit.message }}
+          New Commits: ${steps.commit_count_head.outputs.commit_count_head}" \
           > /dev/null 2>&1
