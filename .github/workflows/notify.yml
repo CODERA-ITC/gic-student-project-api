@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Count new commits in this push
+        run: |
+          # Counts commits between the previous state (before) and current (after)
+          echo "NEW_COMMITS=$(git rev-list --count ${{ github.event.before }}..${{ github.event.after }})" \
+            >> $GITHUB_ENV
+
       - name: Send Telegram message on push 
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
@@ -22,4 +28,4 @@ jobs:
           *Author:* \`${{ github.event.head_commit.author.name }}\`
           *Message:* \`${{ github.event.head_commit.message }}\`
           *View:* https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-          *New Commits*: ${steps.commit_count_head.outputs.commit_count_head}"
+          *New Commits*: $NEW_COMMITS"
