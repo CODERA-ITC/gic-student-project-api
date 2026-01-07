@@ -10,7 +10,9 @@ import {
   Post,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { CurrentUser } from '../user/auth/current-user.decorator'
@@ -23,6 +25,8 @@ import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
+import { ApiConsumes, ApiOperation } from '@nestjs/swagger'
+import { FilesInterceptor } from '@nestjs/platform-express'
 
 @Controller('projects')
 export class ProjectController {
@@ -31,8 +35,14 @@ export class ProjectController {
   ) {}
 
   @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectService.create(createProjectDto)
+  @ApiOperation({ summary: 'Upload multiple images to a project' })
+  @ApiConsumes('application/json', 'multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files', 5))
+  create(
+    @Body() createProjectDto: CreateProjectDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.projectService.create(createProjectDto, files)
   }
 
   @Post('submit/:id')

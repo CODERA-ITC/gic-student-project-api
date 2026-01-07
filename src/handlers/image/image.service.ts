@@ -101,7 +101,7 @@ export class ImageService {
     };
   }
 
-  async bulkUploadImage(files: Express.Multer.File[], projectId: string) {
+  async bulkUploadImages(files: Express.Multer.File[], projectId: string) {
     if (!files || files.length === 0) {
       throw new BadRequestException('No files provided');
     }

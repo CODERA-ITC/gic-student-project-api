@@ -2,7 +2,7 @@ import type { EntityManager, Repository } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
@@ -18,6 +18,7 @@ import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
 import { ProjectView } from './entities/project-view.entity'
 import { ProjectLike } from './entities/project-like.entity'
+import { ImageService } from '../image/image.service'
 
 @Injectable()
 export class ProjectService {
@@ -39,9 +40,10 @@ export class ProjectService {
     @InjectEntityManager()
     private entityManager: EntityManager, // for db transaction
     private notificationService: NotificationService,
+    private imageService: ImageService,
   ) {}
 
-  async create(dto: CreateProjectDto): Promise<any> {
+  async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
     // tem shorts for TransactionEntityManager
     const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
@@ -111,7 +113,19 @@ export class ProjectService {
 
     try {
       await this.addMembers(project.id, dto.memberIds)
-    } catch (e) {}
+    } catch (e) {
+      console.error(e)
+    }
+
+
+    if (images && images.length > 0) {
+      try {
+        await this.imageService.bulkUploadImages(images, project.id)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
 
     const result = await this.findOne(project.id)
 

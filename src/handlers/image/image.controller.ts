@@ -5,7 +5,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('image')
 export class ImageController {
-  constructor(private readonly imageService: ImageService) { }
+  constructor(private readonly imageService: ImageService) {}
   @Post('/upload/:projectId')
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Post project image' })
@@ -60,6 +60,6 @@ export class ImageController {
       throw new BadRequestException('No files provided');
     }
 
-    return this.imageService.bulkUploadImage(files, projectId);
+    return this.imageService.bulkUploadImages(files, projectId);
   }
 }

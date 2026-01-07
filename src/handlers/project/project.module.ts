@@ -17,6 +17,7 @@ import { TagService } from './tag.service'
 import { Image } from '../image/entities/image.entity'
 import { ProjectView } from './entities/project-view.entity'
 import { ProjectLike } from './entities/project-like.entity'
+import { ImageModule } from '../image/image.module'
 
 @Module({
   controllers: [ProjectController, CategoryController, TagController],
@@ -32,7 +33,7 @@ import { ProjectLike } from './entities/project-like.entity'
     User,
     ProjectView,
     ProjectLike,
-  ]), NotificationModule],
+  ]), NotificationModule, ImageModule],
 
 })
-export class ProjectModule { }
+export class ProjectModule {}
