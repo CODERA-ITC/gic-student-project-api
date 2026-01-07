@@ -193,8 +193,8 @@ export class ProjectService {
             member: {
               id: true,
               email: true,
-              firstname: true,
-              lastname: true,
+              firstName: true,
+              lastName: true,
             },
           },
         },
@@ -207,8 +207,8 @@ export class ProjectService {
           authorInfo = {
             id: pmA.member.id,
             email: pmA.member.email,
-            firstname: pmA.member.firstname,
-            lastname: pmA.member.lastname,
+            firstName: pmA.member.firstName,
+            lastName: pmA.member.lastName,
             role: pmA.role,
           }
         }
@@ -225,8 +225,8 @@ export class ProjectService {
           members: project.members.filter(m => m.role === 'member').map(pm => ({
             id: pm.member.id,
             email: pm.member.email,
-            firstname: pm.member.firstname,
-            lastname: pm.member.lastname,
+            firstName: pm.member.firstName,
+            lastName: pm.member.lastName,
             role: pm.role,
           })),
           features: project.features.map(feature => ({
@@ -281,8 +281,8 @@ export class ProjectService {
           member: {
             id: true,
             email: true,
-            firstname: true,
-            lastname: true,
+            firstName: true,
+            lastName: true,
           },
         },
         tags: {
@@ -315,8 +315,8 @@ export class ProjectService {
       members: project.members.map(pm => ({
         id: pm.member.id,
         email: pm.member.email,
-        firstname: pm.member.firstname,
-        lastname: pm.member.lastname,
+        firstName: pm.member.firstName,
+        lastName: pm.member.lastName,
         role: pm.role,
         avatarUrl: pm.member.avatarUrl,
       })),
@@ -325,6 +325,8 @@ export class ProjectService {
         name: f.name,
         description: f.description,
         status: f.status,
+        icon: f.icon,
+        date: f.doneAt,
       })),
       tags: project.tags.map(tag => ({
         id: tag.id,
@@ -399,8 +401,8 @@ export class ProjectService {
         authorInfo = {
           id: pmA.member.id,
           email: pmA.member.email,
-          firstname: pmA.member.firstname,
-          lastname: pmA.member.lastname,
+          firstName: pmA.member.firstName,
+          lastName: pmA.member.lastName,
           role: pmA.role,
         }
       }
@@ -423,8 +425,8 @@ export class ProjectService {
         members: project.members.filter(m => m.role === 'member').map(pm => ({
           id: pm.member.id,
           email: pm.member.email,
-          firstname: pm.member.firstname,
-          lastname: pm.member.lastname,
+          firstName: pm.member.firstName,
+          lastName: pm.member.lastName,
           role: pm.role,
         })),
         features: project.features.map(feature => ({
@@ -432,6 +434,8 @@ export class ProjectService {
           name: feature.name,
           description: feature.description,
           status: feature.status,
+          icon: feature.icon,
+          date: feature.doneAt,
         })),
         tags: project.tags.map(tag => ({
           id: tag.id,

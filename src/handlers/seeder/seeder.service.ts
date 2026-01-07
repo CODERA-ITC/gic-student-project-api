@@ -53,8 +53,8 @@ export class SeederService {
 
     const users = [
       {
-        firstname: 'Sarah',
-        lastname: 'Chen',
+        firstName: 'Sarah',
+        lastName: 'Chen',
         skill: ['Frontend Developer'],
         avatarUrl: 'https://randomuser.me/api/portraits/women/1.jpg',
         password: hashedPassword,
@@ -65,8 +65,8 @@ export class SeederService {
         year: 4,
       },
       {
-        firstname: 'Alex',
-        lastname: 'Kumar',
+        firstName: 'Alex',
+        lastName: 'Kumar',
         name: 'Alex Kumar',
         avatarUrl: 'https://randomuser.me/api/portraits/men/2.jpg',
         password: hashedPassword,
@@ -77,8 +77,8 @@ export class SeederService {
         year: 5,
       },
       {
-        firstname: 'Maya',
-        lastname: 'Rodriguez',
+        firstName: 'Maya',
+        lastName: 'Rodriguez',
         avatarUrl: 'https://randomuser.me/api/portraits/women/3.jpg',
         password: hashedPassword,
         department: department!,
@@ -88,8 +88,8 @@ export class SeederService {
         year: 4,
       },
       {
-        firstname: 'David',
-        lastname: 'Park',
+        firstName: 'David',
+        lastName: 'Park',
         skill: ['DevOps Engineer', 'Terrorist'],
         avatarUrl: 'https://randomuser.me/api/portraits/men/4.jpg',
         password: hashedPassword,
@@ -100,8 +100,8 @@ export class SeederService {
         year: 4,
       },
       {
-        firstname: 'Emma',
-        lastname: 'Thompson',
+        firstName: 'Emma',
+        lastName: 'Thompson',
         skill: ['Product Manager'],
         avatarUrl: 'https://randomuser.me/api/portraits/women/5.jpg',
         password: hashedPassword,
@@ -112,8 +112,8 @@ export class SeederService {
         year: 3,
       },
       {
-        firstname: 'James',
-        lastname: 'Wilson',
+        firstName: 'James',
+        lastName: 'Wilson',
         skill: ['Full Stack Developer'],
         avatarUrl: 'https://randomuser.me/api/portraits/men/6.jpg',
         password: hashedPassword,
@@ -129,8 +129,8 @@ export class SeederService {
       [
         {
           id: '11111111-1111-1111-1111-111111111111',
-          firstname: 'Test',
-          lastname: 'User',
+          firstName: 'Test',
+          lastName: 'User',
           email: 'testuser@gmail.com',
           phone: '0123456789',
           password: hashedPassword,
@@ -140,8 +140,8 @@ export class SeederService {
         },
         {
           id: '22222222-2222-2222-2222-222222222222',
-          firstname: 'Test',
-          lastname: 'User',
+          firstName: 'Test',
+          lastName: 'User',
           email: 'testuser2@gmail.com',
           phone: '0123456789',
           password: hashedPassword,
@@ -151,8 +151,8 @@ export class SeederService {
         },
         {
           id: '33333333-3333-3333-3333-333333333333',
-          firstname: 'John',
-          lastname: 'Yakult',
+          firstName: 'John',
+          lastName: 'Yakult',
           email: 'admin123@gmail.com',
           phone: '0123456789',
           password: hashedPassword,
@@ -161,8 +161,8 @@ export class SeederService {
         },
         {
           id: '44444444-4444-4444-4444-444444444444',
-          firstname: 'Cool',
-          lastname: 'Teacher',
+          firstName: 'Cool',
+          lastName: 'Teacher',
           email: 'teacher123@gmail.com',
           phone: '0123456789',
           password: hashedPassword,

@@ -65,8 +65,8 @@ export class AuthService {
     if (!user) {
       user = await this.userService.createUser({
         email: googleUser.email,
-        firstname: googleUser.firstname,
-        lastname: googleUser.lastname,
+        firstName: googleUser.firstName,
+        lastName: googleUser.lastName,
         password: hashedPassword,
         departmentCode: 'GIC', // Need to handle this better
         role: { name: 'STUDENT' },
@@ -86,8 +86,8 @@ export class AuthService {
     if (!user) {
       user = await this.userService.createUser({
         email: githubUser.email,
-        firstname: githubUser.firstname,
-        lastname: githubUser.lastname,
+        firstName: githubUser.firstName,
+        lastName: githubUser.lastName,
         password: hashedPassword,
         departmentCode: 'GIC', // Need to handle this better
         role: { name: 'STUDENT' },
@@ -107,8 +107,8 @@ export class AuthService {
     const payload = {
       id: user.id,
       email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: user.role.name,
     }
 

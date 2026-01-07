@@ -3,8 +3,8 @@ import { Category } from '../entities/category.entity'
 export class UserResponseDto {
     id: string
     email: string
-    firstname: string
-    lastname: string
+    firstName: string
+    lastName: string
     role: string
 }
 

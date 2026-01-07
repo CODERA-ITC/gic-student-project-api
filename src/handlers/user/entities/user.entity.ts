@@ -21,10 +21,10 @@ import {
 @Entity('users')
 export class User extends BaseEntity {
   @Column()
-  firstname: string
+  firstName: string
 
   @Column({ nullable: true })
-  lastname: string
+  lastName: string
 
   @Column({ nullable: true })
   avatarUrl: string

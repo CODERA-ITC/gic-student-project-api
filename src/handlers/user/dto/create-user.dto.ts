@@ -4,17 +4,17 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLengt
 
 export class CreateUserDto {
   @ApiProperty({ example: 'John' })
-  @IsNotEmpty({ message: 'Please enter your firstname' })
+  @IsNotEmpty({ message: 'Please enter your firstName' })
   @MinLength(2)
   @MaxLength(100)
   @Transform(({ value }) => value?.trim())
-  firstname: string
+  firstName: string
 
   @ApiProperty({ example: 'Doe' })
   @IsOptional()
   @MaxLength(100)
   @Transform(({ value }) => value?.trim())
-  lastname: string
+  lastName: string
 
   @ApiProperty({ example: 'john@example.com' })
   @IsEmail({}, { message: 'Please input a valid email address' })

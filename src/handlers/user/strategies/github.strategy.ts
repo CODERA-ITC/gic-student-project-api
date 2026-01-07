@@ -23,8 +23,8 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
         const { emails } = profile;
         const user = {
             email: emails[0].value,
-            firstname: profile.username,
-            lastname: profile.username
+            firstName: profile.username,
+            lastName: profile.username
         };
         console.log(user)
         done(null, user);

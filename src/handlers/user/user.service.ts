@@ -70,8 +70,8 @@ export class UserService {
 
     const transformed = {
       id: user.id,
-      firstname: user.firstname,
-      lastname: user.lastname,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       bio: user.bio,
       year: user.year,
@@ -110,10 +110,10 @@ export class UserService {
     if (!q || q.trim() === '')
       return []
     return this.userRepo.createQueryBuilder('user')
-      .select(['user.id', 'user.firstname', 'user.lastname', 'user.email'])
-      .where('user.firstname ILIKE :prefix', { prefix: `${q}%` })
-      .orWhere('user.lastname ILIKE :prefix', { prefix: `${q}%` })
-      .orderBy('user.firstname', 'ASC')
+      .select(['user.id', 'user.firstName', 'user.lastName', 'user.email'])
+      .where('user.firstName ILIKE :prefix', { prefix: `${q}%` })
+      .orWhere('user.lastName ILIKE :prefix', { prefix: `${q}%` })
+      .orderBy('user.firstName', 'ASC')
       .limit(10)
       .getMany()
   }
@@ -129,8 +129,8 @@ export class UserService {
 
     // Optional search (e.g., search by project name)
     if (params.search) {
-      qb.andWhere('u.firstname ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
-        .orWhere('u.lastname ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
+      qb.andWhere('u.firstName ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
+        .orWhere('u.lastName ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
     }
 
     const [users, total] = await qb
@@ -141,8 +141,8 @@ export class UserService {
 
     const transformed: any[] = users.map(u => ({
       id: u.id,
-      firstname: u.firstname,
-      lastname: u.lastname,
+      firstName: u.firstName,
+      lastName: u.lastName,
       email: u.email,
       bio: u.bio,
       year: u.year,
