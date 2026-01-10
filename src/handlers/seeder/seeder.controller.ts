@@ -26,7 +26,7 @@ export class SeederController {
   }
 
   @Post('/seed-role')
-  seedRole(){
+  seedRole() {
     return this.seedRole()
   }
 }

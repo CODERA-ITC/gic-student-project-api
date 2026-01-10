@@ -1,24 +1,23 @@
-import { Like, type EntityManager, type Repository, ILike } from 'typeorm'
+import type { EntityManager, Repository } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Department } from '../department/entitites/department.entity'
+import { ImageService } from '../image/image.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
-import { CreateTagDto } from './dto/create-tag.dto'
 import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
+import { ProjectLike } from './entities/project-like.entity'
+import { ProjectView } from './entities/project-view.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
-import { ProjectView } from './entities/project-view.entity'
-import { ProjectLike } from './entities/project-like.entity'
-import { ImageService } from '../image/image.service'
 
 @Injectable()
 export class ProjectService {
@@ -110,25 +109,23 @@ export class ProjectService {
       return await tem.save(project)
     })
 
-
     try {
       await this.addMembers(project.id, dto.memberIds)
-    } catch (e) {
+    }
+    catch (e) {
       console.error(e)
     }
-
 
     if (images && images.length > 0) {
       try {
         await this.imageService.bulkUploadImages(images, project.id)
-      } catch (e) {
+      }
+      catch (e) {
         console.error(e)
       }
     }
 
-
     const result = await this.findOne(project.id)
-
 
     return result
   }
@@ -189,7 +186,7 @@ export class ProjectService {
           category: true,
           images: {
             id: true,
-            thumbnailUrl: true, //Change from url to thumbnail_url for findAll
+            thumbnailUrl: true, // Change from url to thumbnail_url for findAll
           },
           features: {
             id: true,
@@ -217,7 +214,7 @@ export class ProjectService {
 
       const transformed: any[] = projects.map((project) => {
         const pmA = project.members.find(m => m.role === 'author')
-        let authorInfo = {};
+        let authorInfo = {}
         if (pmA) {
           authorInfo = {
             id: pmA.member.id,
@@ -292,7 +289,7 @@ export class ProjectService {
         isFeatured: true,
         images: {
           id: true,
-          originalUrl: true, //Change from url to original_url
+          originalUrl: true, // Change from url to original_url
         },
         members: {
           id: true,
@@ -577,7 +574,7 @@ export class ProjectService {
     return await this.entityManager.save(feature)
   }
 
-  async updateFeature(featureId: number, dto: UpdateFeatureDto) {
+  async updateFeature(featureId: string, dto: UpdateFeatureDto) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
       throw new NotFoundException('Feature not found')
@@ -591,7 +588,7 @@ export class ProjectService {
     return await this.featureRepo.save(updated)
   }
 
-  async updateFeatureStatus(featureId: number, dto: UpdateFeatureStatusDto) {
+  async updateFeatureStatus(featureId: string, dto: UpdateFeatureStatusDto) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
       throw new NotFoundException('Feature not found')
@@ -616,7 +613,7 @@ export class ProjectService {
     return await this.featureRepo.save(feature)
   }
 
-  async deleteFeature(featureId: number) {
+  async deleteFeature(featureId: string) {
     const feature = await this.featureRepo.findOne({ where: { id: featureId } })
     if (!feature) {
       throw new NotFoundException('Feature not found')
@@ -632,7 +629,7 @@ export class ProjectService {
     })
   }
 
-  async findOneFeature(featureId: number): Promise<Feature> {
+  async findOneFeature(featureId: string): Promise<Feature> {
     const feature = await this.entityManager.getRepository(Feature).findOne({
       where: { id: featureId },
       relations: ['project'],
@@ -755,55 +752,6 @@ export class ProjectService {
     }
   }
 
-  // ================================
-  //      Project Tag Service
-  // ================================
-
-  async createTag(projectId: string, dto: CreateTagDto): Promise<Tag> {
-    const project = await this.projectRepo.findOneBy({ id: projectId })
-    if (!project) {
-      throw new NotFoundException('Project Not found')
-    }
-
-    let tag = await this.tagRepo.findOne({
-      where: { name: dto.name },
-      relations: ['projects'],
-    })
-
-    if (tag) {
-      if (!tag.projects.some(p => p.id === projectId)) {
-        tag.projects.push(project)
-        return await this.tagRepo.save(tag)
-      }
-      return tag
-    }
-
-    tag = this.tagRepo.create({
-      name: dto.name,
-      projects: [project],
-    })
-    return await this.tagRepo.save(tag)
-  }
-
-  async deleteTag(tagId: number) {
-    const tag = await this.tagRepo.findOne({ where: { id: tagId } })
-    if (!tag) {
-      throw new NotFoundException('Tag not found')
-    }
-    return await this.tagRepo.remove(tag)
-  }
-
-  async findOneTag(id: number): Promise<Tag> {
-    const tag = await this.entityManager.getRepository(Tag).findOne({
-      where: { id },
-      relations: ['project'],
-    })
-    if (!tag) {
-      throw new NotFoundException('Tag not found')
-    }
-    return tag
-  }
-
   async trackProjectView(projectId: string, userId: string): Promise<void> {
     // Check if project exists
     const project = await this.projectRepo.findOne({
@@ -873,7 +821,7 @@ export class ProjectService {
     const existingLike = await this.projectLikeRepo.findOne({
       where: {
         user: { id: userId },
-        project: { id: projectId }
+        project: { id: projectId },
       },
     })
 
@@ -889,7 +837,8 @@ export class ProjectService {
       )
 
       return { liked: false }
-    } else {
+    }
+    else {
       // Like: Create new like record
       const user = await this.userRepo.findOne({ where: { id: userId } })
       if (!user) {
@@ -913,9 +862,9 @@ export class ProjectService {
     }
   }
 
-  //===============================
-  //Get total likes for a project
-  //===============================
+  // ===============================
+  // Get total likes for a project
+  // ===============================
   async getProjectLikeCount(projectId: string): Promise<number> {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -927,15 +876,14 @@ export class ProjectService {
     return project.likeCount
   }
 
-
-  //====================================
-  //Check if a user has liked a project
-  //====================================
+  // ====================================
+  // Check if a user has liked a project
+  // ====================================
   async hasUserLikedProject(projectId: string, userId: string): Promise<boolean> {
     const like = await this.projectLikeRepo.findOne({
       where: {
         user: { id: userId },
-        project: { id: projectId }
+        project: { id: projectId },
       },
     })
     return !!like

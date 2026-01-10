@@ -15,5 +15,5 @@ export class ProjectPaginateDto extends PaginationDto {
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
-    categoryId: number | null
+    categoryId: string
 }

@@ -25,6 +25,7 @@ export class SeederService {
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
+    gic.id = '11111111-1111-1111-1111-111111111111'
     gic.name = 'Department of Information and Communication Engineering'
     gic.code = 'GIC'
     const result = await this.departmentRepo.upsert(gic, { conflictPaths: ['code'] })
@@ -33,9 +34,10 @@ export class SeederService {
 
   async seedCategories() {
     const result = await this.categoryRepo.upsert([
-      { name: 'Web Development' },
-      { name: 'AI' },
-      { name: 'Mobile Development' },
+      { id: '11111111-1111-1111-1111-111111111111', name: 'Web Development' },
+      { id: '22222222-2222-2222-2222-222222222222', name: 'AI' },
+      { id: '33333333-3333-3333-3333-333333333333', name: 'Mobile Development' },
+      { id: '44444444-4444-4444-4444-444444444444', name: 'Game Development' },
     ], {
       conflictPaths: ['name'],
     })
@@ -44,7 +46,7 @@ export class SeederService {
   }
 
   async seedUser() {
-    const department = await this.departmentRepo.findOneBy({ id: 1 })
+    const department = await this.departmentRepo.findOneBy({ id: '11111111-1111-1111-1111-111111111111' })
     const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
     const studentRole = await this.roleRepo.findOne({ where: { name: 'STUDENT' } })
     const adminRole = await this.roleRepo.findOne({ where: { name: 'ADMIN' } })

@@ -82,28 +82,18 @@ export class ProjectController {
   }
 
   @Patch(':id/features/:featureId')
-  updateFeature(@Param('projectId') projectId: string, @Param('featureId') featureId: number, @Body() dto: UpdateFeatureDto) {
+  updateFeature(@Param('projectId') projectId: string, @Param('featureId') featureId: string, @Body() dto: UpdateFeatureDto) {
     return this.projectService.updateFeature(featureId, dto)
   }
 
   @Patch(':id/features/:featureId/status')
-  updateFeatureStatus(@Param('projectId') projectId: string, @Param('featureId') featureId: number, @Body() dto: UpdateFeatureStatusDto) {
+  updateFeatureStatus(@Param('projectId') projectId: string, @Param('featureId') featureId: string, @Body() dto: UpdateFeatureStatusDto) {
     return this.projectService.updateFeatureStatus(featureId, dto)
   }
 
   @Delete(':id/features/:featureId')
-  deleteFeature(@Param('id') projectId: string, @Param('featureId') featureId: number) {
+  deleteFeature(@Param('id') projectId: string, @Param('featureId') featureId: string) {
     return this.projectService.deleteFeature(featureId)
-  }
-
-  @Post(':id/tag')
-  createTag(@Param('id') projectId: string, @Body() dto: CreateTagDto) {
-    return this.projectService.createTag(projectId, dto)
-  }
-
-  @Delete(':id/tag/:tagId')
-  deleteTag(@Param('id') projectId: string, @Param('tagId') tagId: number) {
-    return this.projectService.deleteTag(tagId)
   }
 
   //

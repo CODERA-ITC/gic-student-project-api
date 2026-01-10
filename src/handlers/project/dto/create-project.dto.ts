@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform, Type } from 'class-transformer'
-import { IsArray, IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator'
+import { IsArray, IsISO8601, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
 import { CreateFeatureDto } from './create-feature.dto'
 
 export class CreateProjectDto {
@@ -18,24 +18,32 @@ export class CreateProjectDto {
   @MaxLength(300)
   description: string
 
-  @ApiProperty({ example: 1, required: true })
-  @Type(() => Number)
-  @IsNumber()
+  @ApiProperty({ example: '11111111-1111-1111-1111-111111111111', required: true })
+  @Type(() => String)
+  @IsString()
   @IsNotEmpty()
-  categoryId: number
+  categoryId: string
 
   @ApiProperty({ example: ['React', 'JavaScript'], required: false, description: 'List of tag names. Maximum is 5.' })
+  @Transform(({ value }) => {
+    try {
+      const json = JSON.parse(value)
+      return json
+    }
+    catch (e) {
+      return value
+    }
+  })
   @IsOptional()
-  @Transform(({ value }) => JSON.parse(value))
   @IsArray()
   @IsString({ each: true })
   tags: string[]
 
-  @ApiProperty({ example: '1', required: true })
-  @Type(() => Number)
-  @IsNumber()
+  @ApiProperty({ example: '11111111-1111-1111-1111-111111111111', required: true })
+  @Type(() => String)
+  @IsString()
   @IsNotEmpty()
-  departmentId: number
+  departmentId: string
 
   @ApiProperty({ description: 'Author id', example: '11111111-1111-1111-1111-111111111111', required: true })
   @Type(() => String)
@@ -58,8 +66,16 @@ export class CreateProjectDto {
       description: 'bogo sort',
     }],
   })
+  @Transform(({ value }) => {
+    try {
+      const json = JSON.parse(value)
+      return json
+    }
+    catch (e) {
+      return value
+    }
+  })
   @IsOptional()
-  @Transform(({ value }) => JSON.parse(value))
   @IsArray()
   features: CreateFeatureDto[]
 
@@ -68,7 +84,15 @@ export class CreateProjectDto {
   memberIds: string[]
 
   @ApiProperty({ description: 'List of technologies used (string)', required: false, example: ['VueJs'] })
-  @Transform(({ value }) => JSON.parse(value))
+  @Transform(({ value }) => {
+    try {
+      const json = JSON.parse(value)
+      return json
+    }
+    catch (e) {
+      return value
+    }
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

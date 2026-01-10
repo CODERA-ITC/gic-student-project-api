@@ -1,28 +1,17 @@
+import { BaseEntity } from 'src/database/base.entity'
 import { User } from 'src/handlers/user/entities/user.entity'
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, Entity, ManyToOne } from 'typeorm'
 import { Project } from './project.entity'
 
 @Entity('project_has_members')
-export class ProjectMember {
-    @PrimaryGeneratedColumn()
-    id: number
+export class ProjectMember extends BaseEntity {
+  @ManyToOne(() => Project, project => project.members)
+  project: Project
 
-    @ManyToOne(() => Project, project => project.members)
-    project: Project
+  @ManyToOne(() => User, user => user.projects)
+  member: User
 
-    @ManyToOne(() => User, user => user.projects)
-    member: User
-
-    // author, member
-    @Column({ default: 'member' })
-    role: string
-
-    @CreateDateColumn()
-    createdAt: Date
-
-    @UpdateDateColumn()
-    updatedAt: Date
-
-    @DeleteDateColumn()
-    deletedAt: Date
+  // author, member
+  @Column({ default: 'member' })
+  role: string
 }
