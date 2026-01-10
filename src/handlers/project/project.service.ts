@@ -64,18 +64,7 @@ export class ProjectService {
         throw new HttpException('Department not found', HttpStatus.NOT_FOUND)
       }
 
-
       let tags: Tag[] = []
-      // if (dto.tagIds) {
-      //   const tagIds = dto.tagIds.slice(0, 5) // get first 5 ids
-      //   const tagPromises: Promise<Tag | null>[] = []
-      //   for (const id of tagIds) {
-      //     tagPromises.push(this.tagRepo.findOneBy({ id }))
-      //   }
-
-      //   tags = (await Promise.all(tagPromises)).filter(p => p !== null)
-      // }
-
       if (dto.tags) {
         const tagNames = dto.tags.slice(0, 5)
         const tagPromises: Promise<Tag | null>[] = []
@@ -196,6 +185,7 @@ export class ProjectService {
         select: {
           id: true,
           name: true,
+          description: true,
           category: true,
           images: {
             id: true,
@@ -241,6 +231,7 @@ export class ProjectService {
         return {
           id: project.id,
           name: project.name,
+          description: project.description,
           category: project.category,
           images: project.images.map(img => ({
             id: img.id,
@@ -292,6 +283,9 @@ export class ProjectService {
         id: true,
         name: true,
         category: true,
+        repoUrl: true,
+        demoUrl: true,
+        description: true,
         viewCount: true,
         technologies: true,
         academicYear: true,
@@ -324,6 +318,7 @@ export class ProjectService {
     const transformed = {
       id: project.id,
       name: project.name,
+      decription: project.description,
       category: project.category,
       startDate: project.startDate,
       isFeatured: project.isFeatured,
@@ -436,6 +431,7 @@ export class ProjectService {
       return {
         id: project.id,
         name: project.name,
+        description: project.description,
         category: project.category,
         visibility: project.visibility,
         repoUrl: project.repoUrl,
