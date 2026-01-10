@@ -59,8 +59,8 @@ export class ImageService {
 
     const fileExt = extname(file.originalname);
     const baseName = uuid();
-    const originalKey = `project-images/original/${projectId}/${baseName}${fileExt}`;
-    const thumbnailKey = `project-images/thumbnail/${projectId}/${baseName}${fileExt}`;
+    const originalKey = `project-images/${projectId}/original/${baseName}${fileExt}`;
+    const thumbnailKey = `project-images/${projectId}/thumbnail/${baseName}${fileExt}`;
 
     const [thumbnailBuffer] = await Promise.all([
       sharp(file.buffer)
@@ -118,9 +118,9 @@ export class ImageService {
     const uploadPromises = files.map(async (file) => {
       const fileExt = extname(file.originalname);
       const baseName = uuid();
-      const originalKey = `project-images/original/${projectId}/${baseName}${fileExt}`;
-      const thumbnailKey = `project-images/thumbnail/${projectId}/${baseName}${fileExt}`;
-
+      const originalKey = `project-images/${projectId}/original/${baseName}${fileExt}`;
+      const thumbnailKey = `project-images/${projectId}/thumbnail/${baseName}${fileExt}`;
+      
       const thumbnailBuffer = await sharp(file.buffer)
         .jpeg({ quality: 70 })
         .toBuffer();
