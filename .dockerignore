@@ -3,6 +3,10 @@ dist/
 .git/
 logs/
 .env
+.env*
 .github/
 .sublime/
 .vscode/
+
+.gitignore
+.dockerignore
