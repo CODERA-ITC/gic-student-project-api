@@ -1,4 +1,4 @@
-import type { EntityManager, Repository } from 'typeorm'
+import { Like, type EntityManager, type Repository, ILike } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
@@ -66,14 +66,25 @@ export class ProjectService {
 
 
       let tags: Tag[] = []
-      if (dto.tagIds) {
-        const tagIds = dto.tagIds.slice(0, 5) // get first 5 ids
+      // if (dto.tagIds) {
+      //   const tagIds = dto.tagIds.slice(0, 5) // get first 5 ids
+      //   const tagPromises: Promise<Tag | null>[] = []
+      //   for (const id of tagIds) {
+      //     tagPromises.push(this.tagRepo.findOneBy({ id }))
+      //   }
+
+      //   tags = (await Promise.all(tagPromises)).filter(p => p !== null)
+      // }
+
+      if (dto.tags) {
+        const tagNames = dto.tags.slice(0, 5)
         const tagPromises: Promise<Tag | null>[] = []
-        for (const id of tagIds) {
-          tagPromises.push(this.tagRepo.findOneBy({ id }))
+
+        for (const name of tagNames) {
+          tagPromises.push(this.tagRepo.findOneBy({ name }))
         }
 
-        tags = (await Promise.all(tagPromises)).filter(p => p !== null)
+        tags = (await Promise.all(tagPromises)).filter(p => p != null)
       }
 
       const features = this.featureRepo.create(dto.features)
@@ -361,7 +372,7 @@ export class ProjectService {
 
     // const updated = this.projectRepo.create(dto)
 
-    const { memberIds, authorId, categoryId, tagIds, ...updated } = dto
+    const { memberIds, authorId, categoryId, tags, ...updated } = dto
 
     this.projectRepo.merge(project, updated)
 

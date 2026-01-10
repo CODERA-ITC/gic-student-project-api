@@ -23,10 +23,10 @@ export class CreateProjectDto {
   @IsNotEmpty()
   categoryId: number
 
-  @ApiProperty({ example: [1], required: false, description: 'List of tag ids' })
+  @ApiProperty({ example: ['React', 'JavaScript'], required: false, description: 'List of tag names. Maximum is 5.' })
   @IsOptional()
   @IsArray()
-  tagIds: number[]
+  tags: string[]
 
   @ApiProperty({ example: '1', required: true })
   @IsNumber()
