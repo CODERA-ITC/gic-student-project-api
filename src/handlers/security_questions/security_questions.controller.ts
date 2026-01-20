@@ -24,12 +24,4 @@ export class SecurityQuestionsController {
   ) {
     return this.securityQuestionsService.saveMutliAnswer(user.id, dto);
   }
-
-  @Post("security-questions")
-  saveMulti(
-    @CurrentUser() user: any,
-    @Body() dto: MultiSecurityQuestionDto,
-  ) {
-    return this.securityQuestionsService.saveMutliAnswer(user.id, dto);
-  }
 }
