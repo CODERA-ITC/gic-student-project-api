@@ -120,7 +120,7 @@ export class ImageService {
       const baseName = uuid();
       const originalKey = `project-images/${projectId}/original/${baseName}${fileExt}`;
       const thumbnailKey = `project-images/${projectId}/thumbnail/${baseName}${fileExt}`;
-      
+
       const thumbnailBuffer = await sharp(file.buffer)
         .jpeg({ quality: 70 })
         .toBuffer();

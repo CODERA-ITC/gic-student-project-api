@@ -312,6 +312,8 @@ export class ProjectService {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
+    const pmA = project.members.find(m => m.role === 'author')
+
     const transformed = {
       id: project.id,
       name: project.name,
@@ -330,6 +332,14 @@ export class ProjectService {
         id: img.id,
         url: img.originalUrl,
       })),
+      author: {
+        id: pmA?.member.id,
+        email: pmA?.member.email,
+        firstName: pmA?.member.firstName,
+        lastName: pmA?.member.lastName,
+        role: pmA?.role,
+        avatarUrl: pmA?.member.avatarUrl,
+      },
       members: project.members.map(pm => ({
         id: pm.member.id,
         email: pm.member.email,
