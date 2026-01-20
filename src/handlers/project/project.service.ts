@@ -168,103 +168,6 @@ export class ProjectService {
     return await this.projectRepo.save(project)
   }
 
-  async findAll() {
-    try {
-      const projects = await this.projectRepo.find({
-        relations: {
-          images: true,
-          members: {
-            member: true,
-          },
-          tags: true,
-          features: true,
-        },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          category: true,
-          images: {
-            id: true,
-            thumbnailUrl: true, // Change from url to thumbnail_url for findAll
-          },
-          features: {
-            id: true,
-            name: true,
-            description: true,
-            status: true,
-          },
-          tags: {
-            id: true,
-            name: true,
-          },
-          startDate: true,
-          members: {
-            id: true,
-            role: true,
-            member: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-      })
-
-      const transformed: any[] = projects.map((project) => {
-        const pmA = project.members.find(m => m.role === 'author')
-        let authorInfo = {}
-        if (pmA) {
-          authorInfo = {
-            id: pmA.member.id,
-            email: pmA.member.email,
-            firstName: pmA.member.firstName,
-            lastName: pmA.member.lastName,
-            role: pmA.role,
-          }
-        }
-
-        return {
-          id: project.id,
-          name: project.name,
-          description: project.description,
-          category: project.category,
-          images: project.images.map(img => ({
-            id: img.id,
-            url: img.thumbnailUrl,
-          })),
-          author: authorInfo,
-          members: project.members.filter(m => m.role === 'member').map(pm => ({
-            id: pm.member.id,
-            email: pm.member.email,
-            firstName: pm.member.firstName,
-            lastName: pm.member.lastName,
-            role: pm.role,
-          })),
-          features: project.features.map(feature => ({
-            id: feature.id,
-            name: feature.name,
-            description: feature.description,
-            status: feature.status,
-          })),
-          tags: project.tags.map(tag => ({
-            id: tag.id,
-            name: tag.name,
-          })),
-          academicYear: project.startDate.getFullYear(),
-        }
-      })
-
-      return transformed
-    }
-
-    catch (e) {
-      throw new NotFoundException('Project not found')
-    }
-    // return this.projectRepo.find({ take: 20, order: { createdAt: 'DESC' } })
-  }
-
   async findOne(id: string) {
     const project = await this.projectRepo.findOne({
       where: { id },
@@ -312,57 +215,7 @@ export class ProjectService {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    const pmA = project.members.find(m => m.role === 'author')
-
-    const transformed = {
-      id: project.id,
-      name: project.name,
-      decription: project.description,
-      category: project.category,
-      startDate: project.startDate,
-      isFeatured: project.isFeatured,
-      academicYear: project.academicYear,
-      technologies: project.technologies,
-      visibility: project.visibility,
-      repoUrl: project.repoUrl,
-      demoUrl: project.demoUrl,
-      viewCount: project.viewCount,
-      likeCount: project.likeCount,
-      images: project.images.map(img => ({
-        id: img.id,
-        url: img.originalUrl,
-      })),
-      author: {
-        id: pmA?.member.id,
-        email: pmA?.member.email,
-        firstName: pmA?.member.firstName,
-        lastName: pmA?.member.lastName,
-        role: pmA?.role,
-        avatarUrl: pmA?.member.avatarUrl,
-      },
-      members: project.members.map(pm => ({
-        id: pm.member.id,
-        email: pm.member.email,
-        firstName: pm.member.firstName,
-        lastName: pm.member.lastName,
-        role: pm.role,
-        avatarUrl: pm.member.avatarUrl,
-      })),
-      features: project.features.map(f => ({
-        id: f.id,
-        name: f.name,
-        description: f.description,
-        status: f.status,
-        icon: f.icon,
-        date: f.doneAt,
-      })),
-      tags: project.tags.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-      })),
-    }
-
-    return transformed
+    return this.getProjectResponse(project)
   }
 
   async update(id: string, dto: UpdateProjectDto) {
@@ -422,58 +275,9 @@ export class ProjectService {
       .orderBy('p.createdAt', 'DESC')
       .getManyAndCount()
 
-    const transformed: any[] = projects.map((project) => {
-      const pmA = project.members.find(m => m.role === 'author')
-      let authorInfo = {}
-      if (pmA) {
-        authorInfo = {
-          id: pmA.member.id,
-          email: pmA.member.email,
-          firstName: pmA.member.firstName,
-          lastName: pmA.member.lastName,
-          role: pmA.role,
-        }
-      }
-
-      return {
-        id: project.id,
-        name: project.name,
-        description: project.description,
-        category: project.category,
-        visibility: project.visibility,
-        repoUrl: project.repoUrl,
-        demoUrl: project.demoUrl,
-        isFeatured: project.isFeatured,
-        technologies: project.technologies,
-        viewCount: project.viewCount,
-        likeCount: project.likeCount,
-        images: project.images.map(img => ({
-          id: img.id,
-          url: img.thumbnailUrl,
-        })),
-        author: authorInfo,
-        members: project.members.filter(m => m.role === 'member').map(pm => ({
-          id: pm.member.id,
-          email: pm.member.email,
-          firstName: pm.member.firstName,
-          lastName: pm.member.lastName,
-          role: pm.role,
-        })),
-        features: project.features.map(feature => ({
-          id: feature.id,
-          name: feature.name,
-          description: feature.description,
-          status: feature.status,
-          icon: feature.icon,
-          date: feature.doneAt,
-        })),
-        tags: project.tags.map(tag => ({
-          id: tag.id,
-          name: tag.name,
-        })),
-        academicYear: project.startDate.getFullYear(),
-      }
-    })
+    const transformed: any[] = projects.map(
+      project => this.getProjectResponse(project),
+    )
 
     return {
       data: transformed,
@@ -509,57 +313,8 @@ export class ProjectService {
 
     const result: any = members.map((member) => {
       const project = member.project
-      const author = project.members.find(m => m.role === 'author')
-      const nonAuthors = members.filter(m => m.role !== 'author')
 
-      const transformed = {
-        id: project.id,
-        name: project.name,
-        decription: project.description,
-        category: project.category,
-        startDate: project.startDate,
-        isFeatured: project.isFeatured,
-        academicYear: project.academicYear,
-        technologies: project.technologies,
-        visibility: project.visibility,
-        repoUrl: project.repoUrl,
-        demoUrl: project.demoUrl,
-        viewCount: project.viewCount,
-        likeCount: project.likeCount,
-        images: project.images.map(img => ({
-          id: img.id,
-          url: img.originalUrl,
-        })),
-        author: {
-          id: author?.member.id,
-          email: author?.member.email,
-          firstName: author?.member.firstName,
-          lastName: author?.member.lastName,
-          role: author?.member.role,
-          avatarUrl: author?.member.avatarUrl,
-        },
-        members: nonAuthors.map(pm => ({
-          id: pm.member.id,
-          email: pm.member.email,
-          firstName: pm.member.firstName,
-          lastName: pm.member.lastName,
-          role: pm.role,
-          avatarUrl: pm.member.avatarUrl,
-        })),
-        features: project.features.map(f => ({
-          id: f.id,
-          name: f.name,
-          description: f.description,
-          status: f.status,
-          icon: f.icon,
-          date: f.doneAt,
-        })),
-        tags: project.tags.map(tag => ({
-          id: tag.id,
-          name: tag.name,
-        })),
-      }
-      return transformed
+      return this.getProjectResponse(project)
     })
 
     return result
@@ -978,5 +733,59 @@ export class ProjectService {
       },
     })
     return !!like
+  }
+
+  private getProjectResponse(project: Project) {
+    const pmAuthor = project.members.find(m => m.role === 'author')
+    const pmMember = project.members.filter(m => m.role !== 'member')
+
+    const transformed = {
+      id: project.id,
+      name: project.name,
+      decription: project.description,
+      category: project.category,
+      startDate: project.startDate,
+      isFeatured: project.isFeatured,
+      academicYear: project.academicYear,
+      technologies: project.technologies,
+      visibility: project.visibility,
+      repoUrl: project.repoUrl,
+      demoUrl: project.demoUrl,
+      viewCount: project.viewCount,
+      likeCount: project.likeCount,
+      images: project.images.map(img => ({
+        id: img.id,
+        url: img.originalUrl,
+      })),
+      author: {
+        id: pmAuthor?.member.id,
+        email: pmAuthor?.member.email,
+        firstName: pmAuthor?.member.firstName,
+        lastName: pmAuthor?.member.lastName,
+        role: pmAuthor?.member.role,
+        avatarUrl: pmAuthor?.member.avatarUrl,
+      },
+      members: pmMember.map(pm => ({
+        id: pm.member.id,
+        email: pm.member.email,
+        firstName: pm.member.firstName,
+        lastName: pm.member.lastName,
+        role: pm.role,
+        avatarUrl: pm.member.avatarUrl,
+      })),
+      features: project.features.map(f => ({
+        id: f.id,
+        name: f.name,
+        description: f.description,
+        status: f.status,
+        icon: f.icon,
+        date: f.doneAt,
+      })),
+      tags: project.tags.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+      })),
+    }
+    return transformed
   }
 }
