@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { SecurityQuestionsService } from './security_questions.service';
-import { CreateSecurityQuestionDto } from './dto/create-security_question.dto';
-import { UpdateSecurityQuestionDto } from './dto/update-security_question.dto';
+import { ApiOperation } from '@nestjs/swagger';
+import { ManyToOne } from 'typeorm';
+import { JwtAuthGuard } from '../user/auth/jwt-auth.guard';
+import { CurrentUser } from '../user/auth/current-user.decorator';
+import { MultiSecurityQuestionDto } from './dto/answer.dto';
 
 @Controller('security-questions')
 export class SecurityQuestionsController {
-  constructor(private readonly securityQuestionsService: SecurityQuestionsService) {}
-
-  @Post()
-  create(@Body() createSecurityQuestionDto: CreateSecurityQuestionDto) {
-    return this.securityQuestionsService.create(createSecurityQuestionDto);
-  }
+  constructor(private readonly securityQuestionsService: SecurityQuestionsService) { }
 
   @Get()
+  @ApiOperation({ summary: "Get all security questions" })
   findAll() {
-    return this.securityQuestionsService.findAll();
+    return this.securityQuestionsService.findAllSQ();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.securityQuestionsService.findOne(+id);
+  @Post('answer')
+  @UseGuards(JwtAuthGuard)
+  answer(
+    @CurrentUser() user: any,
+    @Body() dto: MultiSecurityQuestionDto,
+  ) {
+    return this.securityQuestionsService.saveMutliAnswer(user.id, dto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSecurityQuestionDto: UpdateSecurityQuestionDto) {
-    return this.securityQuestionsService.update(+id, updateSecurityQuestionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.securityQuestionsService.remove(+id);
+  @Post("security-questions")
+  saveMulti(
+    @CurrentUser() user: any,
+    @Body() dto: MultiSecurityQuestionDto,
+  ) {
+    return this.securityQuestionsService.saveMutliAnswer(user.id, dto);
   }
 }

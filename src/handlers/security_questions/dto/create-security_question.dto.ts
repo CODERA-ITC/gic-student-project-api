@@ -1,1 +1,1 @@
-export class CreateSecurityQuestionDto {}
+export class CreateSecurityQuestionDto { }

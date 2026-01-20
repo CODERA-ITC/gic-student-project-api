@@ -21,7 +21,7 @@ export class SeederService {
     private roleRepo: Repository<Role>,
     @InjectRepository(Tag)
     private tagRepo: Repository<Tag>,
-  ) {}
+  ) { }
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
