@@ -484,6 +484,87 @@ export class ProjectService {
     }
   }
 
+  async getProjectsByUserId(userId: string) {
+    const members = await this.projectMemberRepo.find(
+      {
+        where: {
+          member: {
+            id: userId,
+          },
+        },
+        relations: {
+          member: true, // user
+          project: {
+            images: true,
+            category: true,
+            tags: true,
+            features: true,
+            members: {
+              member: true,
+            },
+          },
+        },
+      },
+    )
+
+    const result: any = members.map((member) => {
+      const project = member.project
+      const author = project.members.find(m => m.role === 'author')
+      const nonAuthors = members.filter(m => m.role !== 'author')
+
+      const transformed = {
+        id: project.id,
+        name: project.name,
+        decription: project.description,
+        category: project.category,
+        startDate: project.startDate,
+        isFeatured: project.isFeatured,
+        academicYear: project.academicYear,
+        technologies: project.technologies,
+        visibility: project.visibility,
+        repoUrl: project.repoUrl,
+        demoUrl: project.demoUrl,
+        viewCount: project.viewCount,
+        likeCount: project.likeCount,
+        images: project.images.map(img => ({
+          id: img.id,
+          url: img.originalUrl,
+        })),
+        author: {
+          id: author?.member.id,
+          email: author?.member.email,
+          firstName: author?.member.firstName,
+          lastName: author?.member.lastName,
+          role: author?.member.role,
+          avatarUrl: author?.member.avatarUrl,
+        },
+        members: nonAuthors.map(pm => ({
+          id: pm.member.id,
+          email: pm.member.email,
+          firstName: pm.member.firstName,
+          lastName: pm.member.lastName,
+          role: pm.role,
+          avatarUrl: pm.member.avatarUrl,
+        })),
+        features: project.features.map(f => ({
+          id: f.id,
+          name: f.name,
+          description: f.description,
+          status: f.status,
+          icon: f.icon,
+          date: f.doneAt,
+        })),
+        tags: project.tags.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+        })),
+      }
+      return transformed
+    })
+
+    return result
+  }
+
   // Project Member Functions
 
   async addMember(projectId: string, memberId: string) {

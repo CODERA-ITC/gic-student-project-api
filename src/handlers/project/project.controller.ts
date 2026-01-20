@@ -15,7 +15,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
-import { CurrentUser } from '../user/auth/current-user.decorator'
 import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
 import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
@@ -27,6 +26,8 @@ import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger'
 import { FilesInterceptor } from '@nestjs/platform-express'
+import { Request } from 'express'
+import { CurrentUser } from '../user/decorator/current-user.decorator'
 
 @Controller('projects')
 export class ProjectController {
@@ -59,6 +60,12 @@ export class ProjectController {
   @Get()
   findAll(@Query() pagination: ProjectPaginateDto) {
     return this.projectService.paginate(pagination)
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getUserProjects(@CurrentUser() user: { id: string }) {
+    return this.projectService.getProjectsByUserId(user.id)
   }
 
   @Get(':id')

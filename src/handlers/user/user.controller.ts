@@ -20,7 +20,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { CurrentUser } from './auth/current-user.decorator';
+import { CurrentUser } from './decorator/current-user.decorator';
 import { GitHubOauthGuard } from './auth/github-oauth.guards';
 import { GoogleOauthGuard } from './auth/google-oauth.guards';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
