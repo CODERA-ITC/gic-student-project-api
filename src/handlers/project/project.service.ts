@@ -742,7 +742,7 @@ export class ProjectService {
     const transformed = {
       id: project.id,
       name: project.name,
-      decription: project.description,
+      description: project.description,
       category: project.category,
       startDate: project.startDate,
       isFeatured: project.isFeatured,
