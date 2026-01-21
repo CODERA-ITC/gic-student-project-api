@@ -126,9 +126,7 @@ export class ProjectService {
       }
     }
 
-    const result = await this.findOne(project.id)
-
-    return result
+    return await this.findOne(project.id)
   }
 
   async submitProjectForReview(projectId: string): Promise<Project> {
@@ -216,7 +214,7 @@ export class ProjectService {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    return this.getProjectResponse(project)
+    return await this.getProjectResponse(project)
   }
 
   async update(id: string, dto: UpdateProjectDto) {
@@ -276,9 +274,9 @@ export class ProjectService {
       .orderBy('p.createdAt', 'DESC')
       .getManyAndCount()
 
-    const transformed: any[] = projects.map(
+    const transformed = await Promise.all(projects.map(
       project => this.getProjectResponse(project),
-    )
+    ))
 
     return {
       data: transformed,
@@ -312,11 +310,17 @@ export class ProjectService {
       },
     )
 
-    const result: any = members.map((member) => {
+    // const result: any = members.map((member) => {
+    //   const project = member.project
+
+    //   return this.getProjectResponse(project)
+    // })
+
+    const result = await Promise.all(members.map((member) => {
       const project = member.project
 
       return this.getProjectResponse(project)
-    })
+    }))
 
     return result
   }
