@@ -210,17 +210,17 @@ export class ImageService {
   async getSignedUrl(key: string): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucket,
-      Key: key
-    });
+      Key: key,
+    })
 
-    return getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+    return getSignedUrl(this.s3Client, command, { expiresIn: 3600 })
   }
 
   // Get viewable image
   async getImageUrl(imageId: string) {
     const image = await this.imageRepo.findOne({
       where: { id: imageId },
-      relations: ['project']
+      relations: ['project'],
     })
 
     if (!image) {
@@ -229,7 +229,7 @@ export class ImageService {
 
     const [originalUrl, thumbnailUrl] = await Promise.all([
       this.getSignedUrl(image.originalUrl),
-      this.getSignedUrl(image.thumbnailUrl)
+      this.getSignedUrl(image.thumbnailUrl),
     ]);
 
     return {

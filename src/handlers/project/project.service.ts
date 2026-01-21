@@ -18,6 +18,7 @@ import { ProjectView } from './entities/project-view.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
+import { sign } from 'node:crypto'
 
 @Injectable()
 export class ProjectService {
@@ -735,9 +736,24 @@ export class ProjectService {
     return !!like
   }
 
-  private getProjectResponse(project: Project) {
+  private async getProjectResponse(project: Project) {
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role !== 'member')
+
+    const images = await Promise.all(
+      project.images.map(async (img) => {
+        const [originalSigned, thumbnailSigned] = await Promise.all([
+          this.imageService.getSignedUrl(img.originalUrl),
+          this.imageService.getSignedUrl(img.thumbnailUrl),
+        ])
+
+        return {
+          id: img.id,
+          originalUrl: originalSigned,
+          thumbnailUrl: thumbnailSigned,
+        }
+      }),
+    )
 
     const transformed = {
       id: project.id,
@@ -753,10 +769,7 @@ export class ProjectService {
       demoUrl: project.demoUrl,
       viewCount: project.viewCount,
       likeCount: project.likeCount,
-      images: project.images.map(img => ({
-        id: img.id,
-        url: img.originalUrl,
-      })),
+      images,
       author: {
         id: pmAuthor?.member.id,
         email: pmAuthor?.member.email,

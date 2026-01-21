@@ -4,7 +4,11 @@
       "path": ".."
     }
   ],
-  "lsp_code_actions_on_save": {
-    "source.fixAll.eslint": true,
-  },
+  "settings": {
+    "LSP": {
+      "lsp_code_actions_on_save": {
+        "source.fixAll.eslint": true
+      }
+    }
+  }
 }
