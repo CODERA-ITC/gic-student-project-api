@@ -140,7 +140,11 @@ export class AuthService {
       if (!user)
         throw new UnauthorizedException('User not found')
 
+      if (!user.hashedRefreshToken) {
+        throw new UnauthorizedException('Empty Refresh Token')
+      }
       const hashedRefreshToken = user.hashedRefreshToken
+
       // Check if refresh token has been revoked
       const tokenMatches = await bcrypt.compare(
         refreshToken,
