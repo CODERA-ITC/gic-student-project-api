@@ -69,5 +69,5 @@ export class User extends BaseEntity {
   notifications: Notification[]
 
   @OneToMany(() => SecurityQuestion, secureQuestion => secureQuestion.user)
-  secureQuestions: ProjectLike[]
+  secureQuestions: SecurityQuestion[]
 }

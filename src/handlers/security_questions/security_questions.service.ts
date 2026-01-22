@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { MultiSecurityQuestionDto } from './dto/answer.dto';
@@ -21,8 +21,6 @@ export class SecurityQuestionsService {
   ) {
     this.saltRounds = Number(config.get('SALT_ROUNDS')) || 12;
   }
-
-
 
   private readonly secQuestions = [
     { id: 'q1', questions: "What city were you born in?" },
@@ -77,5 +75,88 @@ export class SecurityQuestionsService {
         answer: s.answers.answer,
       })),
     };
+  }
+
+  async verifyMultiAnswer(dto: MultiSecurityQuestionDto, userId?: string) {
+    const user = await this.getUserWithSecurityQuestions(dto, userId);
+
+    this.validateUserHasSecurityQuestions(user);
+
+    const allAnswersCorrect = await this.verifyAllAnswers(dto.answers, user.secureQuestions);
+
+    if (!allAnswersCorrect) {
+      return {
+        verified: false,
+        message: 'Incorrect Answers'
+      }
+    }
+
+    return {
+      verified: true,
+      message: 'Security answers verified successfully'
+    }
+  }
+
+  //HELPER FUNCTIONS
+
+  //Change password or recovering password
+  private async getUserWithSecurityQuestions(dto: MultiSecurityQuestionDto, userId?: string) {
+    const whereClause = userId ? { id: userId } : { email: this.validateAndGetEmail(dto) }
+    const user = await this.userRepo.findOne({ where: whereClause, relations: ['secureQuestions'] })
+
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+
+    return user;
+  }
+
+  //Validate email if user is revcovering 
+  private validateAndGetEmail(dto: MultiSecurityQuestionDto) {
+    if (!dto.email) {
+      throw new BadRequestException(
+        'Email is required for unauthenticated verification',
+      );
+    }
+    return dto.email;
+  }
+
+  //Check if user has security questions
+  private validateUserHasSecurityQuestions(user: User) {
+    if (!user.secureQuestions?.length) {
+      throw new NotFoundException('No security question found for user');
+    }
+  }
+
+  private async verifyAllAnswers(
+    providedAnswers: Array<{ questionId: string; answer: string }>,
+    storedQuestions: SecurityQuestion[],
+  ) {
+    for (const provided of providedAnswers) {
+      const stored = this.findStoredQuestion(provided.questionId, storedQuestions);
+      const isCorrect = await this.verifyAnswer(provided.answer, stored.answers.answer);
+
+      if (!isCorrect) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private findStoredQuestion(questionId: string, storedQuestions: SecurityQuestion[]) {
+    const question = storedQuestions.find(q => q.answers.questionId === questionId);
+
+    if (!question) {
+      throw new NotFoundException(
+        `Security question ${questionId} not found for this user`,
+      );
+    }
+
+    return question;
+  }
+
+  private async verifyAnswer(providedAnswer: string, hashedAnswer: string) {
+    return bcrypt.compare(providedAnswer, hashedAnswer);
   }
 }

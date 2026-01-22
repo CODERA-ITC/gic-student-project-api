@@ -1,7 +1,11 @@
-import { IsArray, IsString, MinLength, MaxLength, ValidateNested } from 'class-validator';
+import { IsArray, IsString, MinLength, MaxLength, ValidateNested, IsEmail, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class MultiSecurityQuestionDto {
+    @IsEmail()
+    @IsOptional()
+    email?: string;
+
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => AnswerItemDto)

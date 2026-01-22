@@ -8,7 +8,7 @@ import { MultiSecurityQuestionDto } from './dto/answer.dto';
 
 @Controller('security-questions')
 export class SecurityQuestionsController {
-  constructor(private readonly securityQuestionsService: SecurityQuestionsService) {}
+  constructor(private readonly securityQuestionsService: SecurityQuestionsService) { }
 
   @Get()
   @ApiOperation({ summary: "Get all security questions" })
@@ -19,9 +19,25 @@ export class SecurityQuestionsController {
   @Post('answer')
   @UseGuards(JwtAuthGuard)
   answer(
-    @CurrentUser() user: any,
+    @CurrentUser() user: { id: string },
     @Body() dto: MultiSecurityQuestionDto,
   ) {
     return this.securityQuestionsService.saveMutliAnswer(user.id, dto);
+  }
+
+  @Post('verify')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Verify security question answers for password change" })
+  verifyAuthenticated(
+    @CurrentUser() user: { id: string },
+    @Body() dto: MultiSecurityQuestionDto,
+  ) {
+    return this.securityQuestionsService.verifyMultiAnswer(dto, user.id);
+  }
+
+  @Post('verify/public')
+  @ApiOperation({ summary: "Verify security question answers for password change" })
+  async verifyPublic(@Body() dto: MultiSecurityQuestionDto) {
+    return this.securityQuestionsService.verifyMultiAnswer(dto);
   }
 }
