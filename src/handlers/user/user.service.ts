@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { instanceToPlain } from 'class-transformer'
-
+import { v4 as uuid } from 'uuid';
+import * as sharp from 'sharp';
+import { ConfigService } from '@nestjs/config';
 import { Not, Repository } from 'typeorm'
 import { Department } from '../department/entitites/department.entity'
 import { Role } from '../role/entities/role.entity'
@@ -9,17 +10,42 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './entities/user.entity'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { extname } from 'path';
 
 @Injectable()
 export class UserService {
+  private s3Client: S3Client;
+  private bucket: string;
+
   constructor(
+    private readonly configService: ConfigService,
     @InjectRepository(User)
     private userRepo: Repository<User>,
     @InjectRepository(Role)
     private roleRepo: Repository<Role>,
     @InjectRepository(Department)
     private departmentRepo: Repository<Department>,
-  ) {}
+  ) {
+    const region = configService.get<string>('aws.region');
+    const accessKeyId = configService.get<string>('aws.accessKey');
+    const secretAccessKey = configService.get<string>('aws.secretAccessKey');
+    const bucketName = configService.get<string>('aws.s3BucketName');
+
+    if (!region || !accessKeyId || !secretAccessKey || !bucketName) {
+      throw new Error('Missing required AWS configuration');
+    }
+
+    this.s3Client = new S3Client({
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey
+      },
+    });
+
+    this.bucket = bucketName;
+  }
 
   // =============
   // Create
@@ -161,6 +187,74 @@ export class UserService {
       limit,
       total,
       lastPage: Math.ceil(total / limit),
+    }
+  }
+
+  // ======================
+  // Upload PFP
+  // =======================
+  async uploadPFP(userId: string, file: Express.Multer.File) {
+    const storage = this.configService.get<string>('STORAGE_URL')
+
+    if (!file) {
+      throw new BadRequestException('File not found');
+    }
+
+    const user = await this.userRepo.findOne({ where: { id: userId } })
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.avatarUrl) {
+      await this.deleteFromS3(user.avatarUrl)
+    }
+
+    const fileExt = extname(file.originalname);
+    const baseName = uuid();
+    const originalKey = `user/${userId}/original/${baseName}${fileExt}`;
+    // const thumbnailKey = `user/${userId}/thumbnail/${baseName}${fileExt}`;
+
+    // const thumbnailBuffer = await
+    //   sharp(file.buffer)
+    //     .jpeg({ quality: 70 })
+    //     .toBuffer()
+
+    await this.s3Client.send(new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: originalKey,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'private'
+    }))
+
+    await this.userRepo.update({ id: userId }, { avatarUrl: originalKey })
+    return {
+      avatarUrl: `${storage}/${originalKey}`
+    }
+  }
+
+  async deletePFP(userId: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } })
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.deleteFromS3(user.avatarUrl);
+    await this.userRepo.update({ id: userId }, { avatarUrl: "" })
+  }
+
+  private async deleteFromS3(key: string) {
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: key
+      });
+
+      await this.s3Client.send(command)
+      console.log(`Deleted from s3: ${key}`)
+    } catch (error) {
+      console.error(`Error deleting ${key} from s3:`, error);
+      throw new BadRequestException(`Failed to delete image from storage`);
     }
   }
 }

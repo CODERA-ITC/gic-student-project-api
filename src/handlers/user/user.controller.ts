@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -12,7 +13,9 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -28,6 +31,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserService } from './user.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('auth')
 @Controller('users')
@@ -36,7 +40,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -116,7 +120,7 @@ export class UserController {
   // Redirect user to Google Login Page
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async authGoogle() {}
+  async authGoogle() { }
 
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
@@ -141,7 +145,7 @@ export class UserController {
   // Redirect user to GitHub Login Page
   @Get('github')
   @UseGuards(GitHubOauthGuard)
-  async authGitHub() {}
+  async authGitHub() { }
 
   @Get('github/callback')
   @UseGuards(GitHubOauthGuard)
@@ -190,5 +194,20 @@ export class UserController {
   @ApiOperation({ summary: 'Get user by id' })
   getUserById(@Param('id') id: string) {
     return this.userService.findUserById(id)
+  }
+
+  @Post('avatar')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('files'))
+  @ApiOperation({ summary: 'Upload user profile pic' })
+  uploadProfile(@CurrentUser() user: { id: string }, @UploadedFile() file: Express.Multer.File) {
+    return this.userService.uploadPFP(user.id, file);
+  }
+
+  @Delete('avatar')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Delete user profile pic' })
+  deleteProfile(@CurrentUser() user: { id: string }) {
+    return this.userService.deletePFP(user.id)
   }
 }
