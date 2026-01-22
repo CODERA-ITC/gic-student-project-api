@@ -1,4 +1,5 @@
 import { BaseEntity } from 'src/database/base.entity'
+import { Course } from 'src/handlers/course/entities/course.entity'
 import { Department } from 'src/handlers/department/entitites/department.entity'
 import { Image } from 'src/handlers/image/entities/image.entity'
 import {
@@ -91,4 +92,7 @@ export class Project extends BaseEntity {
 
   @Column({ nullable: true })
   demoUrl: string
+
+  @ManyToOne(() => Course, course => course.projects)
+  course: Course
 }

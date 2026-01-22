@@ -13,6 +13,7 @@ import { UserModule } from './handlers/user/user.module'
 import { NotificationModule } from './handlers/notification/notification.module';
 import { ImageModule } from './handlers/image/image.module';
 import { SecurityQuestionsModule } from './handlers/security_questions/security_questions.module';
+import { CourseModule } from './handlers/course/course.module';
 import awsConfig from './config/aws.config'
 
 @Module({
@@ -40,6 +41,7 @@ import awsConfig from './config/aws.config'
     NotificationModule,
     ImageModule,
     SecurityQuestionsModule,
+    CourseModule,
   ],
 
   controllers: [AppController],
