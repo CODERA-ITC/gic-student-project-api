@@ -62,7 +62,7 @@ export class ProjectController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   async getUserProjects(@CurrentUser() user: any) {
     return this.projectService.getProjectsByUserId(user.id)
   }
