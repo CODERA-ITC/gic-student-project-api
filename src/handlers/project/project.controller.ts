@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
-  Headers,
   Param,
   Patch,
   Post,
@@ -14,20 +12,17 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { PaginationDto } from 'src/common/dto/pagination.dto'
+import { FilesInterceptor } from '@nestjs/platform-express'
+import { ApiConsumes, ApiOperation } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
+import { CurrentUser } from '../user/decorator/current-user.decorator'
 import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
 import { CreateProjectDto } from './dto/create-project.dto'
-import { CreateTagDto } from './dto/create-tag.dto'
 import { ProjectPaginateDto } from './dto/paginate-project.dto'
 import { UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { ProjectService } from './project.service'
-import { ApiConsumes, ApiOperation } from '@nestjs/swagger'
-import { FilesInterceptor } from '@nestjs/platform-express'
-import { Request } from 'express'
-import { CurrentUser } from '../user/decorator/current-user.decorator'
 
 @Controller('projects')
 export class ProjectController {
@@ -78,6 +73,11 @@ export class ProjectController {
     return this.projectService.update(id, dto)
   }
 
+  @Delete(':id')
+  delete(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
+    return this.projectService.delete(id)
+  }
+
   @Post(':id/members')
   addMembers(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
     return this.projectService.addMembers(projectId, dto.memberIds)
@@ -114,18 +114,18 @@ export class ProjectController {
     return { message: 'View tracked successfully' }
   }
 
-  //===========================================
+  // ===========================================
   // Get the total view count for a project
-  //===========================================
+  // ===========================================
   @Get(':id/view-count')
   async getViewCount(@Param('id') projectId: string) {
     const viewCount = await this.projectService.getProjectViewCount(projectId)
     return { projectId, viewCount }
   }
 
-  //=================================================
+  // =================================================
   // Check if the current user has viewed a project
-  //=================================================
+  // =================================================
   @Get(':id/has-viewed')
   @UseGuards(JwtAuthGuard)
   async hasViewed(
@@ -136,13 +136,13 @@ export class ProjectController {
     return { projectId, hasViewed }
   }
 
-  //========================================================
-  //PROJECT LIKE CONTROLLER
-  //========================================================
+  // ========================================================
+  // PROJECT LIKE CONTROLLER
+  // ========================================================
 
-  //================================
+  // ================================
   // Toggle like/unlike on a project
-  //================================ 
+  // ================================
   @Post(':id/like')
   @UseGuards(JwtAuthGuard)
   async toggleLike(
@@ -152,22 +152,22 @@ export class ProjectController {
     const result = await this.projectService.trackProjectLike(projectId, user.id)
     return {
       message: result.liked ? 'Project liked successfully' : 'Project unliked successfully',
-      liked: result.liked
+      liked: result.liked,
     }
   }
 
-  //==================================
-  //Get total like count for a project
-  //==================================
+  // ==================================
+  // Get total like count for a project
+  // ==================================
   @Get(':id/like-count')
   async getLikeCount(@Param('id') projectId: string) {
     const likeCount = await this.projectService.getProjectLikeCount(projectId)
     return { projectId, likeCount }
   }
 
-  //=========================================
-  //Check if current user has liked a project
-  //=========================================
+  // =========================================
+  // Check if current user has liked a project
+  // =========================================
   @Get(':id/has-liked')
   @UseGuards(JwtAuthGuard)
   async hasLiked(

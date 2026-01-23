@@ -18,7 +18,6 @@ import { ProjectView } from './entities/project-view.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
-import { sign } from 'node:crypto'
 
 @Injectable()
 export class ProjectService {
@@ -240,6 +239,29 @@ export class ProjectService {
     }
 
     await this.projectRepo.softDelete(id)
+    return project
+  }
+
+  async delete(id: string) {
+    const project = await this.projectRepo.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        images: true,
+      },
+    })
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    const imageIds = project.images.map(p => p.id)
+    if (imageIds) {
+      await this.imageService.bulkDeleteImages(imageIds)
+    }
+
+    await this.projectRepo.remove(project)
     return project
   }
 
