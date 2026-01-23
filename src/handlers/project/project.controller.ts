@@ -15,7 +15,9 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
+import { RolesGuard } from '../user/auth/roles.guard'
 import { CurrentUser } from '../user/decorator/current-user.decorator'
+import { Roles } from '../user/decorator/roles.decorator'
 import { AddProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
 import { CreateProjectDto } from './dto/create-project.dto'
@@ -46,7 +48,9 @@ export class ProjectController {
     return this.projectService.submitProjectForReview(id)
   }
 
+  @Roles(['TEACHER'])
   @Patch('accept/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async acceptProject(@Param('id') projectId: string, @Req() req: any) {
     const teacherId = req.user?.id
     return this.projectService.acceptProject(projectId, teacherId)
@@ -58,8 +62,8 @@ export class ProjectController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async getUserProjects(@CurrentUser() user: { id: string }) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async getUserProjects(@CurrentUser() user: any) {
     return this.projectService.getProjectsByUserId(user.id)
   }
 
