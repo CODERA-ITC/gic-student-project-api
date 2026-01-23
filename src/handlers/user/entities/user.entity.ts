@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer'
 
 import { BaseEntity } from 'src/database/base.entity'
+import { Course } from 'src/handlers/course/entities/course.entity'
 import { Department } from 'src/handlers/department/entitites/department.entity'
 import { Notification } from 'src/handlers/notification/entities/notification.entity'
 import { ProjectLike } from 'src/handlers/project/entities/project-like.entity'
@@ -70,4 +71,8 @@ export class User extends BaseEntity {
 
   @OneToMany(() => SecurityQuestion, secureQuestion => secureQuestion.user)
   secureQuestions: SecurityQuestion[]
+
+  @ManyToMany(() => Course, course => course.users)
+  @JoinTable()
+  courses: Course[]
 }

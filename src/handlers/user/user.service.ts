@@ -1,22 +1,21 @@
+import { extname } from 'node:path'
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { v4 as uuid } from 'uuid';
-import * as sharp from 'sharp';
-import { ConfigService } from '@nestjs/config';
-import { Not, Repository } from 'typeorm'
+import { PaginationDto } from 'src/common/dto/pagination.dto'
+import { Repository } from 'typeorm'
+import { v4 as uuid } from 'uuid'
 import { Department } from '../department/entitites/department.entity'
 import { Role } from '../role/entities/role.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './entities/user.entity'
-import { PaginationDto } from 'src/common/dto/pagination.dto'
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { extname } from 'path';
 
 @Injectable()
 export class UserService {
-  private s3Client: S3Client;
-  private bucket: string;
+  private s3Client: S3Client
+  private bucket: string
 
   constructor(
     private readonly configService: ConfigService,
@@ -27,24 +26,24 @@ export class UserService {
     @InjectRepository(Department)
     private departmentRepo: Repository<Department>,
   ) {
-    const region = configService.get<string>('aws.region');
-    const accessKeyId = configService.get<string>('aws.accessKey');
-    const secretAccessKey = configService.get<string>('aws.secretAccessKey');
-    const bucketName = configService.get<string>('aws.s3BucketName');
+    const region = configService.get<string>('aws.region')
+    const accessKeyId = configService.get<string>('aws.accessKey')
+    const secretAccessKey = configService.get<string>('aws.secretAccessKey')
+    const bucketName = configService.get<string>('aws.s3BucketName')
 
     if (!region || !accessKeyId || !secretAccessKey || !bucketName) {
-      throw new Error('Missing required AWS configuration');
+      throw new Error('Missing required AWS configuration')
     }
 
     this.s3Client = new S3Client({
       region,
       credentials: {
         accessKeyId,
-        secretAccessKey
+        secretAccessKey,
       },
-    });
+    })
 
-    this.bucket = bucketName;
+    this.bucket = bucketName
   }
 
   // =============
@@ -84,6 +83,7 @@ export class UserService {
         email: true,
         password: true,
         hashedRefreshToken: true,
+        role: true,
       },
       relations: ['role'],
     })
@@ -136,7 +136,7 @@ export class UserService {
     if (!q || q.trim() === '')
       return []
     return this.userRepo.createQueryBuilder('user')
-      .select(['user.id', 'user.firstName', 'user.lastName', 'user.email'])
+      .select(['user.id', 'user.firstName', 'user.lastName', 'user.email', 'user.role'])
       .where('user.firstName ILIKE :prefix', { prefix: `${q}%` })
       .orWhere('user.lastName ILIKE :prefix', { prefix: `${q}%` })
       .orderBy('user.firstName', 'ASC')
@@ -152,6 +152,7 @@ export class UserService {
     const qb = this.userRepo
       .createQueryBuilder('u')
       .leftJoinAndSelect('u.department', 'department')
+      .leftJoinAndSelect('u.role', 'role')
 
     // Optional search (e.g., search by project name)
     if (params.search) {
@@ -179,6 +180,7 @@ export class UserService {
         name: u.department.name,
         code: u.department.code,
       },
+      role: u.role.name,
     }))
 
     return {
@@ -197,21 +199,21 @@ export class UserService {
     const storage = this.configService.get<string>('STORAGE_URL')
 
     if (!file) {
-      throw new BadRequestException('File not found');
+      throw new BadRequestException('File not found')
     }
 
     const user = await this.userRepo.findOne({ where: { id: userId } })
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('User not found')
     }
 
     if (user.avatarUrl) {
       await this.deleteFromS3(user.avatarUrl)
     }
 
-    const fileExt = extname(file.originalname);
-    const baseName = uuid();
-    const originalKey = `user/${userId}/original/${baseName}${fileExt}`;
+    const fileExt = extname(file.originalname)
+    const baseName = uuid()
+    const originalKey = `user/${userId}/original/${baseName}${fileExt}`
     // const thumbnailKey = `user/${userId}/thumbnail/${baseName}${fileExt}`;
 
     // const thumbnailBuffer = await
@@ -224,37 +226,38 @@ export class UserService {
       Key: originalKey,
       Body: file.buffer,
       ContentType: file.mimetype,
-      ACL: 'private'
+      ACL: 'private',
     }))
 
     await this.userRepo.update({ id: userId }, { avatarUrl: originalKey })
     return {
-      avatarUrl: `${storage}/${originalKey}`
+      avatarUrl: `${storage}/${originalKey}`,
     }
   }
 
   async deletePFP(userId: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } })
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('User not found')
     }
 
-    await this.deleteFromS3(user.avatarUrl);
-    await this.userRepo.update({ id: userId }, { avatarUrl: "" })
+    await this.deleteFromS3(user.avatarUrl)
+    await this.userRepo.update({ id: userId }, { avatarUrl: '' })
   }
 
   private async deleteFromS3(key: string) {
     try {
       const command = new DeleteObjectCommand({
         Bucket: this.bucket,
-        Key: key
-      });
+        Key: key,
+      })
 
       await this.s3Client.send(command)
       console.log(`Deleted from s3: ${key}`)
-    } catch (error) {
-      console.error(`Error deleting ${key} from s3:`, error);
-      throw new BadRequestException(`Failed to delete image from storage`);
+    }
+    catch (error) {
+      console.error(`Error deleting ${key} from s3:`, error)
+      throw new BadRequestException(`Failed to delete image from storage`)
     }
   }
 }
