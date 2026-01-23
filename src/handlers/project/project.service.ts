@@ -742,7 +742,7 @@ export class ProjectService {
 
   private async getProjectResponse(project: Project) {
     const pmAuthor = project.members.find(m => m.role === 'author')
-    const pmMember = project.members.filter(m => m.role !== 'member')
+    const pmMember = project.members.filter(m => m.role === 'member')
 
     const images = await Promise.all(
       project.images.map(async (img) => {
