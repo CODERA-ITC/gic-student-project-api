@@ -32,6 +32,7 @@ export class SeederModule implements OnModuleInit {
     await this.seederService.seedDepartment()
     await this.seederService.seedRole()
     await this.seederService.seedUser()
+    await this.seederService.seedTeachers()
     await this.seederService.seedTags()
     await this.seederService.seedProjects()
   }

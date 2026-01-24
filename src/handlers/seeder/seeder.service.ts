@@ -54,6 +54,49 @@ export class SeederService {
     return result
   }
 
+  async seedTeachers() {
+    const department = await this.departmentRepo.findOneBy({ id: '11111111-1111-1111-1111-111111111111' })
+    const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
+    const hashedPassword = await bcrypt.hash('@password123', 10)
+
+    const result = await this.userRepo.save(
+      [
+        {
+          id: '77777777-7777-7777-7777-777777777777',
+          firstName: 'Heng',
+          lastName: 'Rathpisey',
+          email: 'rathpisey@gic.com',
+          phone: '0123456789',
+          password: hashedPassword,
+          department: department!,
+          role: teacherRole!,
+        },
+        {
+          id: '88888888-8888-8888-8888-888888888888',
+          firstName: 'Hok',
+          lastName: 'Tin',
+          email: 'hoktin@gic.com',
+          phone: '0123456789',
+          password: hashedPassword,
+          department: department!,
+          role: teacherRole!,
+        },
+        {
+          id: '99999999-9999-9999-9999-999999999999',
+          firstName: 'Chun',
+          lastName: 'Thavorac',
+          email: 'thavorac@gic.com',
+          phone: '0123456789',
+          password: hashedPassword,
+          department: department!,
+          role: teacherRole!,
+        },
+      ],
+    )
+
+    return result
+  }
+
   async seedUser() {
     const department = await this.departmentRepo.findOneBy({ id: '11111111-1111-1111-1111-111111111111' })
     const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
