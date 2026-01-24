@@ -241,7 +241,7 @@ export class SeederService {
       {
         id: '11111111-1111-1111-1111-111111111111',
         name: 'COOLEST COURSE EVER',
-        code: 'CCE',
+        code: 'SEEDED',
       },
     ], { conflictPaths: ['code'] })
 
@@ -312,6 +312,7 @@ export class SeederService {
     const courses = await this.courseRepo.find()
     const courseWeb = courses[3]
     const courseAI = courses[6]
+    const courseSeeded = courses[courses.length - 1]
 
     const users = await this.userRepo.find()
     const tags = await this.tagRepo.find()
@@ -355,6 +356,7 @@ export class SeederService {
         technologies: [
           'VueJs',
         ],
+        duration: '2 years',
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
@@ -400,8 +402,57 @@ export class SeederService {
             status: 'done',
           },
         ],
+        duration: '5 years',
         members,
         technologies: ['Python', 'GPT-3', 'React', 'Node.js', 'MongoDB'],
+        academicYear: '2024-2025',
+        repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
+        demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
+        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+      },
+      {
+        name: 'Smart Parking System',
+        description: 'IoT-based parking management system with real-time space detection, mobile app booking, and payment integration.',
+        category: catAI,
+        course: courseSeeded,
+        tags: [
+          tags[0],
+          tags[1],
+        ],
+        departments: [depts[0]],
+        features: [
+          {
+            name: 'Core Features',
+            description:
+              'Developed workout tracking, nutrition logging, and health metrics dashboard.',
+            icon: 'i-lucide-activity',
+            status: 'done',
+          },
+          {
+            name: 'Social Integration',
+            description:
+              'Added friend connections, workout sharing, and community challenges.',
+            icon: 'i-lucide-users',
+            status: 'done',
+          },
+          {
+            name: 'Wearable Sync',
+            description:
+              'Integrated with HealthKit and popular fitness wearables for automatic data sync.',
+            icon: 'i-lucide-watch',
+            status: 'ongoing',
+          },
+          {
+            name: 'Launch',
+            description:
+              'Final testing, app store submission, and public launch preparation.',
+            icon: 'i-lucide-rocket',
+            status: 'pending',
+          },
+        ],
+        members,
+        duration: '4 months',
+        technologies: ['React Native', 'Node.js', 'IoT Sensors', 'MongoDB', 'Stripe'],
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',

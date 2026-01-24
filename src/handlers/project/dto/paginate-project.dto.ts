@@ -1,6 +1,6 @@
 import { ApiProperty, ApiQuery } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsNumber, IsOptional } from 'class-validator'
+import { IsOptional, IsString } from 'class-validator'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
 
 @ApiQuery({ name: 'filter' })
@@ -9,11 +9,23 @@ export class ProjectPaginateDto extends PaginationDto {
         description: 'category id',
         default: null,
         required: false,
-        type: 'number',
+        type: 'string',
 
     })
     @IsOptional()
-    @Type(() => Number)
-    @IsNumber()
+    @Type(() => String)
+    @IsString()
     categoryId: string
+
+    @ApiProperty({
+        description: 'course id',
+        default: null,
+        required: false,
+        type: 'string',
+
+    })
+    @IsOptional()
+    @Type(() => String)
+    @IsString()
+    courseId: string
 }

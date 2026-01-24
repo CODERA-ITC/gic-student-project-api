@@ -284,7 +284,7 @@ export class ProjectService {
 
     const qb = this.projectRepo
       .createQueryBuilder('p')
-      .leftJoinAndSelect('p.category', 'c') // if you have category relation
+      .leftJoinAndSelect('p.category', 'category') // if you have category relation
       .leftJoinAndSelect('p.images', 'images')
       .leftJoinAndSelect('p.members', 'pm')
       .leftJoinAndSelect('pm.member', 'member')
@@ -293,7 +293,11 @@ export class ProjectService {
       .leftJoinAndSelect('p.course', 'course')
     // Filter by category
     if (params.categoryId) {
-      qb.andWhere('p.categoryId = :cid', { cid: params.categoryId })
+      qb.andWhere('p.categoryId = :catId', { catId: params.categoryId })
+    }
+
+    if (params.courseId) {
+      qb.andWhere('p.courseId = :courseId', { courseId: params.courseId })
     }
 
     // Optional search (e.g., search by project name)
@@ -799,6 +803,7 @@ export class ProjectService {
       description: project.description,
       category: project.category,
       course: {
+        id: project.course.id,
         name: project.course.name,
         code: project.course.code,
         description: project.course.description,
