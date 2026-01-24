@@ -4,6 +4,7 @@ import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
+import { Course } from '../course/entities/course.entity'
 import { Department } from '../department/entitites/department.entity'
 import { ImageService } from '../image/image.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
@@ -46,10 +47,11 @@ export class ProjectService {
     // tem shorts for TransactionEntityManager
     const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
-      const [author, category, department] = await Promise.all([
+      const [author, category, department, course] = await Promise.all([
         tem.findOneBy(User, { id: dto.authorId }),
         tem.findOneBy(Category, { id: dto.categoryId }),
         tem.findOneBy(Department, { id: dto.departmentId }),
+        tem.findOneBy(Course, { id: dto.courseId }),
       ])
 
       // Validate all required entities exist
@@ -61,6 +63,10 @@ export class ProjectService {
       }
       if (!department) {
         throw new HttpException('Department not found', HttpStatus.NOT_FOUND)
+      }
+
+      if (!course) {
+        throw new HttpException('Course not found', HttpStatus.NOT_FOUND)
       }
 
       let tags: Tag[] = []
@@ -81,6 +87,7 @@ export class ProjectService {
       const project = this.projectRepo.create({
         ...dto,
         category,
+        course,
         departments: [department],
         members: [],
         visibility: 'draft',
@@ -176,11 +183,14 @@ export class ProjectService {
         },
         features: true,
         tags: true,
+        category: true,
+        course: true,
       },
       select: {
         id: true,
         name: true,
         category: true,
+        course: true,
         repoUrl: true,
         demoUrl: true,
         description: true,
@@ -280,6 +290,7 @@ export class ProjectService {
       .leftJoinAndSelect('pm.member', 'member')
       .leftJoinAndSelect('p.tags', 'tags')
       .leftJoinAndSelect('p.features', 'features')
+      .leftJoinAndSelect('p.course', 'course')
     // Filter by category
     if (params.categoryId) {
       qb.andWhere('p.categoryId = :cid', { cid: params.categoryId })
@@ -324,6 +335,7 @@ export class ProjectService {
             category: true,
             tags: true,
             features: true,
+            course: true,
             members: {
               member: true,
             },
@@ -786,6 +798,11 @@ export class ProjectService {
       name: project.name,
       description: project.description,
       category: project.category,
+      course: {
+        name: project.course.name,
+        code: project.course.code,
+        description: project.course.description,
+      },
       startDate: project.startDate,
       isFeatured: project.isFeatured,
       academicYear: project.academicYear,

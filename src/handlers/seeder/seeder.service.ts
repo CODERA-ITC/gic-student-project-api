@@ -238,6 +238,11 @@ export class SeederService {
         name: 'Artificial Intelligence',
         code: 'AI',
       },
+      {
+        id: '11111111-1111-1111-1111-111111111111',
+        name: 'COOLEST COURSE EVER',
+        code: 'CCE',
+      },
     ], { conflictPaths: ['code'] })
 
     return result
@@ -306,7 +311,7 @@ export class SeederService {
 
     const courses = await this.courseRepo.find()
     const courseWeb = courses[3]
-    const courseAI = courses[7]
+    const courseAI = courses[6]
 
     const users = await this.userRepo.find()
     const tags = await this.tagRepo.find()

@@ -24,6 +24,12 @@ export class CreateProjectDto {
   @IsNotEmpty()
   categoryId: string
 
+  @ApiProperty({ example: '11111111-1111-1111-1111-111111111111', required: true })
+  @Type(() => String)
+  @IsString()
+  @IsNotEmpty()
+  courseId: string
+
   @ApiProperty({ example: ['React', 'JavaScript'], required: false, description: 'List of tag names. Maximum is 5.' })
   @Transform(({ value }) => {
     try {
@@ -115,7 +121,6 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   demoUrl: string
-
 
   @ApiProperty({ example: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg', required: false })
   @Transform(({ value }) => value?.trim())
