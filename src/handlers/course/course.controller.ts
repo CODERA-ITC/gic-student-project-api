@@ -4,7 +4,7 @@ import { AssignCourseDto } from './dto/assign-course.dto'
 import { CreateCourseDto } from './dto/create-course.dto'
 import { UpdateCourseDto } from './dto/update-course.dto'
 
-@Controller('course')
+@Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
