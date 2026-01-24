@@ -86,6 +86,16 @@ export class CreateProjectDto {
   features: CreateFeatureDto[]
 
   @ApiProperty({ description: 'List of member ids', required: false, example: ['22222222-2222-2222-2222-222222222222'] })
+  @Transform(({ value }) => {
+    try {
+      const json = JSON.parse(value)
+      return json
+    }
+    catch (e) {
+      return value
+    }
+  })
+  @IsOptional()
   @IsArray()
   memberIds: string[]
 
