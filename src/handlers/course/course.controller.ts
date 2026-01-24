@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
+import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { CourseService } from './course.service'
 import { AssignCourseDto } from './dto/assign-course.dto'
 import { CreateCourseDto } from './dto/create-course.dto'
@@ -14,8 +15,8 @@ export class CourseController {
   }
 
   @Get()
-  findAll() {
-    return this.courseService.findAll()
+  findAll(@Query() params: PaginationDto) {
+    return this.courseService.paginate(params)
   }
 
   @Get(':id')
