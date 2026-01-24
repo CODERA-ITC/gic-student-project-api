@@ -5,6 +5,8 @@ import { Repository } from 'typeorm'
 import { Course } from '../course/entities/course.entity'
 import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
+import { Project } from '../project/entities/project.entity'
+import { ProjectMember } from '../project/entities/project_members.entity'
 import { Tag } from '../project/entities/tag.entity'
 import { Role } from '../role/entities/role.entity'
 import { User } from '../user/entities/user.entity'
@@ -24,6 +26,10 @@ export class SeederService {
     private tagRepo: Repository<Tag>,
     @InjectRepository(Course)
     private courseRepo: Repository<Course>,
+    @InjectRepository(Project)
+    private projectRepo: Repository<Project>,
+    @InjectRepository(ProjectMember)
+    private pmRepo: Repository<ProjectMember>,
   ) {}
 
   async seedDepartment() {
@@ -221,8 +227,16 @@ export class SeederService {
         code: 'IP',
       },
       {
+        name: 'Mobile Development',
+        code: 'MOB',
+      },
+      {
         name: 'Network',
         code: 'N',
+      },
+      {
+        name: 'Artificial Intelligence',
+        code: 'AI',
       },
     ], { conflictPaths: ['code'] })
 
@@ -283,5 +297,113 @@ export class SeederService {
       ],
       { conflictPaths: ['name'] },
     )
+  }
+
+  async seedProjects() {
+    const categories = await this.categoryRepo.find()
+    const catWeb = categories[0]
+    const catAI = categories[1]
+
+    const courses = await this.courseRepo.find()
+    const courseWeb = courses[3]
+    const courseAI = courses[7]
+
+    const users = await this.userRepo.find()
+    const tags = await this.tagRepo.find()
+    const depts = await this.departmentRepo.find()
+
+    const members = this.pmRepo.create([
+      {
+        member: users[0],
+        role: 'author',
+      },
+      {
+        member: users[1],
+        role: 'member',
+      },
+      {
+        member: users[2],
+        role: 'member',
+      },
+    ])
+
+    const projects: any[] = [
+      {
+        name: 'My First Project',
+        description: 'A small personal project',
+        category: catWeb,
+        course: courseWeb,
+        tags: [
+          tags[0],
+          tags[1],
+        ],
+        departments: [depts[0]],
+        features: [
+          {
+            name: 'coolest feature ever',
+            status: 'pending',
+            icon: 'bruh',
+            description: 'bogo sort',
+          },
+        ],
+        members,
+        technologies: [
+          'VueJs',
+        ],
+        academicYear: '2024-2025',
+        repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
+        demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
+        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+      },
+      {
+        name: 'AI Chat Assistant',
+        description: 'A small personal project',
+        category: catAI,
+        course: courseAI,
+        tags: [
+          tags[0],
+          tags[1],
+        ],
+        departments: [depts[0]],
+        features: [
+          {
+            name: 'GPT-3 Integration',
+            description:
+              'Set up GPT-3 API integration and basic chatbot framework with Python backend.',
+            icon: 'i-lucide-brain',
+            status: 'done',
+          },
+          {
+            name: 'Conversation History',
+            description:
+              'Implemented conversation persistence and user session management with MongoDB.',
+            icon: 'i-lucide-message-circle',
+            status: 'ongoing',
+          },
+          {
+            name: 'Multi-language Support',
+            description:
+              'Added support for multiple languages and improved response accuracy.',
+            icon: 'i-lucide-globe',
+            status: 'pending',
+          },
+          {
+            name: 'Production Deployment',
+            description:
+              'Successfully deployed to production with monitoring and analytics dashboard.',
+            icon: 'i-lucide-rocket',
+            status: 'done',
+          },
+        ],
+        members,
+        technologies: ['Python', 'GPT-3', 'React', 'Node.js', 'MongoDB'],
+        academicYear: '2024-2025',
+        repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
+        demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
+        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+      },
+    ]
+
+    await this.projectRepo.save(projects)
   }
 }
