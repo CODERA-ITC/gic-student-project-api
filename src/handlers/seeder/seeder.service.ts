@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as bcrypt from 'bcrypt'
 import { Repository } from 'typeorm'
+import { Course } from '../course/entities/course.entity'
 import { Department } from '../department/entitites/department.entity'
 import { Category } from '../project/entities/category.entity'
+import { Tag } from '../project/entities/tag.entity'
 import { Role } from '../role/entities/role.entity'
 import { User } from '../user/entities/user.entity'
-import { Tag } from '../project/entities/tag.entity'
 
 @Injectable()
 export class SeederService {
@@ -21,7 +22,9 @@ export class SeederService {
     private roleRepo: Repository<Role>,
     @InjectRepository(Tag)
     private tagRepo: Repository<Tag>,
-  ) { }
+    @InjectRepository(Course)
+    private courseRepo: Repository<Course>,
+  ) {}
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
@@ -195,6 +198,33 @@ export class SeederService {
         description: 'Create and propose project ideas',
       },
     ], { conflictPaths: ['name'] })
+
+    return result
+  }
+
+  async seedCourses() {
+    const result = await this.courseRepo.upsert([
+      {
+        name: 'Cloud Computing',
+        code: 'CC',
+      },
+      {
+        name: 'Natural Language Processing',
+        code: 'NLP',
+      },
+      {
+        name: 'Image Processing',
+        code: 'IMP',
+      },
+      {
+        name: 'Internet Programming',
+        code: 'IP',
+      },
+      {
+        name: 'Network',
+        code: 'N',
+      },
+    ], { conflictPaths: ['code'] })
 
     return result
   }

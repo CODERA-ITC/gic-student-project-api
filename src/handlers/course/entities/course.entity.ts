@@ -8,10 +8,10 @@ export class Course extends BaseEntity {
   @Column()
   name: string
 
-  @Column()
+  @Column({ default: '' })
   description: string
 
-  @Column()
+  @Column({ unique: true })
   code: string
 
   @OneToMany(() => Project, project => project.course)
