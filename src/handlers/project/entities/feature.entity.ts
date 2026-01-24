@@ -19,7 +19,11 @@ export class Feature extends BaseEntity {
   @Column({ nullable: true })
   icon: string
 
-  @ManyToOne(() => Project, project => project.features)
+  @ManyToOne(
+    () => Project,
+    project => project.features,
+    { onDelete: 'SET NULL' },
+  )
   project: Project
 
   @Column({ nullable: true, type: 'timestamptz' })

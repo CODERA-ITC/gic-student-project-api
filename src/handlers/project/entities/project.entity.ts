@@ -51,7 +51,10 @@ export class Project extends BaseEntity {
   @OneToMany(
     () => Feature,
     feature => feature.project,
-    { cascade: true },
+    {
+      cascade: true,
+      orphanedRowAction: 'delete',
+    },
   )
   features: Feature[]
 
@@ -66,16 +69,26 @@ export class Project extends BaseEntity {
   @JoinTable()
   departments: Department[]
 
-  @OneToMany(() => Image, image => image.project)
+  @OneToMany(() => Image, image => image.project, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   images: Image[]
 
-  @OneToMany(() => ProjectLike, like => like.project)
+  @OneToMany(
+    () => ProjectLike,
+    like => like.project,
+    { onDelete: 'CASCADE' },
+  )
   likes: ProjectLike[]
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   startDate: Date
 
-  @OneToMany(() => ProjectMember, pm => pm.project)
+  @OneToMany(() => ProjectMember, pm => pm.project, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   members: ProjectMember[]
 
   @Column({ nullable: true })
@@ -93,6 +106,10 @@ export class Project extends BaseEntity {
   @Column({ nullable: true })
   demoUrl: string
 
-  @ManyToOne(() => Course, course => course.projects)
+  @ManyToOne(
+    () => Course,
+    course => course.projects,
+    { onDelete: 'SET NULL' },
+  )
   course: Course
 }

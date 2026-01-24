@@ -5,7 +5,9 @@ import { Project } from './project.entity'
 
 @Entity('project_has_members')
 export class ProjectMember extends BaseEntity {
-  @ManyToOne(() => Project, project => project.members)
+  @ManyToOne(() => Project, project => project.members, {
+    onDelete: 'CASCADE',
+  })
   project: Project
 
   @ManyToOne(() => User, user => user.projects)

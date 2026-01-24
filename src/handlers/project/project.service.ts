@@ -257,7 +257,7 @@ export class ProjectService {
     }
 
     const imageIds = project.images.map(p => p.id)
-    if (imageIds) {
+    if (imageIds && imageIds.length > 0) {
       await this.imageService.bulkDeleteImages(imageIds)
     }
 
