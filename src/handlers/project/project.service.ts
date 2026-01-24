@@ -95,22 +95,13 @@ export class ProjectService {
         features,
       })
 
-      const projectMember = this.projectMemberRepo.create({
+      const pmAuthor = this.projectMemberRepo.create({
         member: author,
-        project,
         role: 'author',
       })
+
       // Add author as project member
-      try {
-        await tem.save(projectMember)
-      }
-      catch (e) {
-        throw new HttpException(
-          `Failed to add member to project`,
-          HttpStatus.BAD_REQUEST,
-        )
-      }
-      project.members.push(projectMember)
+      project.members.push(pmAuthor)
 
       // Save project with all relations
       return await tem.save(project)
@@ -120,7 +111,10 @@ export class ProjectService {
       await this.addMembers(project.id, dto.memberIds)
     }
     catch (e) {
-      console.error(e)
+      throw new HttpException(
+        `Failed to add member to project: ${e}`,
+        HttpStatus.BAD_REQUEST,
+      )
     }
 
     if (images && images.length > 0) {
