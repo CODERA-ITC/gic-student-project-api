@@ -65,7 +65,10 @@ export class Project extends BaseEntity {
   @JoinTable()
   tags: Tag[]
 
-  @ManyToOne(() => Department, department => department.projects)
+  @ManyToOne(() => Department, department => department.projects, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   department: Department
 
   @OneToMany(() => Image, image => image.project, {
