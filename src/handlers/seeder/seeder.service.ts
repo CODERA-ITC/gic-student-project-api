@@ -361,7 +361,7 @@ export class SeederService {
     const tags = await this.tagRepo.find()
     const depts = await this.departmentRepo.find()
 
-    const members = this.pmRepo.create([
+    const createMembers = () => this.pmRepo.create([
       {
         member: users[0],
         role: 'author',
@@ -395,7 +395,7 @@ export class SeederService {
             description: 'bogo sort',
           },
         ],
-        members,
+        members: createMembers(),
         technologies: [
           'VueJs',
         ],
@@ -446,7 +446,7 @@ export class SeederService {
           },
         ],
         duration: '5 years',
-        members,
+        members: createMembers(),
         technologies: ['Python', 'GPT-3', 'React', 'Node.js', 'MongoDB'],
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
@@ -493,7 +493,7 @@ export class SeederService {
             status: 'pending',
           },
         ],
-        members,
+        members: createMembers(),
         duration: '4 months',
         technologies: ['React Native', 'Node.js', 'IoT Sensors', 'MongoDB', 'Stripe'],
         academicYear: '2024-2025',
