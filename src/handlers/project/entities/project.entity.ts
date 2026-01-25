@@ -48,6 +48,9 @@ export class Project extends BaseEntity {
   @Column({ default: 0 })
   likeCount: number
 
+  @Column({ nullable: true })
+  duration: string
+
   @OneToMany(
     () => Feature,
     feature => feature.project,

@@ -137,4 +137,10 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   avatarUrl: string
+
+  @ApiProperty({ example: '3 months', required: false })
+  @Transform(({ value }) => value?.trim())
+  @IsOptional()
+  @IsString()
+  duration: string
 }

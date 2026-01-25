@@ -192,6 +192,7 @@ export class ProjectService {
         technologies: true,
         academicYear: true,
         isFeatured: true,
+        duration: true,
         images: {
           id: true,
           originalUrl: true, // Change from url to original_url
@@ -811,6 +812,7 @@ export class ProjectService {
       demoUrl: project.demoUrl,
       viewCount: project.viewCount,
       likeCount: project.likeCount,
+      duration: project.duration,
       images,
       author: {
         id: pmAuthor?.member.id,
