@@ -772,7 +772,7 @@ export class ProjectService {
     return !!like
   }
 
-  private async getProjectResponse(project: Project) {
+  async getProjectResponse(project: Project) {
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role === 'member')
 

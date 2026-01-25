@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
-import { Repository } from 'typeorm'
+import { Equal, In, Not, Repository } from 'typeorm'
+import { Project } from '../project/entities/project.entity'
 import { ProjectService } from '../project/project.service'
 import { User } from '../user/entities/user.entity'
 import { AssignCourseDto } from './dto/assign-course.dto'
@@ -16,7 +17,8 @@ export class CourseService {
     private courseRepo: Repository<Course>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
-
+    @InjectRepository(Project)
+    private projectRepo: Repository<Project>,
     private projectService: ProjectService,
   ) {}
 
@@ -115,7 +117,49 @@ export class CourseService {
     return this.userRepo.save(teacher)
   }
 
-  async getProjectsByCourseId(courseId: string) {
-    return true
+  async getProjectsForReview(teacherId: string, status: 'pending' | 'ongoing' | 'done' = 'pending') {
+    const teacher = await this.userRepo.findOneOrFail({
+      where: {
+        id: teacherId,
+      },
+      select: {
+        courses: true,
+      },
+      relations: {
+        courses: true,
+      },
+    })
+
+    const allowedCourseIds: string[] = teacher.courses.map(c => c.id)
+    if (!allowedCourseIds || allowedCourseIds.length < 0) {
+      throw new UnauthorizedException('Unauthorized access to courses')
+    }
+
+    const projects = await this.projectRepo.find({
+      where: {
+        course: {
+          id: In(allowedCourseIds),
+        },
+        visibility: Not(Equal('draft')),
+      },
+      relations: {
+        members: {
+          member: true,
+        },
+        images: true,
+        category: true,
+        tags: true,
+        features: true,
+        likes: true,
+        departments: true,
+        course: true,
+      },
+    })
+
+    const response = await Promise.all(
+      projects.map(p => this.projectService.getProjectResponse(p)),
+    )
+
+    return response
   }
 }

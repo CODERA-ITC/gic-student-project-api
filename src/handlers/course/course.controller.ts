@@ -1,5 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
+import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
+import { RolesGuard } from '../user/auth/roles.guard'
+import { CurrentUser } from '../user/decorator/current-user.decorator'
+import { Roles } from '../user/decorator/roles.decorator'
 import { CourseService } from './course.service'
 import { AssignCourseDto } from './dto/assign-course.dto'
 import { CreateCourseDto } from './dto/create-course.dto'
@@ -17,6 +21,13 @@ export class CourseController {
   @Get()
   findAll(@Query() params: PaginationDto) {
     return this.courseService.paginate(params)
+  }
+
+  @Roles(['TEACHER'])
+  @Get('submissions')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getProjectsByCourse(@CurrentUser() teacher: any) {
+    return this.courseService.getProjectsForReview(teacher.id)
   }
 
   @Get(':id')
