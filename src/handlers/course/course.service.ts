@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { Repository } from 'typeorm'
+import { ProjectService } from '../project/project.service'
 import { User } from '../user/entities/user.entity'
 import { AssignCourseDto } from './dto/assign-course.dto'
 import { CreateCourseDto } from './dto/create-course.dto'
@@ -15,6 +16,8 @@ export class CourseService {
     private courseRepo: Repository<Course>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+
+    private projectService: ProjectService,
   ) {}
 
   create(createCourseDto: CreateCourseDto) {
@@ -110,5 +113,9 @@ export class CourseService {
     teacher.courses = allCourses.filter(c => c.id !== course.id)
 
     return this.userRepo.save(teacher)
+  }
+
+  async getProjectsByCourseId(courseId: string) {
+    return true
   }
 }

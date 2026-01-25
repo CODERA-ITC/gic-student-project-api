@@ -78,7 +78,10 @@ export class Project extends BaseEntity {
   @OneToMany(
     () => ProjectLike,
     like => like.project,
-    { onDelete: 'CASCADE' },
+    {
+      cascade: true,
+      orphanedRowAction: 'delete',
+    },
   )
   likes: ProjectLike[]
 
