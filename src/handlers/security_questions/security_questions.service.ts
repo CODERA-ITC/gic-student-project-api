@@ -19,7 +19,7 @@ export class SecurityQuestionsService {
     @InjectRepository(User)
     private userRepo: Repository<User>,
   ) {
-    this.saltRounds = Number(config.get('SALT_ROUNDS')) || 12;
+    this.saltRounds = Number(config.get('SALT_ROUNDS'));
   }
 
   private readonly secQuestions = [

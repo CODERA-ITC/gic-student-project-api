@@ -32,6 +32,7 @@ import { LoginDto } from './dto/login.dto';
 import { UserService } from './user.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('auth')
 @Controller('users')
@@ -209,5 +210,11 @@ export class UserController {
   @ApiOperation({ summary: 'Delete user profile pic' })
   deleteProfile(@CurrentUser() user: { id: string }) {
     return this.userService.deletePFP(user.id)
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Account recovery' })
+  async forgotPassword(@Body() dto: ChangePasswordDto) {
+    return this.authService.forgotPassword(dto);
   }
 }

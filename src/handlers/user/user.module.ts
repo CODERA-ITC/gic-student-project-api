@@ -11,9 +11,11 @@ import { GitHubStrategy } from './strategies/github.strategy'
 import { GoogleStrategy } from './strategies/google.strategy'
 import { UserController } from './user.controller'
 import { UserService } from './user.service'
+import { SecurityQuestionsService } from '../security_questions/security_questions.service'
+import { SecurityQuestionsModule } from '../security_questions/security_questions.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Role, Department]), PassportModule],
+  imports: [TypeOrmModule.forFeature([User, Role, Department]), PassportModule, SecurityQuestionsModule],
   controllers: [UserController],
   providers: [UserService, AuthService, JwtService, JwtAuthGuard, GoogleStrategy, GitHubStrategy],
   exports: [UserService, AuthService],

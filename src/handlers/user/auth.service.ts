@@ -2,6 +2,7 @@ import * as crypto from 'node:crypto'
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -13,23 +14,30 @@ import { CreateUserDto } from '../user/dto/create-user.dto'
 import { UserService } from '../user/user.service'
 import { LoginDto } from './dto/login.dto'
 import { User } from './entities/user.entity'
+import { SecurityQuestionsService } from '../security_questions/security_questions.service'
+import { ChangePasswordDto } from './dto/change-password.dto'
 
 @Injectable()
 export class AuthService {
+  private readonly saltRoundsAuth: number;
   constructor(
+    configService: ConfigService,
     @InjectRepository(User)
     private userRepo: Repository<User>,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-  ) {}
+    private readonly securityQuestionsService: SecurityQuestionsService
+  ) {
+    this.saltRoundsAuth = Number(configService.get('SALT_ROUNDS_AUTH'))
+  }
 
   async signup(dto: CreateUserDto) {
     const check_email = await this.userService.findUserByEmail(dto.email)
     if (check_email)
       throw new BadRequestException('Email already registered')
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10)
+    const hashedPassword = await bcrypt.hash(dto.password, this.saltRoundsAuth)
     const user = await this.userService.createUser({
       ...dto,
       password: hashedPassword,
@@ -177,18 +185,27 @@ export class AuthService {
     return !!user
   }
 
-  // Method to validate user credentials without logging in
-  async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.userService.findUserByEmail(email)
+  async forgotPassword(dto: ChangePasswordDto) {
+    const user = await this.userService.findUserByEmail(dto.email!)
     if (!user) {
-      return null
+      throw new NotFoundException('User not found')
     }
 
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) {
-      return null
+    const result = await this.securityQuestionsService.verifyMultiAnswer(
+      { answers: dto.answers },
+      user.id
+    )
+
+    if (!result.verified) {
+      throw new UnauthorizedException(result.message)
     }
 
-    return user
+    user.password = await bcrypt.hash(dto.newPassword, this.saltRoundsAuth);
+    await this.userRepo.save(user)
+
+    await this.revokeToken(user.id);
+    return {
+      message: 'Password reset successfully'
+    }
   }
 }
