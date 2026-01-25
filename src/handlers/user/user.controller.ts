@@ -217,4 +217,14 @@ export class UserController {
   async forgotPassword(@Body() dto: ChangePasswordDto) {
     return this.authService.forgotPassword(dto);
   }
+
+  @Post('change-password')
+  @ApiOperation({ summary: 'Account recovery' })
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @CurrentUser() user: { id: string },
+    @Body() dto: ChangePasswordDto
+  ) {
+    return this.authService.changePassword(dto, user.id);
+  }
 }

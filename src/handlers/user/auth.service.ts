@@ -191,19 +191,38 @@ export class AuthService {
       throw new NotFoundException('User not found')
     }
 
+    return this.resetPasswordWithVerification(dto, user.id)
+  }
+
+  async changePassword(dto: ChangePasswordDto, userId: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } })
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+
+    return this.resetPasswordWithVerification(dto, userId)
+  }
+
+  private async resetPasswordWithVerification(
+    dto: ChangePasswordDto,
+    userId: string
+  ) {
     const result = await this.securityQuestionsService.verifyMultiAnswer(
       { answers: dto.answers },
-      user.id
+      userId
     )
 
     if (!result.verified) {
       throw new UnauthorizedException(result.message)
     }
 
-    user.password = await bcrypt.hash(dto.newPassword, this.saltRoundsAuth);
-    await this.userRepo.save(user)
+    const user = await this.userRepo.findOne({ where: { id: userId } })
+    const hashedPassword = await bcrypt.hash(dto.newPassword, this.saltRoundsAuth)
 
-    await this.revokeToken(user.id);
+    user!.password = hashedPassword
+    await this.userRepo.save(user!)
+    await this.revokeToken(userId)
+
     return {
       message: 'Password reset successfully'
     }
