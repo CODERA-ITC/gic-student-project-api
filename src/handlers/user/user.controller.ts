@@ -1,4 +1,4 @@
-import { log } from 'node:console';
+import { log } from 'node:console'
 import {
   BadRequestException,
   Body,
@@ -16,23 +16,23 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+} from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express'
 
-import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
-import { CurrentUser } from './decorator/current-user.decorator';
-import { GitHubOauthGuard } from './auth/github-oauth.guards';
-import { GoogleOauthGuard } from './auth/google-oauth.guards';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { CreateUserDto } from './dto/create-user.dto';
-import { LoginDto } from './dto/login.dto';
-import { UserService } from './user.service';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { Request, Response } from 'express'
+import { PaginationDto } from 'src/common/dto/pagination.dto'
+import { AuthService } from './auth.service'
+import { GitHubOauthGuard } from './auth/github-oauth.guards'
+import { GoogleOauthGuard } from './auth/google-oauth.guards'
+import { JwtAuthGuard } from './auth/jwt-auth.guard'
+import { CurrentUser } from './decorator/current-user.decorator'
+import { ChangePasswordDto } from './dto/change-password.dto'
+import { CreateUserDto } from './dto/create-user.dto'
+import { LoginDto } from './dto/login.dto'
+import { UserService } from './user.service'
 
 @ApiTags('auth')
 @Controller('users')
@@ -41,33 +41,39 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
   async signup(@Body() dto: CreateUserDto) {
     try {
-      const result = await this.authService.signup(dto);
+      const result = await this.authService.signup(dto)
 
       return {
         success: true,
         message: 'User registered successfully',
         data: result,
-      };
-    } catch (error) {
-      console.error('Signup error:', error.message);
+      }
+    }
+    catch (error) {
+      console.error('Signup error:', error.message)
 
       if (error instanceof BadRequestException) {
-        throw error;
+        throw error
       }
 
-      throw new BadRequestException('Registration failed. Please try again.');
+      throw new BadRequestException('Registration failed. Please try again.')
     }
   }
 
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.userService.paginate(pagination)
+  }
+
+  @Get('refresh')
+  getNewTokens(@Body('refresh_token') refreshToken: string) {
+    return this.authService.refresh(refreshToken)
   }
 
   @Post('login')
@@ -77,36 +83,37 @@ export class UserController {
     try {
       // Validate input
       if (!dto.email || !dto.password) {
-        throw new BadRequestException('Email and password are required');
+        throw new BadRequestException('Email and password are required')
       }
 
-      const result = await this.authService.login(dto);
+      const result = await this.authService.login(dto)
 
       return {
         success: true,
         message: 'Login successful',
         data: result,
-      };
-    } catch (error) {
+      }
+    }
+    catch (error) {
       // Log the error for debugging
-      console.error('Login error:', error);
+      console.error('Login error:', error)
 
       if (
-        error instanceof UnauthorizedException ||
-        error instanceof BadRequestException
+        error instanceof UnauthorizedException
+        || error instanceof BadRequestException
       ) {
-        throw error;
+        throw error
       }
 
       // Handle unexpected errors
-      throw new UnauthorizedException(error);
+      throw new UnauthorizedException(error)
     }
   }
 
   @Post('logout/:id')
   @ApiOperation({ summary: 'Log user out and revoke the token' })
   async logout(@Param('id') id: string) {
-    this.authService.revokeToken(id);
+    this.authService.revokeToken(id)
   }
 
   @Get('current')
@@ -114,20 +121,20 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user' })
   findUserWithCurrent(@CurrentUser() user: any) {
-    log('Current User:', user);
-    return this.userService.findUserById(user.userId);
+    log('Current User:', user)
+    return this.userService.findUserById(user.userId)
   }
 
   // Redirect user to Google Login Page
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async authGoogle() { }
+  async authGoogle() {}
 
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    const googleUser = req.user as any;
-    const tokens = await this.authService.handleGoogleLogin(googleUser);
+    const googleUser = req.user as any
+    const tokens = await this.authService.handleGoogleLogin(googleUser)
 
     res.cookie('access_token', tokens.access_token, {
       maxAge: 2592000000,
@@ -135,24 +142,24 @@ export class UserController {
       secure: true,
       domain: 'localhost',
       path: '/', // cookie will attach to whatever hostname the backend is served on
-    });
+    })
 
-    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST');
+    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
     return res
       .status(HttpStatus.OK)
-      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`);
+      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
   }
 
   // Redirect user to GitHub Login Page
   @Get('github')
   @UseGuards(GitHubOauthGuard)
-  async authGitHub() { }
+  async authGitHub() {}
 
   @Get('github/callback')
   @UseGuards(GitHubOauthGuard)
   async githubAuthCallBack(@Req() req: Request, @Res() res: Response) {
-    const githubUser = req.user as any;
-    const tokens = await this.authService.handleGitHubLogin(githubUser);
+    const githubUser = req.user as any
+    const tokens = await this.authService.handleGitHubLogin(githubUser)
 
     res.cookie('access_token', tokens.access_token, {
       maxAge: 2592000000,
@@ -160,12 +167,12 @@ export class UserController {
       secure: true,
       domain: 'localhost', // in prod change to frontend real domain
       path: '/', // cookie will attach to whatever hostname the backend is served on
-    });
+    })
 
-    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST');
+    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
     return res
       .status(HttpStatus.OK)
-      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`);
+      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
   }
 
   @Get('search')
@@ -177,17 +184,18 @@ export class UserController {
           success: true,
           message: 'No search query provided',
           data: [],
-        };
+        }
       }
-      const users = await this.userService.searchUser(q);
+      const users = await this.userService.searchUser(q)
       return {
         success: true,
         message: 'Search Completed',
         data: users,
-      };
-    } catch (error) {
-      console.error('Search error:', error.message);
-      throw new BadRequestException('Search failed. Please try again! ');
+      }
+    }
+    catch (error) {
+      console.error('Search error:', error.message)
+      throw new BadRequestException('Search failed. Please try again! ')
     }
   }
 
@@ -202,7 +210,7 @@ export class UserController {
   @UseInterceptors(FileInterceptor('files'))
   @ApiOperation({ summary: 'Upload user profile pic' })
   uploadProfile(@CurrentUser() user: { id: string }, @UploadedFile() file: Express.Multer.File) {
-    return this.userService.uploadPFP(user.id, file);
+    return this.userService.uploadPFP(user.id, file)
   }
 
   @Delete('avatar')
@@ -215,7 +223,7 @@ export class UserController {
   @Post('forgot-password')
   @ApiOperation({ summary: 'Account recovery' })
   async forgotPassword(@Body() dto: ChangePasswordDto) {
-    return this.authService.forgotPassword(dto);
+    return this.authService.forgotPassword(dto)
   }
 
   @Post('change-password')
@@ -223,8 +231,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   async changePassword(
     @CurrentUser() user: { id: string },
-    @Body() dto: ChangePasswordDto
+    @Body() dto: ChangePasswordDto,
   ) {
-    return this.authService.changePassword(dto, user.id);
+    return this.authService.changePassword(dto, user.id)
   }
 }

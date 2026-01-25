@@ -5,19 +5,16 @@ import { Course } from 'src/handlers/course/entities/course.entity'
 import { Department } from 'src/handlers/department/entitites/department.entity'
 import { Notification } from 'src/handlers/notification/entities/notification.entity'
 import { ProjectLike } from 'src/handlers/project/entities/project-like.entity'
-import { Project } from 'src/handlers/project/entities/project.entity'
 import { ProjectMember } from 'src/handlers/project/entities/project_members.entity'
 import { Role } from 'src/handlers/role/entities/role.entity'
 import { SecurityQuestion } from 'src/handlers/security_questions/entities/security_question.entity'
 import {
   Column,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
-  OneToOne,
 } from 'typeorm'
 
 @Entity('users')
@@ -57,7 +54,7 @@ export class User extends BaseEntity {
   bio: string
 
   @Column({ type: 'text', nullable: true, select: false })
-  hashedRefreshToken: string | null
+  refreshToken: string | null
 
   @ManyToOne(() => Role, role => role.users)
   role: Role

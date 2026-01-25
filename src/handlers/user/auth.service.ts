@@ -106,9 +106,7 @@ export class AuthService {
   }
 
   private async saveRefreshToken(id: string, refreshToken: string) {
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10) // hashed token
-
-    await this.userRepo.update(id, { hashedRefreshToken }) // store it in the hashedRefreshToken column
+    await this.userRepo.save({ id, refreshToken }) // store it in the hashedRefreshToken column
   }
 
   private async generateTokens(user: User) {
@@ -140,27 +138,30 @@ export class AuthService {
 
   async refresh(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: this.config.get('JWT_REFRESH_SECRET'),
+      const user = await this.userRepo.findOne({
+        where: {
+          refreshToken,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          refreshToken: true,
+        },
+        relations: {
+          role: true,
+        },
       })
 
-      const user = await this.userService.findUserByEmailWithSecrets(payload.email)
-      if (!user)
-        throw new UnauthorizedException('User not found')
+      if (!user) {
+        throw new UnauthorizedException('Invalid refresh token')
+      }
 
-      if (!user.hashedRefreshToken) {
+      if (!user.refreshToken) {
         throw new UnauthorizedException('Empty Refresh Token')
       }
-      const hashedRefreshToken = user.hashedRefreshToken
-
-      // Check if refresh token has been revoked
-      const tokenMatches = await bcrypt.compare(
-        refreshToken,
-        hashedRefreshToken,
-      )
-
-      if (!tokenMatches)
-        throw new UnauthorizedException('Invalid refresh token')
 
       // Generate new refresh token
       const { access_token, refresh_token: newRefreshToken } = await this.generateTokens(user)
@@ -168,10 +169,10 @@ export class AuthService {
       // Store the new refresh token
       await this.saveRefreshToken(user.id, newRefreshToken)
 
-      return { access_token, refreshToken: newRefreshToken }
+      return { access_token, refresh_token: newRefreshToken }
     }
     catch (error) {
-      throw new UnauthorizedException('Invalid or expired refresh token')
+      throw new UnauthorizedException(error)
     }
   }
 

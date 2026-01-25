@@ -80,9 +80,11 @@ export class UserService {
       where: { email },
       select: {
         id: true,
+        firstName: true,
+        lastName: true,
         email: true,
         password: true,
-        hashedRefreshToken: true,
+        refreshToken: true,
         role: true,
       },
       relations: ['role'],
