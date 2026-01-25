@@ -41,7 +41,7 @@ export class CreateUserDto {
   @ApiProperty({ example: 'Refresh token for easy revoking' })
   @IsOptional()
   @IsString()
-  hashedRefreshToken?: string | null
+  refreshToken?: string | null
 
   role: object
 

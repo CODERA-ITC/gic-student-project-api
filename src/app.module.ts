@@ -15,6 +15,7 @@ import { SecurityQuestionsModule } from './handlers/security_questions/security_
 import { SeederModule } from './handlers/seeder/seeder.module'
 import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
 import { UserModule } from './handlers/user/user.module'
+import { RealStudentModule } from './handlers/real-student/real-student.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UserModule } from './handlers/user/user.module'
     ImageModule,
     SecurityQuestionsModule,
     CourseModule,
+    RealStudentModule,
   ],
 
   controllers: [AppController],

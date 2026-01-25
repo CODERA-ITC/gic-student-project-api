@@ -177,7 +177,7 @@ export class AuthService {
   }
 
   async revokeToken(id: string) {
-    await this.userService.updateUser(id, { hashedRefreshToken: null })
+    await this.userService.updateUser(id, { refreshToken: null })
   }
 
   // Helper method to check if user exists
