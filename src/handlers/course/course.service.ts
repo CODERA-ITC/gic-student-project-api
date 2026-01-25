@@ -151,7 +151,7 @@ export class CourseService {
         tags: true,
         features: true,
         likes: true,
-        departments: true,
+        department: true,
         course: true,
       },
     })

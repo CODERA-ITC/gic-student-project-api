@@ -88,7 +88,7 @@ export class ProjectService {
         ...dto,
         category,
         course,
-        departments: [department],
+        department,
         members: [],
         visibility: 'draft',
         tags,

@@ -1,7 +1,7 @@
 import { BaseEntity } from 'src/database/base.entity'
 import { Project } from 'src/handlers/project/entities/project.entity'
 import { User } from 'src/handlers/user/entities/user.entity'
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm'
+import { Column, Entity, OneToMany } from 'typeorm'
 
 @Entity('departments')
 export class Department extends BaseEntity {
@@ -17,6 +17,6 @@ export class Department extends BaseEntity {
   @OneToMany(() => User, user => user.department)
   users: User[]
 
-  @ManyToMany(() => Project, project => project.departments)
+  @OneToMany(() => Project, project => project.department)
   projects: Project[]
 }

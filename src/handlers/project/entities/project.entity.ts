@@ -65,9 +65,8 @@ export class Project extends BaseEntity {
   @JoinTable()
   tags: Tag[]
 
-  @ManyToMany(() => Department, department => department.projects)
-  @JoinTable()
-  departments: Department[]
+  @ManyToOne(() => Department, department => department.projects)
+  department: Department
 
   @OneToMany(() => Image, image => image.project, {
     cascade: true,
