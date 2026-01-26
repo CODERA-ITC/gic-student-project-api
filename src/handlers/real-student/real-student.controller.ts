@@ -1,34 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, UploadedFile, BadRequestException, Post, UseInterceptors } from '@nestjs/common';
 import { RealStudentService } from './real-student.service';
-import { CreateRealStudentDto } from './dto/create-real-student.dto';
-import { UpdateRealStudentDto } from './dto/update-real-student.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('real-student')
 export class RealStudentController {
-  constructor(private readonly realStudentService: RealStudentService) {}
+  constructor(private readonly realStudentService: RealStudentService) { }
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async parseCSV(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException("File not found")
+    }
 
-  @Post()
-  create(@Body() createRealStudentDto: CreateRealStudentDto) {
-    return this.realStudentService.create(createRealStudentDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.realStudentService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.realStudentService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRealStudentDto: UpdateRealStudentDto) {
-    return this.realStudentService.update(+id, updateRealStudentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.realStudentService.remove(+id);
+    return this.realStudentService.importCSV(file);
   }
 }

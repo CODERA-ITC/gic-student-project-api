@@ -1,26 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { parse } from 'csv-parse/sync'; // Add /sync here!
 import { CreateRealStudentDto } from './dto/create-real-student.dto';
-import { UpdateRealStudentDto } from './dto/update-real-student.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { RealStudent } from './entities/real-student.entity';
+import { Repository } from 'typeorm';
+
+const STUDENT_HEADER_MAP: Record<string, string> = {
+  'ID': 'studentId',
+  'Name': 'nameEn',
+  'Name_KH': 'nameKh',
+  'Gender': 'gender',
+  'Date of Birth': 'dob',
+  'Phone Number': 'phoneNumber',
+  'CLASS': 'class',
+  'Other': 'group',
+};
 
 @Injectable()
 export class RealStudentService {
-  create(createRealStudentDto: CreateRealStudentDto) {
-    return 'This action adds a new realStudent';
+  constructor(
+    @InjectRepository(RealStudent)
+    private realStudent: Repository<RealStudent>
+  ) { }
+  async importCSV(file: Express.Multer.File) {
+    try {
+      const records = parse(file.buffer, {
+        delimiter: ',',
+        columns: true,
+        skip_empty_lines: true,
+        trim: true
+      });
+
+      const mappedRecords = records.map(record => this.mapStudentRecord(record));
+      await this.realStudent.save(mappedRecords);
+
+      console.log("THIS IS THE MAPPED RECORDS: ", mappedRecords);
+
+      return {
+        success: true,
+        count: mappedRecords.length,
+        data: mappedRecords,
+      };
+
+    } catch (error) {
+      throw new BadRequestException(`Failed to parse CSV: ${error.message}`);
+    }
   }
 
-  findAll() {
-    return `This action returns all realStudent`;
-  }
+  private mapStudentRecord(record: any): CreateRealStudentDto {
+    const mapped: any = {};
 
-  findOne(id: number) {
-    return `This action returns a #${id} realStudent`;
-  }
+    for (const [csvHeader, dtoProperty] of Object.entries(STUDENT_HEADER_MAP)) {
+      if (record[csvHeader] !== undefined) {
+        mapped[dtoProperty] = record[csvHeader];
+      }
+    }
 
-  update(id: number, updateRealStudentDto: UpdateRealStudentDto) {
-    return `This action updates a #${id} realStudent`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} realStudent`;
+    return mapped as CreateRealStudentDto;
   }
 }
