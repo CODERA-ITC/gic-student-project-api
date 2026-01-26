@@ -1,12 +1,12 @@
 import { IsIn } from "class-validator";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('real-students')
+@Entity()
 export class RealStudent {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, unique: true })
     studentId: string
 
     @Column({ nullable: false })
