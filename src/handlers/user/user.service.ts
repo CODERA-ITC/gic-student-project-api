@@ -228,8 +228,14 @@ export class UserService {
   private getUserResponse(user: User) {
     const storage = this.configService.get<string>('STORAGE_URL')
     let avatarUrl = ''
-    if (user.avatarUrl) {
-      avatarUrl = `${storage}/${user.avatarUrl}`
+    const rawUrl = user.avatarUrl
+
+    if (rawUrl?.includes('http')) {
+      // It's already a full URL
+      avatarUrl = rawUrl
+    } else if (rawUrl) {
+      // It's a path that needs the storage prefix
+      avatarUrl = `${storage}/${rawUrl}`
     }
 
     const response = {

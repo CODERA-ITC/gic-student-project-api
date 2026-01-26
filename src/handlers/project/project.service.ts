@@ -19,6 +19,8 @@ import { ProjectView } from './entities/project-view.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
+import { ConfigService } from '@nestjs/config'
+import path from 'path'
 
 @Injectable()
 export class ProjectService {
@@ -41,6 +43,7 @@ export class ProjectService {
     private entityManager: EntityManager, // for db transaction
     private notificationService: NotificationService,
     private imageService: ImageService,
+    private configService: ConfigService,
   ) {}
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
@@ -776,6 +779,26 @@ export class ProjectService {
   async getProjectResponse(project: Project) {
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role === 'member')
+    // append avatarUrl to storage to get full url stored in bucket
+    const storage = this.configService.get<string>('STORAGE_URL')
+
+    const getPictureUrl = (path: string | null | undefined) => {
+      let avatarUrl = ''
+
+      if (!path) {
+        return avatarUrl
+      }
+      // some seeded pictures have full URLs
+      if (path?.includes('http')) {
+        // It's already a full URL
+        avatarUrl = path
+      } else if (path) {
+        // It's a path that needs the storage prefix
+        avatarUrl = `${storage}/${path}`
+      }
+
+      return avatarUrl
+    }
 
     const images = await Promise.all(
       project.images.map(async (img) => {
@@ -820,7 +843,7 @@ export class ProjectService {
         firstName: pmAuthor?.member.firstName,
         lastName: pmAuthor?.member.lastName,
         role: pmAuthor?.member.role,
-        avatarUrl: pmAuthor?.member.avatarUrl,
+        avatarUrl: getPictureUrl(pmAuthor?.member.avatarUrl),
       },
       members: pmMember.map(pm => ({
         id: pm.member.id,
@@ -828,7 +851,7 @@ export class ProjectService {
         firstName: pm.member.firstName,
         lastName: pm.member.lastName,
         role: pm.role,
-        avatarUrl: pm.member.avatarUrl,
+        avatarUrl: getPictureUrl(pm.member.avatarUrl),
       })),
       features: project.features.map(f => ({
         id: f.id,
