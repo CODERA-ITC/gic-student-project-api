@@ -4,15 +4,18 @@ import { SeederService } from './seeder.service'
 
 @Controller('seeder')
 export class SeederController {
-  constructor(private readonly seederService: SeederService) {}
+  constructor(private readonly seederService: SeederService) { }
 
   @Post('/seed-all')
-  @ApiOperation({ summary: 'Seed departments and categories' })
+  @ApiOperation({ summary: 'Seed all preliminary data' })
   async seedAll() {
     await this.seederService.seedDepartment()
     await this.seederService.seedCategories()
+    await this.seederService.seedRole()
+    await this.seederService.seedTeachers()
+    await this.seederService.seedUser()
 
-    return 'Seeded: Department, Categories'
+    return 'Seeded: Department, Categories, Roles, Teachers, Users'
   }
 
   @Post('/seed-categories')
@@ -27,6 +30,16 @@ export class SeederController {
 
   @Post('/seed-role')
   seedRole() {
-    return this.seedRole()
+    return this.seederService.seedRole()
+  }
+
+  @Post('/seed-teachers')
+  seedTeachers() {
+    return this.seederService.seedTeachers()
+  }
+
+  @Post('/seed-users')
+  seedUsers() {
+    return this.seederService.seedUser()
   }
 }

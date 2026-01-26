@@ -61,6 +61,18 @@ export class UserService {
     return this.userRepo.save(user)
   }
 
+  async createSuperTeacher(dto: CreateUserDto) {
+    const { role: roleName, ...userData } = dto
+    const user = this.userRepo.create(userData)
+
+    const department = await this.departmentRepo.findOneOrFail({ where: { code: dto.departmentCode } })
+    const role = await this.roleRepo.findOneOrFail({ where: { name: 'SUPER_TEACHER' } })
+    user.role = role
+    user.department = department
+
+    return this.userRepo.save(user)
+  }
+
   // ==============================================================================
   // Read (Decision to use instanceToPlain: avoid exposing password on request)
   // ==============================================================================

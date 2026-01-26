@@ -18,6 +18,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import * as bcrypt from 'bcrypt'
+
+import { RolesGuard } from './auth/roles.guard'
+import { Roles } from './decorator/roles.decorator'
 
 import { FileInterceptor } from '@nestjs/platform-express'
 
@@ -41,7 +45,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -63,6 +67,31 @@ export class UserController {
       }
 
       throw new BadRequestException('Registration failed. Please try again.')
+    }
+  }
+
+  @Post('super-teacher')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(['ADMIN'])
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new super teacher role' })
+  async createSuperTeacher(@Body() dto: CreateUserDto) {
+    try {
+      const hashedPassword = await bcrypt.hash(dto.password, 10)
+      const result = await this.userService.createSuperTeacher({
+        ...dto,
+        password: hashedPassword,
+      })
+
+      return {
+        success: true,
+        message: 'Super Teacher created successfully',
+        data: result,
+      }
+    }
+    catch (error) {
+      console.error('Create Super Teacher error:', error.message)
+      throw new BadRequestException('Failed to create super teacher. Please try again.')
     }
   }
 
@@ -126,9 +155,9 @@ export class UserController {
   }
 
   // Redirect user to Google Login Page
-  // @Get('google')
-  // @UseGuards(GoogleOauthGuard)
-  // async authGoogle() { }
+  @Get('google')
+  @UseGuards(GoogleOauthGuard)
+  async authGoogle() { }
 
   // @Get('google/callback')
   // @UseGuards(GoogleOauthGuard)
@@ -151,9 +180,9 @@ export class UserController {
   // }
 
   // Redirect user to GitHub Login Page
-  // @Get('github')
-  // @UseGuards(GitHubOauthGuard)
-  // async authGitHub() { }
+  @Get('github')
+  @UseGuards(GitHubOauthGuard)
+  async authGitHub() { }
 
   // @Get('github/callback')
   // @UseGuards(GitHubOauthGuard)
