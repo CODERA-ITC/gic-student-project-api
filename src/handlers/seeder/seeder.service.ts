@@ -30,7 +30,7 @@ export class SeederService {
     private projectRepo: Repository<Project>,
     @InjectRepository(ProjectMember)
     private pmRepo: Repository<ProjectMember>,
-  ) {}
+  ) { }
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
@@ -57,10 +57,21 @@ export class SeederService {
   async seedTeachers() {
     const department = await this.departmentRepo.findOneBy({ id: '11111111-1111-1111-1111-111111111111' })
     const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
+    const superTeacherRole = await this.roleRepo.findOne({ where: { name: 'SUPER_TEACHER' } })
     const hashedPassword = await bcrypt.hash('@password123', 10)
 
     const result = await this.userRepo.save(
       [
+        {
+          id: '66666666-6666-6666-6666-666666666666',
+          firstName: 'Super',
+          lastName: 'Teacher',
+          email: 'superteacher@gic.com',
+          phone: '0123456789',
+          password: hashedPassword,
+          department: department!,
+          role: superTeacherRole!,
+        },
         {
           id: '77777777-7777-7777-7777-777777777777',
           firstName: 'Heng',
@@ -238,6 +249,10 @@ export class SeederService {
       {
         name: 'ADMIN',
         description: 'Responsible for managing the system',
+      },
+      {
+        name: 'SUPER_TEACHER',
+        description: 'Teacher with administrative privileges to manage other teachers',
       },
       {
         name: 'TEACHER',
