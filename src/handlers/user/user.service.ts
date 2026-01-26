@@ -96,28 +96,7 @@ export class UserService {
     if (!user)
       throw new NotFoundException('User not found')
 
-    const transformed = {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      bio: user.bio,
-      year: user.year,
-      skill: user.skill,
-      avatar: user.avatarUrl,
-      role: {
-        id: user.role.id,
-        name: user.role.name,
-        description: user.role.description,
-      },
-      department: {
-        id: user.department.id,
-        name: user.department.name,
-        code: user.department.code,
-      },
-    }
-
-    return transformed
+    return this.getUserResponse(user)
   }
 
   // =============
@@ -168,22 +147,7 @@ export class UserService {
       .orderBy('u.createdAt', 'DESC')
       .getManyAndCount()
 
-    const transformed: any[] = users.map(u => ({
-      id: u.id,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      email: u.email,
-      bio: u.bio,
-      year: u.year,
-      skill: u.skill,
-      avatar: u.avatarUrl,
-      department: {
-        id: u.department.id,
-        name: u.department.name,
-        code: u.department.code,
-      },
-      role: u.role.name,
-    }))
+    const transformed: any[] = users.map(u => this.getUserResponse(u))
 
     return {
       data: transformed,
@@ -255,11 +219,36 @@ export class UserService {
       })
 
       await this.s3Client.send(command)
-      console.log(`Deleted from s3: ${key}`)
     }
     catch (error) {
-      console.error(`Error deleting ${key} from s3:`, error)
       throw new BadRequestException(`Failed to delete image from storage`)
     }
+  }
+
+  private getUserResponse(user: User) {
+    const storage = this.configService.get<string>('STORAGE_URL')
+    let avatarUrl = ''
+    if (user.avatarUrl) {
+      avatarUrl = `${storage}/${user.avatarUrl}`
+    }
+
+    const response = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      bio: user.bio,
+      year: user.year,
+      skill: user.skill,
+      avatar: avatarUrl,
+      department: {
+        id: user.department.id,
+        name: user.department.name,
+        code: user.department.code,
+      },
+      role: user.role.name,
+    }
+
+    return response
   }
 }
