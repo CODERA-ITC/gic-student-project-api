@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { parse } from 'csv-parse/sync'; // Add /sync here!
-import { CreateRealStudentDto } from './dto/create-real-student.dto';
+import { parse } from 'csv-parse/sync';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RealStudent } from './entities/real-student.entity';
 import { Repository } from 'typeorm';
@@ -47,7 +46,7 @@ export class RealStudentService {
     }
   }
 
-  private mapStudentRecord(record: any): CreateRealStudentDto {
+  private mapStudentRecord(record: any) {
     const mapped: any = {};
 
     for (const [csvHeader, dtoProperty] of Object.entries(STUDENT_HEADER_MAP)) {
@@ -56,6 +55,6 @@ export class RealStudentService {
       }
     }
 
-    return mapped as CreateRealStudentDto;
+    return mapped;
   }
 }

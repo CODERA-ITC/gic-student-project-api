@@ -16,12 +16,16 @@ import { LoginDto } from './dto/login.dto'
 import { User } from './entities/user.entity'
 import { SecurityQuestionsService } from '../security_questions/security_questions.service'
 import { ChangePasswordDto } from './dto/change-password.dto'
+import { VerifyRealStudentDto } from '../real-student/dto/verify-real-student.dto'
+import { RealStudent } from '../real-student/entities/real-student.entity'
 
 @Injectable()
 export class AuthService {
   private readonly saltRoundsAuth: number;
   constructor(
     configService: ConfigService,
+    @InjectRepository(RealStudent)
+    private readonly realStudentRepo: Repository<RealStudent>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
     private readonly userService: UserService,
@@ -226,6 +230,30 @@ export class AuthService {
 
     return {
       message: 'Password reset successfully'
+    }
+  }
+
+  async verifyRealStudent(dto: VerifyRealStudentDto) {
+    if (!dto.studentId || !dto.dob || !dto.nameKh || !dto.phoneNumber) {
+      throw new BadRequestException('Field cannot be empty')
+    }
+
+    const real = await this.realStudentRepo.findOne({
+      where: {
+        studentId: dto.studentId,
+        dob: dto.dob,
+        nameKh: dto.nameKh,
+        phoneNumber: dto.phoneNumber
+      }
+    });
+    console.log('REAL OR FAKE: ', real)
+    if (!real) {
+      throw new NotFoundException('Student not found')
+    }
+
+    return {
+      verified: true,
+      message: 'Student verified successfully'
     }
   }
 }

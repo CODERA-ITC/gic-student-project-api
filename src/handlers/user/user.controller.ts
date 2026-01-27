@@ -33,6 +33,7 @@ import { ChangePasswordDto } from './dto/change-password.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LoginDto } from './dto/login.dto'
 import { UserService } from './user.service'
+import { VerifyRealStudentDto } from '../real-student/dto/verify-real-student.dto'
 
 @ApiTags('auth')
 @Controller('users')
@@ -41,7 +42,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -128,7 +129,7 @@ export class UserController {
   // Redirect user to Google Login Page
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async authGoogle() {}
+  async authGoogle() { }
 
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
@@ -153,7 +154,7 @@ export class UserController {
   // Redirect user to GitHub Login Page
   @Get('github')
   @UseGuards(GitHubOauthGuard)
-  async authGitHub() {}
+  async authGitHub() { }
 
   @Get('github/callback')
   @UseGuards(GitHubOauthGuard)
@@ -234,5 +235,12 @@ export class UserController {
     @Body() dto: ChangePasswordDto,
   ) {
     return this.authService.changePassword(dto, user.id)
+  }
+
+  @Post('real-student')
+  @ApiOperation({ summary: 'Verify real students' })
+  async verifyStudent(@Body() dto: VerifyRealStudentDto) {
+    console.log("DIS DA REAL DTO: ", dto)
+    return this.authService.verifyRealStudent(dto)
   }
 }

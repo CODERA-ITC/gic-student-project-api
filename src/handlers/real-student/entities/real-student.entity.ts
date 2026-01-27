@@ -16,21 +16,19 @@ export class RealStudent {
     nameKh: string
 
     @Column({ type: 'char', length: 1, nullable: false })
-    @IsIn(['M', 'F'])
-    gender: string
+    gender: 'M' | 'F'
 
-    @Column({ type: 'date' })
-    dob: Date
+    @Column({ nullable: false })
+    dob: String
 
-    @Column()
+    @Column({ nullable: false })
     phoneNumber: string
 
     @Column()
     class: string
 
     @Column({ type: 'char', length: 1 })
-    @IsIn(['A', 'B', 'C', 'D', 'E', 'F'])
-    group: string
+    group: 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
 
     @CreateDateColumn({ type: 'timestamptz' })
     readonly ingestedAt!: Date
