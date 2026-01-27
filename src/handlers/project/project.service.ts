@@ -44,7 +44,7 @@ export class ProjectService {
     private notificationService: NotificationService,
     private imageService: ImageService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
     // tem shorts for TransactionEntityManager
@@ -659,11 +659,13 @@ export class ProjectService {
     // Only increment view count if this is a new view
     if (!existingView) {
       // Record the view - create entity instance
-      const projectView = this.projectViewRepo.create({
-        userId,
-        projectId,
-      })
-      await this.projectViewRepo.save(projectView)
+      if (userId) {
+        const projectView = this.projectViewRepo.create({
+          userId,
+          projectId,
+        })
+        await this.projectViewRepo.save(projectView)
+      }
 
       // Increment the view count
       await this.projectRepo.increment(
@@ -691,14 +693,21 @@ export class ProjectService {
   /**
    * Check if a user has viewed a project
    */
-  async hasUserViewedProject(projectId: string, userId: string): Promise<boolean> {
+  async hasUserViewedProject(projectId: string, userId?: string): Promise<boolean> {
+    if (!userId) {
+      return false
+    }
     const view = await this.projectViewRepo.findOne({
       where: { userId, projectId },
     })
     return !!view
   }
 
-  async trackProjectLike(projectId: string, userId: string): Promise<{ liked: boolean }> {
+  async trackProjectLike(projectId: string, userId?: string): Promise<{ liked: boolean }> {
+    if (!userId) {
+      throw new HttpException('Authentication required to like projects', HttpStatus.UNAUTHORIZED)
+    }
+
     // Check if project exists
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -769,7 +778,10 @@ export class ProjectService {
   // ====================================
   // Check if a user has liked a project
   // ====================================
-  async hasUserLikedProject(projectId: string, userId: string): Promise<boolean> {
+  async hasUserLikedProject(projectId: string, userId?: string): Promise<boolean> {
+    if (!userId) {
+      return false
+    }
     const like = await this.projectLikeRepo.findOne({
       where: {
         user: { id: userId },

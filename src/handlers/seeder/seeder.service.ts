@@ -58,9 +58,8 @@ export class SeederService {
     const courses = await this.courseRepo.find()
 
     const department = await this.departmentRepo.findOneBy({ id: '11111111-1111-1111-1111-111111111111' })
-    const superTeacherRole = await this.roleRepo.findOne({ where: { name: 'SUPER_TEACHER' } })
     const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
-    const adminRole = await this.roleRepo.findOne({ where: { name: 'SUPER_TEACHER' } })
+    const adminRole = await this.roleRepo.findOne({ where: { name: 'ADMIN' } })
     const hashedPassword = await bcrypt.hash('@password123', 10)
 
     const result = await this.userRepo.save(

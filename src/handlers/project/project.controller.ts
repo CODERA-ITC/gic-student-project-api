@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger'
+import { OptionalJwtAuthGuard } from '../user/auth/optional-jwt-auth.guard'
 import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
 import { RolesGuard } from '../user/auth/roles.guard'
 import { CurrentUser } from '../user/decorator/current-user.decorator'
@@ -109,12 +110,12 @@ export class ProjectController {
 
   //
   @Post(':id/view')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   async trackView(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
   ) {
-    await this.projectService.trackProjectView(projectId, user.id)
+    await this.projectService.trackProjectView(projectId, user?.id)
     return { message: 'View tracked successfully' }
   }
 
@@ -131,12 +132,12 @@ export class ProjectController {
   // Check if the current user has viewed a project
   // =================================================
   @Get(':id/has-viewed')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   async hasViewed(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
   ) {
-    const hasViewed = await this.projectService.hasUserViewedProject(projectId, user.id)
+    const hasViewed = await this.projectService.hasUserViewedProject(projectId, user?.id)
     return { projectId, hasViewed }
   }
 
@@ -148,12 +149,12 @@ export class ProjectController {
   // Toggle like/unlike on a project
   // ================================
   @Post(':id/like')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   async toggleLike(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
   ) {
-    const result = await this.projectService.trackProjectLike(projectId, user.id)
+    const result = await this.projectService.trackProjectLike(projectId, user?.id)
     return {
       message: result.liked ? 'Project liked successfully' : 'Project unliked successfully',
       liked: result.liked,
@@ -173,12 +174,12 @@ export class ProjectController {
   // Check if current user has liked a project
   // =========================================
   @Get(':id/has-liked')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   async hasLiked(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
   ) {
-    const hasLiked = await this.projectService.hasUserLikedProject(projectId, user.id)
+    const hasLiked = await this.projectService.hasUserLikedProject(projectId, user?.id)
     return { projectId, hasLiked }
   }
 }
