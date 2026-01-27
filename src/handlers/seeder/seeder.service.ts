@@ -55,8 +55,10 @@ export class SeederService {
   }
 
   async seedTeachers() {
-    const department = await this.departmentRepo.findOneBy({ id: '11111111-1111-1111-1111-111111111111' })
-    const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
+    const department = await this.departmentRepo.findOneByOrFail({ id: '11111111-1111-1111-1111-111111111111' })
+    const courses = await this.courseRepo.find()
+
+    const teacherRole = await this.roleRepo.findOneOrFail({ where: { name: 'TEACHER' } })
     const hashedPassword = await bcrypt.hash('@password123', 10)
 
     const result = await this.userRepo.save(
@@ -70,6 +72,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: teacherRole!,
+          courses,
         },
         {
           id: '88888888-8888-8888-8888-888888888888',
@@ -80,6 +83,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: teacherRole!,
+          courses,
         },
         {
           id: '99999999-9999-9999-9999-999999999999',
@@ -90,6 +94,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: teacherRole!,
+          courses,
         },
       ],
     )

@@ -92,7 +92,7 @@ export class UserService {
   }
 
   async findUserById(id: string) {
-    const user = await this.userRepo.findOne({ where: { id }, relations: ['role', 'department'] })
+    const user = await this.userRepo.findOne({ where: { id }, relations: ['role', 'department', 'courses'] })
     if (!user)
       throw new NotFoundException('User not found')
 
@@ -134,6 +134,7 @@ export class UserService {
       .createQueryBuilder('u')
       .leftJoinAndSelect('u.department', 'department')
       .leftJoinAndSelect('u.role', 'role')
+      .leftJoinAndSelect('u.courses', 'courses')
 
     // Optional search (e.g., search by project name)
     if (params.search) {
@@ -252,6 +253,14 @@ export class UserService {
         name: user.department.name,
         code: user.department.code,
       },
+      courses: user.courses.map((c) => {
+        return {
+          id: c.id,
+          name: c.name,
+          code: c.code,
+          description: c.description,
+        }
+      }),
       role: user.role.name,
     }
 
