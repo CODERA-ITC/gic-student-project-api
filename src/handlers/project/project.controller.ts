@@ -30,7 +30,7 @@ import { ProjectService } from './project.service'
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
-  ) {}
+  ) { }
 
   @Post()
   @ApiOperation({ summary: 'Upload multiple images to a project' })
@@ -109,7 +109,7 @@ export class ProjectController {
 
   //
   @Post(':id/view')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async trackView(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
@@ -131,7 +131,7 @@ export class ProjectController {
   // Check if the current user has viewed a project
   // =================================================
   @Get(':id/has-viewed')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async hasViewed(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
