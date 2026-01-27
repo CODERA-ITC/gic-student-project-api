@@ -70,28 +70,23 @@ export class UserController {
     }
   }
 
-  @Post('super-teacher')
+  @Post('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new super teacher role' })
+  @ApiOperation({ summary: 'Create a new Admin role' })
   async createSuperTeacher(@Body() dto: CreateUserDto) {
     try {
-      const hashedPassword = await bcrypt.hash(dto.password, 10)
-      const result = await this.userService.createSuperTeacher({
-        ...dto,
-        password: hashedPassword,
-      })
-
+      const result = await this.userService.createSuperTeacher(dto)
       return {
         success: true,
-        message: 'Super Teacher created successfully',
+        message: 'Admin created successfully',
         data: result,
       }
     }
     catch (error) {
-      console.error('Create Super Teacher error:', error.message)
-      throw new BadRequestException('Failed to create super teacher. Please try again.')
+      console.error('Create Admin error:', error.message)
+      throw new BadRequestException('Failed to create Admin. Please try again.')
     }
   }
 
