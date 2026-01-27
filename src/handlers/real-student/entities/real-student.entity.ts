@@ -22,7 +22,7 @@ export class RealStudent {
     dob: String
 
     @Column({ nullable: false })
-    phoneNumber: string
+    phoneNumber: number
 
     @Column()
     class: string
