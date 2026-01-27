@@ -1,6 +1,6 @@
 import { ApiProperty, ApiQuery } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator'
 
 @ApiQuery({ name: 'filter' })
 export class PaginationDto {
@@ -43,4 +43,16 @@ export class PaginationDto {
     @Type(() => String)
     @IsString()
     search: string | null
+
+    @ApiProperty({
+        description: 'set order of response: true, false',
+        default: null,
+        required: false,
+        type: 'boolean',
+    })
+    @Type(() => Boolean)
+    @IsOptional()
+    @IsBoolean()
+    ascending: boolean
 }
+

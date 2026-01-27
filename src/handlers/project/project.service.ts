@@ -10,7 +10,7 @@ import { ImageService } from '../image/image.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { User } from '../user/entities/user.entity'
-import { ProjectPaginateDto } from './dto/paginate-project.dto'
+import { parseProjectPaginationDto, ProjectPaginateDto } from './dto/paginate-project.dto'
 import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
@@ -274,11 +274,14 @@ export class ProjectService {
   }
 
   async paginate(
-    params: ProjectPaginateDto,
+    dto: ProjectPaginateDto,
   ) {
+    const params = parseProjectPaginationDto(dto)
     const page = params.page ?? 1
     const limit = params.limit ?? 8
     const skip = (page - 1) * limit
+
+    const orderBy = params.ascending ? 'ASC' : 'DESC'
 
     const qb = this.projectRepo
       .createQueryBuilder('p')
@@ -306,7 +309,7 @@ export class ProjectService {
     const [projects, total] = await qb
       .skip(skip)
       .take(limit)
-      .orderBy('p.createdAt', 'DESC')
+      .orderBy(`p.${params.sort}`, orderBy)
       .getManyAndCount()
 
     const transformed = await Promise.all(projects.map(
