@@ -33,7 +33,6 @@ import { ChangePasswordDto } from './dto/change-password.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LoginDto } from './dto/login.dto'
 import { UserService } from './user.service'
-import { VerifyRealStudentDto } from '../real-student/dto/verify-real-student.dto'
 
 @ApiTags('auth')
 @Controller('users')
@@ -127,54 +126,54 @@ export class UserController {
   }
 
   // Redirect user to Google Login Page
-  @Get('google')
-  @UseGuards(GoogleOauthGuard)
-  async authGoogle() { }
+  // @Get('google')
+  // @UseGuards(GoogleOauthGuard)
+  // async authGoogle() { }
 
-  @Get('google/callback')
-  @UseGuards(GoogleOauthGuard)
-  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    const googleUser = req.user as any
-    const tokens = await this.authService.handleGoogleLogin(googleUser)
+  // @Get('google/callback')
+  // @UseGuards(GoogleOauthGuard)
+  // async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+  //   const googleUser = req.user as any
+  //   const tokens = await this.authService.handleGoogleLogin(googleUser)
 
-    res.cookie('access_token', tokens.access_token, {
-      maxAge: 2592000000,
-      sameSite: 'none',
-      secure: true,
-      domain: 'localhost',
-      path: '/', // cookie will attach to whatever hostname the backend is served on
-    })
+  //   res.cookie('access_token', tokens.access_token, {
+  //     maxAge: 2592000000,
+  //     sameSite: 'none',
+  //     secure: true,
+  //     domain: 'localhost',
+  //     path: '/', // cookie will attach to whatever hostname the backend is served on
+  //   })
 
-    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-    return res
-      .status(HttpStatus.OK)
-      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
-  }
+  //   const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
+  //   return res
+  //     .status(HttpStatus.OK)
+  //     .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
+  // }
 
   // Redirect user to GitHub Login Page
-  @Get('github')
-  @UseGuards(GitHubOauthGuard)
-  async authGitHub() { }
+  // @Get('github')
+  // @UseGuards(GitHubOauthGuard)
+  // async authGitHub() { }
 
-  @Get('github/callback')
-  @UseGuards(GitHubOauthGuard)
-  async githubAuthCallBack(@Req() req: Request, @Res() res: Response) {
-    const githubUser = req.user as any
-    const tokens = await this.authService.handleGitHubLogin(githubUser)
+  // @Get('github/callback')
+  // @UseGuards(GitHubOauthGuard)
+  // async githubAuthCallBack(@Req() req: Request, @Res() res: Response) {
+  //   const githubUser = req.user as any
+  //   const tokens = await this.authService.handleGitHubLogin(githubUser)
 
-    res.cookie('access_token', tokens.access_token, {
-      maxAge: 2592000000,
-      sameSite: 'none',
-      secure: true,
-      domain: 'localhost', // in prod change to frontend real domain
-      path: '/', // cookie will attach to whatever hostname the backend is served on
-    })
+  //   res.cookie('access_token', tokens.access_token, {
+  //     maxAge: 2592000000,
+  //     sameSite: 'none',
+  //     secure: true,
+  //     domain: 'localhost', // in prod change to frontend real domain
+  //     path: '/', // cookie will attach to whatever hostname the backend is served on
+  //   })
 
-    const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-    return res
-      .status(HttpStatus.OK)
-      .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
-  }
+  //   const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
+  //   return res
+  //     .status(HttpStatus.OK)
+  //     .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
+  // }
 
   @Get('search')
   @ApiOperation({ summary: 'Search users by name' })
@@ -239,7 +238,7 @@ export class UserController {
 
   @Post('real-student')
   @ApiOperation({ summary: 'Verify real students' })
-  async verifyStudent(@Body() dto: VerifyRealStudentDto) {
+  async verifyStudent(@Body() dto: CreateUserDto) {
     console.log("DIS DA REAL DTO: ", dto)
     return this.authService.verifyRealStudent(dto)
   }

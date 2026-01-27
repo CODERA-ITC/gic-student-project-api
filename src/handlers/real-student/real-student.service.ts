@@ -33,8 +33,6 @@ export class RealStudentService {
       const mappedRecords = records.map(record => this.mapStudentRecord(record));
       await this.realStudent.save(mappedRecords);
 
-      console.log("THIS IS THE MAPPED RECORDS: ", mappedRecords);
-
       return {
         success: true,
         count: mappedRecords.length,

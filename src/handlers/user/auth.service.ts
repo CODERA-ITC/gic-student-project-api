@@ -16,7 +16,6 @@ import { LoginDto } from './dto/login.dto'
 import { User } from './entities/user.entity'
 import { SecurityQuestionsService } from '../security_questions/security_questions.service'
 import { ChangePasswordDto } from './dto/change-password.dto'
-import { VerifyRealStudentDto } from '../real-student/dto/verify-real-student.dto'
 import { RealStudent } from '../real-student/entities/real-student.entity'
 
 @Injectable()
@@ -37,6 +36,12 @@ export class AuthService {
   }
 
   async signup(dto: CreateUserDto) {
+    const realStudent = await this.verifyRealStudent(dto);
+    console.log('VERIFIED?: ', realStudent)
+    if (!realStudent.verified) {
+      throw new BadRequestException('Student not found')
+    }
+
     const check_email = await this.userService.findUserByEmail(dto.email)
     if (check_email)
       throw new BadRequestException('Email already registered')
@@ -67,47 +72,47 @@ export class AuthService {
   }
 
   // Handle Google OAuth login/sign up
-  async handleGoogleLogin(googleUser: any) {
-    let user = await this.userService.findUserByEmailWithSecrets(googleUser.email)
+  // async handleGoogleLogin(googleUser: any) {
+  //   let user = await this.userService.findUserByEmailWithSecrets(googleUser.email)
 
-    // Create random hash to bypass DTO
-    const randomPassword = crypto.randomBytes(32).toString('hex')
-    const hashedPassword = await bcrypt.hash(randomPassword, 10)
+  //   // Create random hash to bypass DTO
+  //   const randomPassword = crypto.randomBytes(32).toString('hex')
+  //   const hashedPassword = await bcrypt.hash(randomPassword, 10)
 
-    if (!user) {
-      user = await this.userService.createUser({
-        email: googleUser.email,
-        firstName: googleUser.firstName,
-        lastName: googleUser.lastName,
-        password: hashedPassword,
-        departmentCode: 'GIC', // Need to handle this better
-        role: { name: 'STUDENT' },
-      })
-    }
+  //   if (!user) {
+  //     user = await this.userService.createUser({
+  //       email: googleUser.email,
+  //       firstName: googleUser.firstName,
+  //       lastName: googleUser.lastName,
+  //       password: hashedPassword,
+  //       departmentCode: 'GIC', // Need to handle this better
+  //       role: { name: 'STUDENT' },
+  //     })
+  //   }
 
-    return this.generateTokens(user)
-  }
+  //   return this.generateTokens(user)
+  // }
 
   // Handle GitHub OAuth login/sign up
-  async handleGitHubLogin(githubUser: any) {
-    let user = await this.userService.findUserByEmailWithSecrets(githubUser.email)
+  // async handleGitHubLogin(githubUser: any) {
+  //   let user = await this.userService.findUserByEmailWithSecrets(githubUser.email)
 
-    const randomPassword = crypto.randomBytes(32).toString('hex')
-    const hashedPassword = await bcrypt.hash(randomPassword, 10)
+  //   const randomPassword = crypto.randomBytes(32).toString('hex')
+  //   const hashedPassword = await bcrypt.hash(randomPassword, 10)
 
-    if (!user) {
-      user = await this.userService.createUser({
-        email: githubUser.email,
-        firstName: githubUser.firstName,
-        lastName: githubUser.lastName,
-        password: hashedPassword,
-        departmentCode: 'GIC', // Need to handle this better
-        role: { name: 'STUDENT' },
-      })
-    }
+  //   if (!user) {
+  //     user = await this.userService.createUser({
+  //       email: githubUser.email,
+  //       firstName: githubUser.firstName,
+  //       lastName: githubUser.lastName,
+  //       password: hashedPassword,
+  //       departmentCode: 'GIC', // Need to handle this better
+  //       role: { name: 'STUDENT' },
+  //     })
+  //   }
 
-    return this.generateTokens(user)
-  }
+  //   return this.generateTokens(user)
+  // }
 
   private async saveRefreshToken(id: string, refreshToken: string) {
     await this.userRepo.save({ id, refreshToken }) // store it in the hashedRefreshToken column
@@ -233,7 +238,7 @@ export class AuthService {
     }
   }
 
-  async verifyRealStudent(dto: VerifyRealStudentDto) {
+  async verifyRealStudent(dto: CreateUserDto) {
     if (!dto.studentId || !dto.dob || !dto.nameKh || !dto.phoneNumber) {
       throw new BadRequestException('Field cannot be empty')
     }
@@ -246,9 +251,11 @@ export class AuthService {
         phoneNumber: dto.phoneNumber
       }
     });
-    console.log('REAL OR FAKE: ', real)
+
     if (!real) {
-      throw new NotFoundException('Student not found')
+      return {
+        verified: false
+      }
     }
 
     return {
