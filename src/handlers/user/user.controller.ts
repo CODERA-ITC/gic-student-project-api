@@ -41,7 +41,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -71,7 +71,7 @@ export class UserController {
     return this.userService.paginate(pagination)
   }
 
-  @Get('refresh')
+  @Post('refresh')
   getNewTokens(@Body('refresh_token') refreshToken: string) {
     return this.authService.refresh(refreshToken)
   }
