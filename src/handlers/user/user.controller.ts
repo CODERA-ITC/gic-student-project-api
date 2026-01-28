@@ -19,7 +19,6 @@ import { ConfigService } from '@nestjs/config'
 
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { AuthService } from './auth.service'
 import { GitHubOauthGuard } from './auth/github-oauth.guards'
 import { GoogleOauthGuard } from './auth/google-oauth.guards'
@@ -30,6 +29,7 @@ import { Roles } from './decorator/roles.decorator'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LoginDto } from './dto/login.dto'
+import { PaginateUserDto } from './dto/paginate-user.dto'
 import { UserService } from './user.service'
 
 @ApiTags('auth')
@@ -85,7 +85,7 @@ export class UserController {
   }
 
   @Get()
-  findAll(@Query() pagination: PaginationDto) {
+  findAll(@Query() pagination: PaginateUserDto) {
     return this.userService.paginate(pagination)
   }
 

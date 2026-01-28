@@ -54,6 +54,9 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   year: number
 
+  @Column({ nullable: true })
+  generation: number
+
   @Column('simple-array', { nullable: true })
   skill: string[]
 

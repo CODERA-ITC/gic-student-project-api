@@ -3,12 +3,12 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { Repository } from 'typeorm'
 import { v4 as uuid } from 'uuid'
 import { Department } from '../department/entitites/department.entity'
 import { Role } from '../role/entities/role.entity'
 import { CreateUserDto } from './dto/create-user.dto'
+import { PaginateUserDto } from './dto/paginate-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './entities/user.entity'
 
@@ -137,7 +137,7 @@ export class UserService {
       .getMany()
   }
 
-  async paginate(params: PaginationDto) {
+  async paginate(params: PaginateUserDto) {
     const page = params.page ?? 1
     const limit = params.limit ?? 10
     const skip = (page - 1) * limit
@@ -152,6 +152,10 @@ export class UserService {
     if (params.search) {
       qb.andWhere('u.firstName ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
         .orWhere('u.lastName ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
+    }
+
+    if (params.generation) {
+      qb.andWhere('u.generation = :generation', { generation: params.generation })
     }
 
     const [users, total] = await qb
@@ -246,7 +250,8 @@ export class UserService {
     if (rawUrl?.includes('http')) {
       // It's already a full URL
       avatarUrl = rawUrl
-    } else if (rawUrl) {
+    }
+    else if (rawUrl) {
       // It's a path that needs the storage prefix
       avatarUrl = `${storage}/${rawUrl}`
     }
@@ -258,6 +263,7 @@ export class UserService {
       email: user.email,
       bio: user.bio,
       year: user.year,
+      generation: user.generation,
       skill: user.skill,
       avatar: avatarUrl,
       department: {

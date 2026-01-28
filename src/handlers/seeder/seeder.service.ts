@@ -118,7 +118,6 @@ export class SeederService {
     const teacherRole = await this.roleRepo.findOne({ where: { name: 'TEACHER' } })
     const studentRole = await this.roleRepo.findOne({ where: { name: 'STUDENT' } })
     const adminRole = await this.roleRepo.findOne({ where: { name: 'ADMIN' } })
-
     const hashedPassword = await bcrypt.hash('@password123', 10)
 
     const users = [
@@ -133,6 +132,7 @@ export class SeederService {
         email: 'sarahchen@gmail.com',
         bio: 'hello i am very sad',
         year: 4,
+        generation: 25,
       },
       {
         firstName: 'Alex',
@@ -145,6 +145,7 @@ export class SeederService {
         email: 'alexkumar@gmail.com',
         bio: 'hello i am very sad',
         year: 5,
+        generation: 25,
       },
       {
         firstName: 'Maya',
@@ -156,6 +157,7 @@ export class SeederService {
         email: 'mayarodri@gmail.com',
         bio: 'Dattebayo UwU',
         year: 4,
+        generation: 25,
       },
       {
         firstName: 'David',
@@ -168,6 +170,7 @@ export class SeederService {
         email: 'davidpark@gmail.com',
         bio: 'hello i am very sad',
         year: 4,
+        generation: 25,
       },
       {
         firstName: 'Emma',
@@ -180,6 +183,7 @@ export class SeederService {
         email: 'emmat@gmail.com',
         bio: 'hello i am very sad',
         year: 3,
+        generation: 24,
       },
       {
         firstName: 'James',
@@ -192,6 +196,7 @@ export class SeederService {
         email: 'jameswilson@yahoo.com',
         bio: 'Ground control to major tom',
         year: 4,
+        generation: 24,
       },
     ]
 
@@ -206,7 +211,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: studentRole!,
-
+          generation: 24,
         },
         {
           id: '22222222-2222-2222-2222-222222222222',
@@ -218,7 +223,7 @@ export class SeederService {
           department: department!,
           role: studentRole!,
           avatarUrl: 'test',
-
+          generation: 24,
         },
         {
           id: '33333333-3333-3333-3333-333333333333',
@@ -229,6 +234,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: adminRole!,
+          generation: 24,
         },
         {
           id: '44444444-4444-4444-4444-444444444444',
@@ -239,7 +245,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: teacherRole!,
-
+          generation: 24,
         },
 
         ...users,
