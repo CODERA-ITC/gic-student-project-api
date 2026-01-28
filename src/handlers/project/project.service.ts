@@ -702,19 +702,7 @@ export class ProjectService {
     return !!view
   }
 
-  async trackProjectLike(projectId: string, userId?: string): Promise<{ liked: boolean }> {
-    if (!userId) {
-      throw new HttpException('Authentication required to like projects', HttpStatus.UNAUTHORIZED)
-    }
-
-    // Check if project exists
-    const project = await this.projectRepo.findOne({
-      where: { id: projectId },
-    })
-    if (!project) {
-      throw new NotFoundException('Project not found')
-    }
-
+  async toggleProjectLike(projectId: string, userId: string) {
     // Check if user already liked this project
     const existingLike = await this.projectLikeRepo.findOne({
       where: {
@@ -737,17 +725,11 @@ export class ProjectService {
       return { liked: false }
     }
     else {
-      // Like: Create new like record
-      const user = await this.userRepo.findOne({ where: { id: userId } })
-      if (!user) {
-        throw new NotFoundException('User not found')
-      }
-
       const projectLike = this.projectLikeRepo.create({
-        user,
-        project,
+        user: { id: userId },
+        project: { id: projectId },
       })
-      await this.projectLikeRepo.save(projectLike)
+      const result = await this.projectLikeRepo.save(projectLike)
 
       // Increment the like count
       await this.projectRepo.increment(
@@ -756,7 +738,7 @@ export class ProjectService {
         1,
       )
 
-      return { liked: true }
+      return result
     }
   }
 
@@ -788,6 +770,29 @@ export class ProjectService {
       },
     })
     return !!like
+  }
+
+  async getLikedProjectsByUserId(userId: string) {
+    const likedProjects = await this.projectLikeRepo.find({
+      where: {
+        user: { id: userId },
+      },
+      relations: {
+        project: {
+          images: true,
+          category: true,
+          tags: true,
+          features: true,
+          course: true,
+          members: {
+            member: true,
+          },
+        },
+      },
+    })
+
+    const result = await Promise.all(likedProjects.map(p => this.getProjectResponse(p.project)))
+    return result
   }
 
   async getProjectResponse(project: Project) {

@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger'
-import { OptionalJwtAuthGuard } from '../user/auth/optional-jwt-auth.guard'
 import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
+import { OptionalJwtAuthGuard } from '../user/auth/optional-jwt-auth.guard'
 import { RolesGuard } from '../user/auth/roles.guard'
 import { CurrentUser } from '../user/decorator/current-user.decorator'
 import { Roles } from '../user/decorator/roles.decorator'
@@ -31,7 +31,7 @@ import { ProjectService } from './project.service'
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
-  ) { }
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Upload multiple images to a project' })
@@ -149,16 +149,12 @@ export class ProjectController {
   // Toggle like/unlike on a project
   // ================================
   @Post(':id/like')
-  @UseGuards(OptionalJwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async toggleLike(
     @Param('id') projectId: string,
     @CurrentUser() user: any,
   ) {
-    const result = await this.projectService.trackProjectLike(projectId, user?.id)
-    return {
-      message: result.liked ? 'Project liked successfully' : 'Project unliked successfully',
-      liked: result.liked,
-    }
+    return this.projectService.toggleProjectLike(projectId, user.id)
   }
 
   // ==================================
@@ -181,5 +177,13 @@ export class ProjectController {
   ) {
     const hasLiked = await this.projectService.hasUserLikedProject(projectId, user?.id)
     return { projectId, hasLiked }
+  }
+
+  @Get('me/likes')
+  @UseGuards(JwtAuthGuard)
+  async getLikedProjects(
+    @CurrentUser() user: any,
+  ) {
+    return this.projectService.getLikedProjectsByUserId(user.id)
   }
 }

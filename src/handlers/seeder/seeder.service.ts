@@ -217,7 +217,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: studentRole!,
-          avatarUrl: 'test'
+          avatarUrl: 'test',
 
         },
         {
