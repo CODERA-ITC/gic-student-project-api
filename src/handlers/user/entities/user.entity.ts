@@ -41,7 +41,14 @@ export class User extends BaseEntity {
   @ManyToOne(() => Department, dept => dept.users)
   department: Department
 
-  @OneToMany(() => ProjectLike, like => like.user)
+  @OneToMany(
+    () => ProjectLike,
+    like => like.user,
+    {
+      cascade: true,
+      orphanedRowAction: 'delete',
+    },
+  )
   projectLikes: ProjectLike[]
 
   @Column({ nullable: true })
@@ -59,14 +66,28 @@ export class User extends BaseEntity {
   @ManyToOne(() => Role, role => role.users)
   role: Role
 
-  @OneToMany(() => ProjectMember, pm => pm.member)
+  @OneToMany(
+    () => ProjectMember,
+    pm => pm.member,
+    {
+      cascade: true,
+      orphanedRowAction: 'delete',
+    },
+  )
   projects: ProjectMember[]
 
   @ManyToMany(() => Notification, notification => notification.users)
   @JoinTable()
   notifications: Notification[]
 
-  @OneToMany(() => SecurityQuestion, secureQuestion => secureQuestion.user)
+  @OneToMany(
+    () => SecurityQuestion,
+    secureQuestion => secureQuestion.user,
+    {
+      cascade: true,
+      orphanedRowAction: 'delete',
+    },
+  )
   secureQuestions: SecurityQuestion[]
 
   @ManyToMany(() => Course, course => course.users)

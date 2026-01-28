@@ -3,6 +3,7 @@ import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Course } from '../course/entities/course.entity'
 import { Department } from '../department/entitites/department.entity'
@@ -19,8 +20,6 @@ import { ProjectView } from './entities/project-view.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
-import { ConfigService } from '@nestjs/config'
-import path from 'path'
 
 @Injectable()
 export class ProjectService {
@@ -44,7 +43,7 @@ export class ProjectService {
     private notificationService: NotificationService,
     private imageService: ImageService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
     // tem shorts for TransactionEntityManager
@@ -807,7 +806,8 @@ export class ProjectService {
       if (path?.includes('http')) {
         // It's already a full URL
         avatarUrl = path
-      } else if (path) {
+      }
+      else if (path) {
         // It's a path that needs the storage prefix
         avatarUrl = `${storage}/${path}`
       }

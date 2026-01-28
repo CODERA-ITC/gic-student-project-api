@@ -10,29 +10,23 @@ import {
   Param,
   Post,
   Query,
-  Req,
-  Res,
   UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import * as bcrypt from 'bcrypt'
-
-import { RolesGuard } from './auth/roles.guard'
-import { Roles } from './decorator/roles.decorator'
 
 import { FileInterceptor } from '@nestjs/platform-express'
-
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { Request, Response } from 'express'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { AuthService } from './auth.service'
 import { GitHubOauthGuard } from './auth/github-oauth.guards'
 import { GoogleOauthGuard } from './auth/google-oauth.guards'
 import { JwtAuthGuard } from './auth/jwt-auth.guard'
+import { RolesGuard } from './auth/roles.guard'
 import { CurrentUser } from './decorator/current-user.decorator'
+import { Roles } from './decorator/roles.decorator'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LoginDto } from './dto/login.dto'
@@ -45,7 +39,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -152,7 +146,7 @@ export class UserController {
   // Redirect user to Google Login Page
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async authGoogle() { }
+  async authGoogle() {}
 
   // @Get('google/callback')
   // @UseGuards(GoogleOauthGuard)
@@ -177,7 +171,7 @@ export class UserController {
   // Redirect user to GitHub Login Page
   @Get('github')
   @UseGuards(GitHubOauthGuard)
-  async authGitHub() { }
+  async authGitHub() {}
 
   // @Get('github/callback')
   // @UseGuards(GitHubOauthGuard)
@@ -263,7 +257,6 @@ export class UserController {
   @Post('real-student')
   @ApiOperation({ summary: 'Verify real students' })
   async verifyStudent(@Body() dto: CreateUserDto) {
-    console.log("DIS DA REAL DTO: ", dto)
     return this.authService.verifyRealStudent(dto)
   }
 }

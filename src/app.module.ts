@@ -10,12 +10,12 @@ import { DepartmentModule } from './handlers/department/department.module'
 import { ImageModule } from './handlers/image/image.module'
 import { NotificationModule } from './handlers/notification/notification.module'
 import { ProjectModule } from './handlers/project/project.module'
+import { RealStudentModule } from './handlers/real-student/real-student.module'
 import { RoleModule } from './handlers/role/role.module'
 import { SecurityQuestionsModule } from './handlers/security_questions/security_questions.module'
 import { SeederModule } from './handlers/seeder/seeder.module'
 import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
 import { UserModule } from './handlers/user/user.module'
-import { RealStudentModule } from './handlers/real-student/real-student.module';
 
 @Module({
   imports: [
