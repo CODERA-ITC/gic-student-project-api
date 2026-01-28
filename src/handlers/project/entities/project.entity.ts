@@ -27,12 +27,12 @@ export class Project extends BaseEntity {
   @Column({ nullable: true })
   thumbnailUrl: string
 
-  // draft, reviewing, rejected, accepted
-  @Column({ default: 'draft' })
+  // private, public
+  @Column({ default: 'public' })
   visibility: string
 
-  // pending, ongoing, done (for tracking project progression)
-  @Column({ default: 'pending' })
+  // draft, pending, rejected, accepted
+  @Column({ default: 'draft' })
   status: string
 
   // handle notification

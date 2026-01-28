@@ -89,7 +89,8 @@ export class ProjectService {
         course,
         department,
         members: [],
-        visibility: 'draft',
+        visibility: 'public', // default should be private in prod
+        status: 'draft',
         tags,
         features,
       })
@@ -166,52 +167,8 @@ export class ProjectService {
     return await this.projectRepo.save(project)
   }
 
-  async findOne(id: string) {
-    const project = await this.projectRepo.findOne({
-      where: { id },
-      relations: {
-        images: true,
-        members: {
-          member: true,
-        },
-        features: true,
-        tags: true,
-        category: true,
-        course: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        course: true,
-        repoUrl: true,
-        demoUrl: true,
-        description: true,
-        viewCount: true,
-        technologies: true,
-        academicYear: true,
-        isFeatured: true,
-        duration: true,
-        images: {
-          id: true,
-          originalUrl: true, // Change from url to original_url
-        },
-        members: {
-          id: true,
-          role: true,
-          member: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        tags: {
-          id: true,
-          name: true,
-        },
-      },
-    })
+  async findOne(projectId: string) {
+    const project = await this.findOneWithRelations(projectId)
 
     if (!project) {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
@@ -543,23 +500,13 @@ export class ProjectService {
 
   // Accept or reject project (Teacher Role)
   async acceptProject(projectId: string, teacherId: string) {
-    const project = await this.projectRepo.findOne({
-      where: { id: projectId },
-      relations: { members: { member: true } },
-    })
+    const project = await this.findOneWithRelations(projectId)
 
     if (!project) {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    if (project.visibility !== 'reviewing') {
-      throw new HttpException(
-        'Only projects under review can be accepted',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-
-    project.visibility = 'accepted'
+    project.status = 'accepted'
     project.reviewedBy = teacherId
     await this.projectRepo.save(project)
 
@@ -588,26 +535,18 @@ export class ProjectService {
     catch (error) {
       console.error('Failed to notify project members: ', error)
     }
+
+    return this.getProjectResponse(project)
   }
 
   async rejectProject(projectId: string, teacherId: string) {
-    const project = await this.projectRepo.findOne({
-      where: { id: projectId },
-      relations: ['members', 'members.member'],
-    })
+    const project = await this.findOneWithRelations(projectId)
 
     if (!project) {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    if (project.visibility !== 'reviewing') {
-      throw new HttpException(
-        'Only projects under review can be accepted',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-
-    project.visibility = 'rejected'
+    project.status = 'rejected'
     project.reviewedBy = teacherId
     await this.projectRepo.save(project)
 
@@ -636,6 +575,8 @@ export class ProjectService {
     catch (error) {
       console.error('Failed to notify project members: ', error)
     }
+
+    return this.getProjectResponse(project)
   }
 
   async incrementViewCount(projectId: string) {
@@ -826,6 +767,7 @@ export class ProjectService {
       academicYear: project.academicYear,
       technologies: project.technologies,
       visibility: project.visibility,
+      status: project.status,
       repoUrl: project.repoUrl,
       demoUrl: project.demoUrl,
       viewCount: project.viewCount,
@@ -862,5 +804,55 @@ export class ProjectService {
       })),
     }
     return transformed
+  }
+
+  private async findOneWithRelations(id: string) {
+    return await this.projectRepo.findOne({
+      where: { id },
+      relations: {
+        images: true,
+        members: {
+          member: true,
+        },
+        features: true,
+        tags: true,
+        category: true,
+        course: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        course: true,
+        repoUrl: true,
+        demoUrl: true,
+        description: true,
+        viewCount: true,
+        technologies: true,
+        academicYear: true,
+        isFeatured: true,
+        duration: true,
+        visibility: true,
+        status: true,
+        images: {
+          id: true,
+          originalUrl: true, // Change from url to original_url
+        },
+        members: {
+          id: true,
+          role: true,
+          member: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        tags: {
+          id: true,
+          name: true,
+        },
+      },
+    })
   }
 }
