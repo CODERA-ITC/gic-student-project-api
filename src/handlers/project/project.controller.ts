@@ -115,7 +115,7 @@ export class ProjectController {
     @Param('id') projectId: string,
     @CurrentUser() user: any,
   ) {
-    await this.projectService.trackProjectView(projectId, user?.id)
+    await this.projectService.incrementViewCount(projectId)
     return { message: 'View tracked successfully' }
   }
 
@@ -128,18 +128,18 @@ export class ProjectController {
     return { projectId, viewCount }
   }
 
-  // =================================================
-  // Check if the current user has viewed a project
-  // =================================================
-  @Get(':id/has-viewed')
-  @UseGuards(OptionalJwtAuthGuard)
-  async hasViewed(
-    @Param('id') projectId: string,
-    @CurrentUser() user: any,
-  ) {
-    const hasViewed = await this.projectService.hasUserViewedProject(projectId, user?.id)
-    return { projectId, hasViewed }
-  }
+  // // =================================================
+  // // Check if the current user has viewed a project
+  // // =================================================
+  // @Get(':id/has-viewed')
+  // @UseGuards(OptionalJwtAuthGuard)
+  // async hasViewed(
+  //   @Param('id') projectId: string,
+  //   @CurrentUser() user: any,
+  // ) {
+  //   const hasViewed = await this.projectService.hasUserViewedProject(projectId, user?.id)
+  //   return { projectId, hasViewed }
+  // }
 
   // ========================================================
   // PROJECT LIKE CONTROLLER

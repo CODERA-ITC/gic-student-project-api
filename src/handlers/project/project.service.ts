@@ -16,7 +16,6 @@ import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/u
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { ProjectLike } from './entities/project-like.entity'
-import { ProjectView } from './entities/project-view.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
@@ -34,8 +33,6 @@ export class ProjectService {
     private featureRepo: Repository<Feature>,
     @InjectRepository(Tag)
     private tagRepo: Repository<Tag>,
-    @InjectRepository(ProjectView)
-    private projectViewRepo: Repository<ProjectView>,
     @InjectRepository(ProjectLike)
     private projectLikeRepo: Repository<ProjectLike>,
     @InjectEntityManager()
@@ -641,7 +638,7 @@ export class ProjectService {
     }
   }
 
-  async trackProjectView(projectId: string, userId: string): Promise<void> {
+  async incrementViewCount(projectId: string) {
     // Check if project exists
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -650,29 +647,7 @@ export class ProjectService {
       throw new NotFoundException('Project not found')
     }
 
-    // Check if user has already viewed this project
-    const existingView = await this.projectViewRepo.findOne({
-      where: { userId, projectId },
-    })
-
-    // Only increment view count if this is a new view
-    if (!existingView) {
-      // Record the view - create entity instance
-      if (userId) {
-        const projectView = this.projectViewRepo.create({
-          userId,
-          projectId,
-        })
-        await this.projectViewRepo.save(projectView)
-      }
-
-      // Increment the view count
-      await this.projectRepo.increment(
-        { id: projectId },
-        'viewCount',
-        1,
-      )
-    }
+    return await this.projectRepo.increment({ id: projectId }, 'viewCount', 1)
   }
 
   /**
@@ -689,18 +664,18 @@ export class ProjectService {
     return project.viewCount
   }
 
-  /**
-   * Check if a user has viewed a project
-   */
-  async hasUserViewedProject(projectId: string, userId?: string): Promise<boolean> {
-    if (!userId) {
-      return false
-    }
-    const view = await this.projectViewRepo.findOne({
-      where: { userId, projectId },
-    })
-    return !!view
-  }
+  // /**
+  //  * Check if a user has viewed a project
+  //  */
+  // async hasUserViewedProject(projectId: string, userId?: string): Promise<boolean> {
+  //   if (!userId) {
+  //     return false
+  //   }
+  //   const view = await this.projectViewRepo.findOne({
+  //     where: { userId, projectId },
+  //   })
+  //   return !!view
+  // }
 
   async toggleProjectLike(projectId: string, userId: string) {
     // Check if user already liked this project

@@ -10,7 +10,6 @@ import { CategoryService } from './category.service'
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { ProjectLike } from './entities/project-like.entity'
-import { ProjectView } from './entities/project-view.entity'
 import { Project } from './entities/project.entity'
 import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
@@ -31,7 +30,6 @@ import { TagService } from './tag.service'
     Image,
     ProjectMember,
     User,
-    ProjectView,
     ProjectLike,
   ]), NotificationModule, ImageModule],
   exports: [ProjectService],
