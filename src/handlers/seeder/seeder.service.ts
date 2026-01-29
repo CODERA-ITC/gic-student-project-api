@@ -222,7 +222,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: studentRole!,
-          avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+          avatarUrl: 'https://images.pexels.com/photos/35802448/pexels-photo-35802448.jpeg',
           generation: 24,
         },
         {
@@ -497,7 +497,7 @@ export class SeederService {
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
-        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        avatarUrl: 'https://images.pexels.com/photos/35802448/pexels-photo-35802448.jpeg',
         highlighted: true,
       },
       {
@@ -546,7 +546,7 @@ export class SeederService {
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
-        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        avatarUrl: 'https://images.pexels.com/photos/35802448/pexels-photo-35802448.jpeg',
         highlighted: true,
         status: 'pending',
       },
@@ -595,7 +595,7 @@ export class SeederService {
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
-        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        avatarUrl: 'https://images.pexels.com/photos/35802448/pexels-photo-35802448.jpeg',
         status: 'rejected',
       },
       {
@@ -643,7 +643,7 @@ export class SeederService {
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
-        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        avatarUrl: 'https://images.pexels.com/photos/35802448/pexels-photo-35802448.jpeg',
         status: 'accepted',
       },
     ]
