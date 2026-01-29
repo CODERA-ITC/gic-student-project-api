@@ -716,6 +716,8 @@ export class ProjectService {
     const pmMember = project.members.filter(m => m.role === 'member')
     // append avatarUrl to storage to get full url stored in bucket
     const storage = this.configService.get<string>('STORAGE_URL')
+    const frontend = this.configService.get<string>('FRONTEND_HOST_URL')
+    const href = `${frontend}/projects/${project.id}`
 
     const getPictureUrl = (path: string | null | undefined) => {
       let avatarUrl = ''
@@ -802,6 +804,7 @@ export class ProjectService {
         id: tag.id,
         name: tag.name,
       })),
+      href,
     }
     return transformed
   }
