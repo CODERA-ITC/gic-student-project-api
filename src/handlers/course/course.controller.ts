@@ -25,8 +25,11 @@ export class CourseController {
   @Roles(['TEACHER'])
   @Get('submissions')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  getProjectsByCourse(@CurrentUser() teacher: any) {
-    return this.courseService.getProjectsForReview(teacher.id)
+  getProjectsByCourse(
+    @CurrentUser() teacher: any,
+    @Query() params: PaginationDto,
+  ) {
+    return this.courseService.getProjectsForReview(teacher.id, params)
   }
 
   // @Get(':id')

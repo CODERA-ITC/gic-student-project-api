@@ -222,7 +222,7 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: studentRole!,
-          avatarUrl: 'test',
+          avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
           generation: 24,
         },
         {

@@ -117,7 +117,10 @@ export class CourseService {
     return this.userRepo.save(teacher)
   }
 
-  async getProjectsForReview(teacherId: string, status: 'draft' | 'pending' | 'accepted' | 'rejected' = 'pending') {
+  async getProjectsForReview(
+    teacherId: string,
+    params: PaginationDto,
+  ) {
     const teacher = await this.userRepo.findOneOrFail({
       where: {
         id: teacherId,
@@ -135,7 +138,11 @@ export class CourseService {
       throw new UnauthorizedException('Unauthorized access to courses')
     }
 
-    const projects = await this.projectRepo.find({
+    const page = params.page ?? 1
+    const limit = params.limit ?? 20
+    const skip = limit * (page - 1)
+
+    const [projects, total] = await this.projectRepo.findAndCount({
       where: {
         course: {
           id: In(allowedCourseIds),
@@ -154,12 +161,20 @@ export class CourseService {
         department: true,
         course: true,
       },
+      take: limit,
+      skip,
     })
 
     const response = await Promise.all(
       projects.map(p => this.projectService.getProjectResponse(p)),
     )
 
-    return response
+    return {
+      data: response,
+      limit,
+      page,
+      total,
+      lastPage: Math.ceil(total / limit),
+    }
   }
 }
