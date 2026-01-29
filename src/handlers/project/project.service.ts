@@ -129,44 +129,6 @@ export class ProjectService {
     return await this.findOne(project.id)
   }
 
-  async submitProjectForReview(projectId: string): Promise<Project> {
-    const project = await this.projectRepo.findOne({
-      where: { id: projectId },
-      relations: ['members', 'members.member', 'category', 'department'],
-    })
-
-    if (!project) {
-      throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
-    }
-
-    if (project.visibility !== 'draft') {
-      throw new HttpException(
-        'Only draft projects can be submitted for review',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-
-    project.visibility = 'reviewing'
-
-    try {
-      const notificationDto: CreateNotificationDto = {
-        name: `${project.name}`,
-        description: `${project.description}`,
-        status: 'pending',
-        read: false,
-      }
-
-      const notification = await this.notificationService.notifyTeachers(notificationDto)
-
-      project.notificationId = notification.id
-    }
-    catch (error) {
-      console.error('Failed to send notification to teachers: ', error)
-    }
-
-    return await this.projectRepo.save(project)
-  }
-
   async findOne(projectId: string) {
     const project = await this.findOneWithRelations(projectId)
 
@@ -496,6 +458,44 @@ export class ProjectService {
       relations: ['project'],
       order: { createdAt: 'ASC' },
     })
+  }
+
+  async submitProjectForReview(projectId: string): Promise<Project> {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: ['members', 'members.member', 'category', 'department'],
+    })
+
+    if (!project) {
+      throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
+    }
+
+    if (project.status !== 'draft') {
+      throw new HttpException(
+        'Only draft projects can be submitted for review',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    project.status = 'pending'
+
+    try {
+      const notificationDto: CreateNotificationDto = {
+        name: `${project.name}`,
+        description: `${project.description}`,
+        status: 'pending',
+        read: false,
+      }
+
+      const notification = await this.notificationService.notifyTeachers(notificationDto)
+
+      project.notificationId = notification.id
+    }
+    catch (error) {
+      console.error('Failed to send notification to teachers: ', error)
+    }
+
+    return await this.projectRepo.save(project)
   }
 
   // Accept or reject project (Teacher Role)

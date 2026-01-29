@@ -137,7 +137,7 @@ export class UserService {
       .getMany()
   }
 
-  async paginate(params: PaginateUserDto) {
+  async paginate(params: PaginateUserDto, user?: { id: string, role: string }) {
     const page = params.page ?? 1
     const limit = params.limit ?? 10
     const skip = (page - 1) * limit
@@ -148,7 +148,11 @@ export class UserService {
       .leftJoinAndSelect('u.role', 'role')
       .leftJoinAndSelect('u.courses', 'courses')
 
-    // Optional search (e.g., search by project name)
+    // if user is not admin, fetch only students
+    if (!user?.role || user?.role !== 'ADMIN') {
+      qb.andWhere('role.name = :roleName', { roleName: 'STUDENT' })
+    }
+
     if (params.search) {
       qb.andWhere('u.firstName ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })
         .orWhere('u.lastName ILIKE :search', { search: `%${params.search.trim().toLowerCase()}%` })

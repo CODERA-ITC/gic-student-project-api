@@ -21,8 +21,8 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
 import { GitHubOauthGuard } from './auth/github-oauth.guards'
-import { GoogleOauthGuard } from './auth/google-oauth.guards'
 import { JwtAuthGuard } from './auth/jwt-auth.guard'
+import { OptionalJwtAuthGuard } from './auth/optional-jwt-auth.guard'
 import { RolesGuard } from './auth/roles.guard'
 import { CurrentUser } from './decorator/current-user.decorator'
 import { Roles } from './decorator/roles.decorator'
@@ -85,8 +85,9 @@ export class UserController {
   }
 
   @Get()
-  findAll(@Query() pagination: PaginateUserDto) {
-    return this.userService.paginate(pagination)
+  @UseGuards(OptionalJwtAuthGuard)
+  findAll(@Query() pagination: PaginateUserDto, @CurrentUser() user) {
+    return this.userService.paginate(pagination, user)
   }
 
   @Post('refresh')
@@ -142,11 +143,6 @@ export class UserController {
     log('Current User:', user)
     return this.userService.findUserById(user.userId)
   }
-
-  // Redirect user to Google Login Page
-  @Get('google')
-  @UseGuards(GoogleOauthGuard)
-  async authGoogle() {}
 
   // @Get('google/callback')
   // @UseGuards(GoogleOauthGuard)

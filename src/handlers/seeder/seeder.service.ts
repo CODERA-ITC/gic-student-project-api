@@ -417,9 +417,27 @@ export class SeederService {
         features: [
           {
             name: 'coolest feature ever',
-            status: 'pending',
-            icon: 'bruh',
+            status: 'done',
+            icon: 'i-lucide-brain',
             description: 'bogo sort',
+          },
+          {
+            name: 'visualizer',
+            status: 'ongoing',
+            icon: 'i-lucide-globe',
+            description: 'graph animation',
+          },
+          {
+            name: 'shader',
+            status: 'pending',
+            icon: 'i-lucide-rocket',
+            description: 'fast inverse square root',
+          },
+          {
+            name: 'Crypto Mining',
+            status: 'pending',
+            icon: 'i-lucide-brain',
+            description: 'jack up gpu and ram prices',
           },
         ],
         members: createMembers(),
