@@ -713,10 +713,13 @@ export class ProjectService {
 
   async getHighlightedProjects() {
     const options = this.getProjectResponseOptions()
-    return await this.projectRepo.find({
+    const projects = await this.projectRepo.find({
       where: { highlighted: true },
       ...options,
     })
+    return await Promise.all(
+      projects.map(p => this.getProjectResponse(p)),
+    )
   }
 
   async getProjectResponse(project: Project) {
