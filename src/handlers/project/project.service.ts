@@ -793,7 +793,7 @@ export class ProjectService {
         firstName: pmAuthor?.member.firstName,
         lastName: pmAuthor?.member.lastName,
         role: pmAuthor?.member.role,
-        avatarUrl: getPictureUrl(pmAuthor?.member.avatarUrl),
+        avatar: getPictureUrl(pmAuthor?.member.avatarUrl),
       },
       members: pmMember.map(pm => ({
         id: pm.member.id,
@@ -801,7 +801,7 @@ export class ProjectService {
         firstName: pm.member.firstName,
         lastName: pm.member.lastName,
         role: pm.role,
-        avatarUrl: getPictureUrl(pm.member.avatarUrl),
+        avatar: getPictureUrl(pm.member.avatarUrl),
       })),
       features: project.features.map(f => ({
         id: f.id,
@@ -833,7 +833,9 @@ export class ProjectService {
       relations: {
         images: true,
         members: {
-          member: true,
+          member: {
+            role: true,
+          },
         },
         features: true,
         tags: true,
@@ -867,6 +869,8 @@ export class ProjectService {
             email: true,
             firstName: true,
             lastName: true,
+            avatarUrl: true,
+            role: true,
           },
         },
         tags: {
