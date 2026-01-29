@@ -132,12 +132,6 @@ export class CreateProjectDto {
   @IsString()
   demoUrl: string
 
-  @ApiProperty({ example: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg', required: false })
-  @Transform(({ value }) => value?.trim())
-  @IsOptional()
-  @IsString()
-  avatarUrl: string
-
   @ApiProperty({ example: '3 months', required: false })
   @Transform(({ value }) => value?.trim())
   @IsOptional()

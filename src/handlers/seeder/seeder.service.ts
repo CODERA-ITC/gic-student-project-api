@@ -414,6 +414,7 @@ export class SeederService {
           tags[1],
         ],
         departments: [depts[0]],
+        highlighted: true,
         features: [
           {
             name: 'coolest feature ever',
@@ -448,7 +449,7 @@ export class SeederService {
         academicYear: '2024-2025',
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
-        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        status: 'pending',
       },
       {
         name: 'AI Chat Assistant',
@@ -497,6 +498,7 @@ export class SeederService {
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
         avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        highlighted: true,
       },
       {
         name: 'Smart Parking System',
@@ -545,6 +547,104 @@ export class SeederService {
         repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
         demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
         avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        highlighted: true,
+        status: 'pending',
+      },
+      {
+        name: 'Concurrency visualizer',
+        description: 'A small personal project',
+        category: catWeb,
+        course: courseWeb,
+        tags: [
+          tags[4],
+          tags[5],
+        ],
+        departments: [depts[0]],
+        highlighted: false,
+        features: [
+          {
+            name: 'coolest feature ever',
+            status: 'done',
+            icon: 'i-lucide-brain',
+            description: 'bogo sort',
+          },
+          {
+            name: 'visualizer',
+            status: 'ongoing',
+            icon: 'i-lucide-globe',
+            description: 'graph animation',
+          },
+          {
+            name: 'shader',
+            status: 'pending',
+            icon: 'i-lucide-rocket',
+            description: 'fast inverse square root',
+          },
+          {
+            name: 'Crypto Mining',
+            status: 'pending',
+            icon: 'i-lucide-brain',
+            description: 'jack up gpu and ram prices',
+          },
+        ],
+        members: createMembers(),
+        technologies: [
+          'VueJs',
+        ],
+        duration: '2 years',
+        academicYear: '2024-2025',
+        repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
+        demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
+        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        status: 'rejected',
+      },
+      {
+        name: 'Yakuzy simulator',
+        description: 'Dame Dane',
+        category: catWeb,
+        course: courseWeb,
+        tags: [
+          tags[2],
+          tags[3],
+        ],
+        departments: [depts[0]],
+        highlighted: false,
+        features: [
+          {
+            name: 'coolest feature ever',
+            status: 'done',
+            icon: 'i-lucide-brain',
+            description: 'bogo sort',
+          },
+          {
+            name: 'visualizer',
+            status: 'ongoing',
+            icon: 'i-lucide-globe',
+            description: 'graph animation',
+          },
+          {
+            name: 'shader',
+            status: 'pending',
+            icon: 'i-lucide-rocket',
+            description: 'fast inverse square root',
+          },
+          {
+            name: 'Crypto Mining',
+            status: 'pending',
+            icon: 'i-lucide-brain',
+            description: 'jack up gpu and ram prices',
+          },
+        ],
+        members: createMembers(),
+        technologies: [
+          'VueJs',
+        ],
+        duration: '2 years',
+        academicYear: '2024-2025',
+        repoUrl: 'https://github.com/CODERA-ITC/gic-student-project-web',
+        demoUrl: 'https://github.com/darororo/Ecommerce/deployments/github-pages',
+        avatarUrl: 'https://en.wikipedia.org/wiki/Doge_(meme)#/media/File:Original_Doge_meme.jpg',
+        status: 'accepted',
       },
     ]
 
