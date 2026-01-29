@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Post, Query, UseGuards } from '@nestjs/common'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { JwtAuthGuard } from '../user/auth/jwt-auth.guard'
 import { RolesGuard } from '../user/auth/roles.guard'
@@ -7,7 +7,6 @@ import { Roles } from '../user/decorator/roles.decorator'
 import { CourseService } from './course.service'
 import { AssignCourseDto } from './dto/assign-course.dto'
 import { CreateCourseDto } from './dto/create-course.dto'
-import { UpdateCourseDto } from './dto/update-course.dto'
 
 @Controller('courses')
 export class CourseController {
@@ -30,20 +29,20 @@ export class CourseController {
     return this.courseService.getProjectsForReview(teacher.id)
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.courseService.findOne(+id)
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.courseService.findOne(+id)
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
-    return this.courseService.update(+id, updateCourseDto)
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
+  //   return this.courseService.update(+id, updateCourseDto)
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.courseService.remove(+id)
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.courseService.remove(+id)
+  // }
 
   @Post('/assign/teacher')
   assignTeacher(@Body() dto: AssignCourseDto) {

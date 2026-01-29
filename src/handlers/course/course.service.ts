@@ -117,7 +117,7 @@ export class CourseService {
     return this.userRepo.save(teacher)
   }
 
-  async getProjectsForReview(teacherId: string, status: 'pending' | 'ongoing' | 'done' = 'pending') {
+  async getProjectsForReview(teacherId: string, status: 'draft' | 'pending' | 'accepted' | 'rejected' = 'pending') {
     const teacher = await this.userRepo.findOneOrFail({
       where: {
         id: teacherId,
@@ -140,7 +140,7 @@ export class CourseService {
         course: {
           id: In(allowedCourseIds),
         },
-        visibility: Not(Equal('draft')),
+        status: Not(Equal('draft')),
       },
       relations: {
         members: {
