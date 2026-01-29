@@ -711,6 +711,14 @@ export class ProjectService {
     return result
   }
 
+  async getHighlightedProjects() {
+    const options = this.getProjectResponseOptions()
+    return await this.projectRepo.find({
+      where: { highlighted: true },
+      ...options,
+    })
+  }
+
   async getProjectResponse(project: Project) {
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role === 'member')
@@ -765,7 +773,7 @@ export class ProjectService {
         description: project.course.description,
       },
       startDate: project.startDate,
-      isFeatured: project.isFeatured,
+      highlighted: project.highlighted,
       academicYear: project.academicYear,
       technologies: project.technologies,
       visibility: project.visibility,
@@ -809,9 +817,16 @@ export class ProjectService {
     return transformed
   }
 
-  private async findOneWithRelations(id: string) {
+  private async findOneWithRelations(id: string, where?: any) {
+    const options = this.getProjectResponseOptions()
     return await this.projectRepo.findOne({
-      where: { id },
+      where: { id, ...where },
+      ...options,
+    })
+  }
+
+  private getProjectResponseOptions() {
+    return {
       relations: {
         images: true,
         members: {
@@ -833,7 +848,7 @@ export class ProjectService {
         viewCount: true,
         technologies: true,
         academicYear: true,
-        isFeatured: true,
+        highlighted: true,
         duration: true,
         visibility: true,
         status: true,
@@ -856,6 +871,6 @@ export class ProjectService {
           name: true,
         },
       },
-    })
+    }
   }
 }

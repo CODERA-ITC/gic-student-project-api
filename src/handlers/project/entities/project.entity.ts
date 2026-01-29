@@ -106,7 +106,7 @@ export class Project extends BaseEntity {
   technologies: string[]
 
   @Column({ default: false })
-  isFeatured: boolean
+  highlighted: boolean
 
   @Column({ nullable: true })
   repoUrl: string

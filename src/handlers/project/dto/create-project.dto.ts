@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform, Type } from 'class-transformer'
-import { IsArray, IsISO8601, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
+import { IsArray, IsBoolean, IsISO8601, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
 import { CreateFeatureDto } from './create-feature.dto'
 
 export class CreateProjectDto {
@@ -143,4 +143,10 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   duration: string
+
+  @ApiProperty({ example: false, required: false })
+  @Type(() => Boolean)
+  @IsOptional()
+  @IsBoolean()
+  highlighted: boolean
 }

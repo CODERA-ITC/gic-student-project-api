@@ -68,6 +68,11 @@ export class ProjectController {
     return this.projectService.getProjectsByUserId(user.id)
   }
 
+  @Get('hightlights')
+  async getHightlightedProjects() {
+    return this.projectService.getHighlightedProjects()
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.projectService.findOne(id)
