@@ -4,9 +4,8 @@ import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { DataSource } from 'typeorm'
 import { AppModule } from './app.module'
-import { HttpExceptionFilter } from './lib/filters/http-exception.filter'
-
-import { LoggingInterceptor } from './lib/interceptor/logging.interceptor'
+import { HttpExceptionFilter } from './common/filters/http-exception.filter'
+import { LoggingInterceptor } from './common/interceptor/logging.interceptor'
 import 'dotenv/config'
 
 async function bootstrap() {

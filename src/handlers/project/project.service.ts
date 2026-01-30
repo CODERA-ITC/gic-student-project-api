@@ -40,7 +40,7 @@ export class ProjectService {
     private notificationService: NotificationService,
     private imageService: ImageService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
     // tem shorts for TransactionEntityManager
@@ -851,6 +851,7 @@ export class ProjectService {
         demoUrl: true,
         description: true,
         viewCount: true,
+        likeCount: true,
         technologies: true,
         academicYear: true,
         highlighted: true,
