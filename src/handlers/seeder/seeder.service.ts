@@ -30,7 +30,7 @@ export class SeederService {
     private projectRepo: Repository<Project>,
     @InjectRepository(ProjectMember)
     private pmRepo: Repository<ProjectMember>,
-  ) {}
+  ) { }
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
@@ -204,9 +204,9 @@ export class SeederService {
       [
         {
           id: '11111111-1111-1111-1111-111111111111',
-          firstName: 'Test',
-          lastName: 'User',
-          email: 'testuser@gmail.com',
+          firstName: 'Saren',
+          lastName: 'Sokmeak',
+          email: 'sarensokmeak@gmail.com',
           phone: '0123456789',
           password: hashedPassword,
           department: department!,
@@ -215,9 +215,9 @@ export class SeederService {
         },
         {
           id: '22222222-2222-2222-2222-222222222222',
-          firstName: 'Test',
-          lastName: 'User',
-          email: 'testuser2@gmail.com',
+          firstName: 'Yem',
+          lastName: 'Daro',
+          email: 'yemdaro@gmail.com',
           phone: '0123456789',
           password: hashedPassword,
           department: department!,
@@ -227,8 +227,8 @@ export class SeederService {
         },
         {
           id: '33333333-3333-3333-3333-333333333333',
-          firstName: 'John',
-          lastName: 'Yakult',
+          firstName: 'Sovichet',
+          lastName: 'Rathanak',
           email: 'admin123@gmail.com',
           phone: '0123456789',
           password: hashedPassword,
@@ -245,6 +245,17 @@ export class SeederService {
           password: hashedPassword,
           department: department!,
           role: teacherRole!,
+          generation: 24,
+        },
+        {
+          id: '55555555-5555-5555-5555-555555555555',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'testuser@gmail.com',
+          phone: '0123456789',
+          password: hashedPassword,
+          department: department!,
+          role: studentRole!,
           generation: 24,
         },
 
