@@ -3,7 +3,7 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { ILike, Like, Or, Repository } from 'typeorm'
 import { v4 as uuid } from 'uuid'
 import { Department } from '../department/entitites/department.entity'
 import { Role } from '../role/entities/role.entity'
@@ -50,21 +50,15 @@ export class UserService {
   // Create
   // =============
   async createUser(dto: CreateUserDto) {
-    const { role: roleName, ...userData } = dto
-    const user = this.userRepo.create(userData)
-
+    const user = this.userRepo.create(dto)
     const department = await this.departmentRepo.findOneOrFail({ where: { code: dto.departmentCode } })
-    const role = await this.roleRepo.findOneOrFail({ where: { name: 'STUDENT' } })
-    user.role = role
     user.department = department
 
     return this.userRepo.save(user)
   }
 
   async createSuperTeacher(dto: CreateUserDto) {
-    const { role: roleName, ...userData } = dto
-    const user = this.userRepo.create(userData)
-
+    const user = this.userRepo.create(dto)
     const department = await this.departmentRepo.findOneOrFail({ where: { code: dto.departmentCode } })
     const role = await this.roleRepo.findOneOrFail({ where: { name: 'SUPER_TEACHER' } })
     user.role = role
@@ -104,7 +98,12 @@ export class UserService {
   }
 
   async findUserById(id: string) {
-    const user = await this.userRepo.findOne({ where: { id }, relations: ['role', 'department', 'courses'] })
+    const user = await this.userRepo.findOne(
+      {
+        where: { id },
+        relations: ['role', 'department', 'courses'],
+      },
+    )
     if (!user)
       throw new NotFoundException('User not found')
 
@@ -115,11 +114,18 @@ export class UserService {
   // Update
   // =============
   async updateUser(id: string, dto: UpdateUserDto) {
-    const { role: roleName, ...userData } = dto
-    const result = await this.userRepo.update(id, userData)
-    if (result.affected === 0)
-      throw new NotFoundException('User not found')
-    return this.findUserById(id)
+    const selectOptions = this.getUserSelectOptions()
+    const user = await this.userRepo.findOne({
+      where: { id },
+      ...selectOptions,
+    })
+    if (!user)
+      throw new NotFoundException()
+
+    const updatedData = this.userRepo.merge(user, dto)
+    const updatedUser = await this.userRepo.save(updatedData)
+
+    return this.getUserResponse(updatedUser)
   }
 
   // ======================
@@ -128,13 +134,24 @@ export class UserService {
   async searchUser(q: string) {
     if (!q || q.trim() === '')
       return []
-    return this.userRepo.createQueryBuilder('user')
-      .select(['user.id', 'user.firstName', 'user.lastName', 'user.email', 'user.role'])
-      .where('user.firstName ILIKE :prefix', { prefix: `${q}%` })
-      .orWhere('user.lastName ILIKE :prefix', { prefix: `${q}%` })
-      .orderBy('user.firstName', 'ASC')
-      .limit(10)
-      .getMany()
+    const terms = q.trim()
+    const [users, _] = await this.userRepo
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.department', 'department')
+      .leftJoinAndSelect('u.role', 'role')
+      .leftJoinAndSelect('u.courses', 'courses')
+      .where('role.name = :roleName', { roleName: 'STUDENT' })
+      .andWhere(
+        '(u.firstName ILIKE :search OR u.lastName ILIKE :search)',
+        { search: `${terms}%` },
+      )
+      .orderBy('u.createdAt', 'DESC')
+      .take(10)
+      .getManyAndCount()
+
+    const result = users.map(u => this.getUserResponse(u))
+
+    return result
   }
 
   async paginate(params: PaginateUserDto, user?: { id: string, role: string }) {
@@ -287,5 +304,20 @@ export class UserService {
     }
 
     return response
+  }
+
+  private getUserSelectOptions() {
+    return {
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        password: true,
+        refreshToken: true,
+        role: true,
+      },
+      relations: ['role', 'department', 'courses'],
+    }
   }
 }

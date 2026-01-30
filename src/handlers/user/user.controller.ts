@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   UnauthorizedException,
@@ -30,6 +31,7 @@ import { ChangePasswordDto } from './dto/change-password.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LoginDto } from './dto/login.dto'
 import { PaginateUserDto } from './dto/paginate-user.dto'
+import { UpdateUserDto } from './dto/update-user.dto'
 import { UserService } from './user.service'
 
 @ApiTags('auth')
@@ -39,7 +41,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -62,6 +64,19 @@ export class UserController {
 
       throw new BadRequestException('Registration failed. Please try again.')
     }
+  }
+
+  @Roles(['TEACHER', 'ADMIN', 'SUPER_ADMIN'])
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return await this.userService.updateUser(id, dto)
+  }
+
+  @Patch('/me')
+  @UseGuards(JwtAuthGuard)
+  async updateSelf(@CurrentUser() user, @Body() dto: UpdateUserDto) {
+    return await this.userService.updateUser(user.id, dto)
   }
 
   @Post('admin')
@@ -167,7 +182,7 @@ export class UserController {
   // Redirect user to GitHub Login Page
   @Get('github')
   @UseGuards(GitHubOauthGuard)
-  async authGitHub() {}
+  async authGitHub() { }
 
   // @Get('github/callback')
   // @UseGuards(GitHubOauthGuard)
@@ -190,7 +205,7 @@ export class UserController {
   // }
 
   @Get('search')
-  @ApiOperation({ summary: 'Search users by name' })
+  @ApiOperation({ summary: 'Search students by name' })
   async searchUser(@Query('q') q: string) {
     try {
       if (!q || q.trim() === '') {

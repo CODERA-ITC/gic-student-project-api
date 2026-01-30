@@ -10,17 +10,17 @@ import { JwtService } from '@nestjs/jwt'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as bcrypt from 'bcrypt'
 import { Repository } from 'typeorm'
+import { RealStudent } from '../real-student/entities/real-student.entity'
+import { SecurityQuestionsService } from '../security_questions/security_questions.service'
 import { CreateUserDto } from '../user/dto/create-user.dto'
 import { UserService } from '../user/user.service'
+import { ChangePasswordDto } from './dto/change-password.dto'
 import { LoginDto } from './dto/login.dto'
 import { User } from './entities/user.entity'
-import { SecurityQuestionsService } from '../security_questions/security_questions.service'
-import { ChangePasswordDto } from './dto/change-password.dto'
-import { RealStudent } from '../real-student/entities/real-student.entity'
 
 @Injectable()
 export class AuthService {
-  private readonly saltRoundsAuth: number;
+  private readonly saltRoundsAuth: number
   constructor(
     configService: ConfigService,
     @InjectRepository(RealStudent)
@@ -30,14 +30,13 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-    private readonly securityQuestionsService: SecurityQuestionsService
+    private readonly securityQuestionsService: SecurityQuestionsService,
   ) {
     this.saltRoundsAuth = Number(configService.get('SALT_ROUNDS_AUTH'))
   }
 
   async signup(dto: CreateUserDto) {
-    const realStudent = await this.verifyRealStudent(dto);
-    console.log('VERIFIED?: ', realStudent)
+    const realStudent = await this.verifyRealStudent(dto)
     if (!realStudent.verified) {
       throw new BadRequestException('Student not found')
     }
@@ -215,11 +214,11 @@ export class AuthService {
 
   private async resetPasswordWithVerification(
     dto: ChangePasswordDto,
-    userId: string
+    userId: string,
   ) {
     const result = await this.securityQuestionsService.verifyMultiAnswer(
       { answers: dto.answers },
-      userId
+      userId,
     )
 
     if (!result.verified) {
@@ -234,7 +233,7 @@ export class AuthService {
     await this.revokeToken(userId)
 
     return {
-      message: 'Password reset successfully'
+      message: 'Password reset successfully',
     }
   }
 
@@ -248,19 +247,19 @@ export class AuthService {
         studentId: dto.studentId,
         dob: dto.dob,
         nameKh: dto.nameKh,
-        phoneNumber: dto.phoneNumber
-      }
-    });
+        phoneNumber: dto.phoneNumber,
+      },
+    })
 
     if (!real) {
       return {
-        verified: false
+        verified: false,
       }
     }
 
     return {
       verified: true,
-      message: 'Student verified successfully'
+      message: 'Student verified successfully',
     }
   }
 }

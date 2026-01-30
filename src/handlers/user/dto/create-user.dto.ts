@@ -38,15 +38,9 @@ export class CreateUserDto {
   @Transform(({ value }) => value?.trim())
   bio?: string
 
-  @ApiProperty({ example: 'Refresh token for easy revoking' })
-  @IsOptional()
-  @IsString()
   refreshToken?: string | null
 
-  role: object
-
-  @ApiProperty({ example: 'e20250001' })
-  @IsNotEmpty()
+  @ApiProperty({ example: '' })
   @IsString()
   studentId: string
 

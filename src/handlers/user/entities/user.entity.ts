@@ -66,6 +66,9 @@ export class User extends BaseEntity {
   @Column({ type: 'text', nullable: true, select: false })
   refreshToken: string | null
 
+  @Column({ nullable: true })
+  studentId: string
+
   @ManyToOne(() => Role, role => role.users)
   role: Role
 
