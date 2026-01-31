@@ -41,7 +41,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
@@ -66,17 +66,17 @@ export class UserController {
     }
   }
 
+  @Patch('/me')
+  @UseGuards(JwtAuthGuard)
+  async updateSelf(@CurrentUser() user, @Body() dto: UpdateUserDto) {
+    return await this.userService.updateUser(user.id, dto)
+  }
+
   @Roles(['TEACHER', 'ADMIN', 'SUPER_ADMIN'])
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return await this.userService.updateUser(id, dto)
-  }
-
-  @Patch('/me')
-  @UseGuards(JwtAuthGuard)
-  async updateSelf(@CurrentUser() user, @Body() dto: UpdateUserDto) {
-    return await this.userService.updateUser(user.id, dto)
   }
 
   @Post('admin')
@@ -182,7 +182,7 @@ export class UserController {
   // Redirect user to GitHub Login Page
   @Get('github')
   @UseGuards(GitHubOauthGuard)
-  async authGitHub() { }
+  async authGitHub() {}
 
   // @Get('github/callback')
   // @UseGuards(GitHubOauthGuard)

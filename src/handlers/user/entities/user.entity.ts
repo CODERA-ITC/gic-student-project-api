@@ -69,6 +69,9 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   studentId: string
 
+  @Column({ type: 'jsonb', nullable: true })
+  socialLinks: SocialLink[]
+
   @ManyToOne(() => Role, role => role.users)
   role: Role
 
@@ -99,4 +102,9 @@ export class User extends BaseEntity {
   @ManyToMany(() => Course, course => course.users)
   @JoinTable()
   courses: Course[]
+}
+
+export class SocialLink {
+  name: string
+  url: string
 }

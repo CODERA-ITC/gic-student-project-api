@@ -1,4 +1,3 @@
-import * as crypto from 'node:crypto'
 import {
   BadRequestException,
   Injectable,
@@ -26,7 +25,7 @@ export class AuthService {
     @InjectRepository(RealStudent)
     private readonly realStudentRepo: Repository<RealStudent>,
     @InjectRepository(User)
-    private userRepo: Repository<User>,
+    private readonly userRepo: Repository<User>,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
@@ -46,7 +45,7 @@ export class AuthService {
       throw new BadRequestException('Email already registered')
 
     const hashedPassword = await bcrypt.hash(dto.password, this.saltRoundsAuth)
-    const user = await this.userService.createUser({
+    const user = await this.userService.createStudent({
       ...dto,
       password: hashedPassword,
     })

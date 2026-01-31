@@ -3,10 +3,11 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ILike, Like, Or, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { v4 as uuid } from 'uuid'
 import { Department } from '../department/entitites/department.entity'
 import { Role } from '../role/entities/role.entity'
+import { SecurityQuestion } from '../security_questions/entities/security_question.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { PaginateUserDto } from './dto/paginate-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -25,6 +26,8 @@ export class UserService {
     private roleRepo: Repository<Role>,
     @InjectRepository(Department)
     private departmentRepo: Repository<Department>,
+    @InjectRepository(SecurityQuestion)
+    private secQuestionRepo: Repository<SecurityQuestion>,
   ) {
     const region = configService.get<string>('aws.region')
     const accessKeyId = configService.get<string>('aws.accessKey')
@@ -49,10 +52,12 @@ export class UserService {
   // =============
   // Create
   // =============
-  async createUser(dto: CreateUserDto) {
+  async createStudent(dto: CreateUserDto) {
     const user = this.userRepo.create(dto)
     const department = await this.departmentRepo.findOneOrFail({ where: { code: dto.departmentCode } })
+    const role = await this.roleRepo.findOneOrFail({ where: { name: 'STUDENT' } })
     user.department = department
+    user.role = role
 
     return this.userRepo.save(user)
   }
@@ -107,7 +112,7 @@ export class UserService {
     if (!user)
       throw new NotFoundException('User not found')
 
-    return this.getUserResponse(user)
+    return await this.getUserResponse(user)
   }
 
   // =============
@@ -149,7 +154,7 @@ export class UserService {
       .take(10)
       .getManyAndCount()
 
-    const result = users.map(u => this.getUserResponse(u))
+    const result = await Promise.all(users.map(u => this.getUserResponse(u)))
 
     return result
   }
@@ -185,7 +190,7 @@ export class UserService {
       .orderBy('u.createdAt', 'DESC')
       .getManyAndCount()
 
-    const transformed: any[] = users.map(u => this.getUserResponse(u))
+    const transformed: any[] = await Promise.all(users.map(u => this.getUserResponse(u)))
 
     return {
       data: transformed,
@@ -263,10 +268,19 @@ export class UserService {
     }
   }
 
-  private getUserResponse(user: User) {
+  private async getUserResponse(user: User) {
     const storage = this.configService.get<string>('STORAGE_URL')
     let avatarUrl = ''
     const rawUrl = user.avatarUrl
+
+    // for passwword recovery
+    const hasAnswers = await this.secQuestionRepo.exists({
+      where: {
+        user: {
+          id: user.id,
+        },
+      },
+    })
 
     if (rawUrl?.includes('http')) {
       // It's already a full URL
@@ -301,6 +315,8 @@ export class UserService {
         }
       }),
       role: user.role.name,
+      socialLinks: user.socialLinks,
+      hasAnswers,
     }
 
     return response
@@ -316,8 +332,13 @@ export class UserService {
         password: true,
         refreshToken: true,
         role: true,
+        socialLinks: true,
       },
-      relations: ['role', 'department', 'courses'],
+      relations: {
+        role: true,
+        courses: true,
+        department: true,
+      },
     }
   }
 }

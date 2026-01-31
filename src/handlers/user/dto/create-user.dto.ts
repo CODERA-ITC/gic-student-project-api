@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Transform } from 'class-transformer'
-import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator'
+import { Transform, Type } from 'class-transformer'
+import { IsArray, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator'
+import { Role } from 'src/handlers/role/entities/role.entity'
+import { SocialLink } from '../entities/user.entity'
 
 export class CreateUserDto {
   @ApiProperty({ example: 'John' })
@@ -38,8 +40,6 @@ export class CreateUserDto {
   @Transform(({ value }) => value?.trim())
   bio?: string
 
-  refreshToken?: string | null
-
   @ApiProperty({ example: '' })
   @IsString()
   studentId: string
@@ -63,4 +63,16 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsNumber()
   generation: number
+
+  @ApiProperty({
+    example:
+      JSON.stringify([{ name: 'youtube', url: 'https://www.youtube.com/@MuseAsia' }]),
+  })
+  @Type(() => SocialLink)
+  @IsArray()
+  @IsOptional()
+  socialLinks: SocialLink[]
+
+  refreshToken?: string | null
+  role: Role
 }

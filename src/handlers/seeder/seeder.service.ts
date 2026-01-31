@@ -30,7 +30,7 @@ export class SeederService {
     private projectRepo: Repository<Project>,
     @InjectRepository(ProjectMember)
     private pmRepo: Repository<ProjectMember>,
-  ) { }
+  ) {}
 
   async seedDepartment() {
     const gic = this.departmentRepo.create()
@@ -133,6 +133,12 @@ export class SeederService {
         bio: 'hello i am very sad',
         year: 4,
         generation: 25,
+        socialLinks: [
+          { name: 'facebook', url: 'https://www.youtube.com/@MuseAsia' },
+          { name: 'twitter', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+          { name: 'instagram', url: 'https://www.youtube.com/watch?v=BGn2oo-0Dqc' },
+          { name: 'youtube', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+        ],
       },
       {
         firstName: 'Alex',
@@ -146,6 +152,12 @@ export class SeederService {
         bio: 'hello i am very sad',
         year: 5,
         generation: 25,
+        socialLinks: [
+          { name: 'facebook', url: 'https://www.youtube.com/@MuseAsia' },
+          { name: 'twitter', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+          { name: 'instagram', url: 'https://www.youtube.com/watch?v=BGn2oo-0Dqc' },
+          { name: 'youtube', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+        ],
       },
       {
         firstName: 'Maya',
@@ -158,6 +170,12 @@ export class SeederService {
         bio: 'Dattebayo UwU',
         year: 4,
         generation: 25,
+        socialLinks: [
+          { name: 'facebook', url: 'https://www.youtube.com/@MuseAsia' },
+          { name: 'twitter', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+          { name: 'instagram', url: 'https://www.youtube.com/watch?v=BGn2oo-0Dqc' },
+          { name: 'youtube', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+        ],
       },
       {
         firstName: 'David',
@@ -171,6 +189,12 @@ export class SeederService {
         bio: 'hello i am very sad',
         year: 4,
         generation: 25,
+        socialLinks: [
+          { name: 'facebook', url: 'https://www.youtube.com/@MuseAsia' },
+          { name: 'twitter', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+          { name: 'instagram', url: 'https://www.youtube.com/watch?v=BGn2oo-0Dqc' },
+          { name: 'youtube', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+        ],
       },
       {
         firstName: 'Emma',
@@ -184,6 +208,12 @@ export class SeederService {
         bio: 'hello i am very sad',
         year: 3,
         generation: 24,
+        socialLinks: [
+          { name: 'facebook', url: 'https://www.youtube.com/@MuseAsia' },
+          { name: 'twitter', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+          { name: 'instagram', url: 'https://www.youtube.com/watch?v=BGn2oo-0Dqc' },
+          { name: 'youtube', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+        ],
       },
       {
         firstName: 'James',
@@ -197,6 +227,12 @@ export class SeederService {
         bio: 'Ground control to major tom',
         year: 4,
         generation: 24,
+        socialLinks: [
+          { name: 'facebook', url: 'https://www.youtube.com/@MuseAsia' },
+          { name: 'twitter', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+          { name: 'instagram', url: 'https://www.youtube.com/watch?v=BGn2oo-0Dqc' },
+          { name: 'youtube', url: 'https://www.youtube.com/watch?v=1XcpQHfTOvs' },
+        ],
       },
     ]
 
