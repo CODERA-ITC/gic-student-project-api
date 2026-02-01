@@ -13,12 +13,9 @@ import { TypeOrmModule } from '@nestjs/typeorm'
         port: configService.get('DATABASE_PORT'),
         username: configService.get('DATABASE_USER'),
         password: configService.get('DATABASE_PASSWORD'),
-        database:
-          `${configService.get('DATABASE_NAME')
-          }-${configService.get('ENVIRONMENT')}`,
+        database: configService.get<string>('DATABASE_NAME'),
         ssl:
-          configService.get('ENVIRONMENT') === 'local'
-            || configService.get('ENVIRONMENT') === 'development'
+          configService.get('ENVIRONMENT') === 'development'
             ? false
             : { rejectUnauthorized: false },
         entities: [`${__dirname}/../handlers/**/*.entity.{js,ts}`],
@@ -33,4 +30,4 @@ import { TypeOrmModule } from '@nestjs/typeorm'
     }),
   ],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}
