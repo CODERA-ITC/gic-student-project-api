@@ -6,6 +6,8 @@ import { User } from '../user/entities/user.entity'
 import { CourseController } from './course.controller'
 import { CourseService } from './course.service'
 import { Course } from './entities/course.entity'
+import { HttpModule } from '@nestjs/axios'
+import { CourseClient } from './course.client'
 
 @Module({
   imports: [
@@ -15,8 +17,10 @@ import { Course } from './entities/course.entity'
       Project,
     ]),
     ProjectModule,
+    HttpModule
   ],
   controllers: [CourseController],
-  providers: [CourseService],
+  providers: [CourseService, CourseClient],
+  exports: [CourseClient]
 })
-export class CourseModule {}
+export class CourseModule { }

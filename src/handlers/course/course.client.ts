@@ -4,26 +4,26 @@ import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 
 @Injectable()
-export class UserClient {
-    private readonly userHostService: string
+export class CourseClient {
+    private readonly courseHostService: string
     constructor(
         private readonly configService: ConfigService,
         private readonly http: HttpService
     ) {
-        this.userHostService = String(configService.get('USER_SERVICE_HOST'))
+        this.courseHostService = String(configService.get('COURSE_SERVICE_HOST'))
     }
-    async getUser(userId: string) {
+    async getCourse(courseId: string) {
         const { data } = await firstValueFrom(
-            this.http.get(`${this.userHostService}/${userId}`)
+            this.http.get(`${this.courseHostService}/${courseId}`)
         )
         return data
     }
 
-    async getUsers(userIds: string[]) {
+    async getDepartments(courseIds: string[]) {
         const { data } = await firstValueFrom(
             this.http.post(
-                `${this.userHostService}/batch`,
-                { userIds }
+                `${this.courseHostService}/batch`,
+                { courseIds }
             )
         )
         return data

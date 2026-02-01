@@ -12,9 +12,9 @@ export class DepartmentClient {
     ) {
         this.deptHostService = String(configService.get('DEPT_SERVICE_HOST'))
     }
-    async getDepartment(deptIds: string) {
+    async getDepartment(deptId: string) {
         const { data } = await firstValueFrom(
-            this.http.get(`${this.deptHostService}/${deptIds}`)
+            this.http.get(`${this.deptHostService}/${deptId}`)
         )
         return data
     }
@@ -22,7 +22,7 @@ export class DepartmentClient {
     async getDepartments(deptIds: string[]) {
         const { data } = await firstValueFrom(
             this.http.post(
-                `${this.deptHostService}/departments/batch`,
+                `${this.deptHostService}/batch`,
                 { deptIds }
             )
         )
