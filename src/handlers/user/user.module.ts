@@ -14,6 +14,8 @@ import { GitHubStrategy } from './strategies/github.strategy'
 import { GoogleStrategy } from './strategies/google.strategy'
 import { UserController } from './user.controller'
 import { UserService } from './user.service'
+import { HttpModule } from '@nestjs/axios'
+import { UserClient } from './user.client'
 
 @Module({
   imports: [TypeOrmModule.forFeature([
@@ -22,9 +24,19 @@ import { UserService } from './user.service'
     Department,
     RealStudent,
     SecurityQuestion,
-  ]), PassportModule, SecurityQuestionsModule],
+  ]),
+    PassportModule,
+    SecurityQuestionsModule,
+    HttpModule],
   controllers: [UserController],
-  providers: [UserService, AuthService, JwtService, JwtAuthGuard, GoogleStrategy, GitHubStrategy],
-  exports: [UserService, AuthService],
+  providers: [
+    UserService,
+    AuthService,
+    JwtService,
+    JwtAuthGuard,
+    GoogleStrategy,
+    GitHubStrategy,
+    UserClient],
+  exports: [UserService, AuthService, UserClient],
 })
-export class UserModule {}
+export class UserModule { }
