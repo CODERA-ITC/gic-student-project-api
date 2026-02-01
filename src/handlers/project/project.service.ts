@@ -40,7 +40,7 @@ export class ProjectService {
     private notificationService: NotificationService,
     private imageService: ImageService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
     // tem shorts for TransactionEntityManager
@@ -146,13 +146,10 @@ export class ProjectService {
       throw new NotFoundException('Project not found')
     }
 
-    // const updated = this.projectRepo.create(dto)
-
     const { memberIds, authorId, categoryId, tags, ...updated } = dto
+    const updatedProject = this.projectRepo.merge(project, updated)
 
-    this.projectRepo.merge(project, updated)
-
-    return await this.projectRepo.save(project)
+    return await this.projectRepo.save(updatedProject)
   }
 
   async softDelete(id: string) {

@@ -143,4 +143,16 @@ export class CreateProjectDto {
   @IsOptional()
   @IsBoolean()
   highlighted: boolean
+
+  @ApiProperty({ example: false, required: false })
+  @Type(() => String)
+  @IsOptional()
+  @IsString()
+  status: string
+
+  @ApiProperty({ example: false, required: false })
+  @Type(() => String)
+  @IsOptional()
+  @IsString()
+  visibility: string
 }
