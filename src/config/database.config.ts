@@ -15,9 +15,11 @@ import { TypeOrmModule } from '@nestjs/typeorm'
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         ssl:
-          configService.get('ENVIRONMENT') === 'development'
-            ? false
-            : { rejectUnauthorized: false },
+          configService.get<boolean>('DATABASE_SSL')
+            ? {
+              rejectUnauthorized: false,
+            }
+            : false,
         entities: [`${__dirname}/../handlers/**/*.entity.{js,ts}`],
         migrations: [`${__dirname}/../migrations/*.{ts,js}`],
         migrationsRun: true,
