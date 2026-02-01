@@ -33,6 +33,57 @@ export class ProjectController {
     private readonly projectService: ProjectService,
   ) {}
 
+  @Get()
+  findAll(@Query() pagination: ProjectPaginateDto) {
+    return this.projectService.paginate(pagination)
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getUserProjects(@CurrentUser() user: any) {
+    return this.projectService.getProjectsByUserId(user.id)
+  }
+
+  @Get('me/likes')
+  @UseGuards(JwtAuthGuard)
+  async getLikedProjects(
+    @CurrentUser() user: any,
+  ) {
+    return this.projectService.getLikedProjectsByUserId(user.id)
+  }
+
+  @Get('highlights')
+  async getHighlightedProjects() {
+    return this.projectService.getHighlightedProjects()
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.projectService.findOne(id)
+  }
+
+  @Get(':id/view-count')
+  async getViewCount(@Param('id') projectId: string) {
+    const viewCount = await this.projectService.getProjectViewCount(projectId)
+    return { projectId, viewCount }
+  }
+
+  @Get(':id/like-count')
+  async getLikeCount(@Param('id') projectId: string) {
+    const likeCount = await this.projectService.getProjectLikeCount(projectId)
+    return { projectId, likeCount }
+  }
+
+  @Get(':id/has-liked')
+  @UseGuards(OptionalJwtAuthGuard)
+  async hasLiked(
+    @Param('id') projectId: string,
+    @CurrentUser() user: any,
+  ) {
+    const hasLiked = await this.projectService.hasUserLikedProject(projectId, user?.id)
+    return { projectId, hasLiked }
+  }
+
   @Post()
   @ApiOperation({ summary: 'Upload multiple images to a project' })
   @ApiConsumes('application/json', 'multipart/form-data')
@@ -49,33 +100,41 @@ export class ProjectController {
     return this.projectService.submitProjectForReview(id)
   }
 
+  @Post(':id/members')
+  addMembers(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
+    return this.projectService.addMembers(projectId, dto.memberIds)
+  }
+
+  @Post(':id/features')
+  createFeature(@Param('id') projectId: string, @Body() dto: CreateFeatureDto) {
+    return this.projectService.createFeature(projectId, dto)
+  }
+
+  @Post(':id/view')
+  @UseGuards(OptionalJwtAuthGuard)
+  async trackView(
+    @Param('id') projectId: string,
+    @CurrentUser() user: any,
+  ) {
+    await this.projectService.incrementViewCount(projectId)
+    return { message: 'View tracked successfully' }
+  }
+
+  @Post(':id/like')
+  @UseGuards(JwtAuthGuard)
+  async toggleLike(
+    @Param('id') projectId: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.projectService.toggleProjectLike(projectId, user.id)
+  }
+
   @Roles(['TEACHER'])
   @Patch('accept/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async acceptProject(@Param('id') projectId: string, @Req() req: any) {
     const teacherId = req.user?.id
     return this.projectService.acceptProject(projectId, teacherId)
-  }
-
-  @Get()
-  findAll(@Query() pagination: ProjectPaginateDto) {
-    return this.projectService.paginate(pagination)
-  }
-
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async getUserProjects(@CurrentUser() user: any) {
-    return this.projectService.getProjectsByUserId(user.id)
-  }
-
-  @Get('highlights')
-  async getHighlightedProjects() {
-    return this.projectService.getHighlightedProjects()
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectService.findOne(id)
   }
 
   @Patch(':id')
@@ -86,16 +145,6 @@ export class ProjectController {
   @Delete(':id')
   delete(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
     return this.projectService.delete(id)
-  }
-
-  @Post(':id/members')
-  addMembers(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
-    return this.projectService.addMembers(projectId, dto.memberIds)
-  }
-
-  @Post(':id/features')
-  createFeature(@Param('id') projectId: string, @Body() dto: CreateFeatureDto) {
-    return this.projectService.createFeature(projectId, dto)
   }
 
   @Patch(':id/features/:featureId')
@@ -111,84 +160,5 @@ export class ProjectController {
   @Delete(':id/features/:featureId')
   deleteFeature(@Param('id') projectId: string, @Param('featureId') featureId: string) {
     return this.projectService.deleteFeature(featureId)
-  }
-
-  //
-  @Post(':id/view')
-  @UseGuards(OptionalJwtAuthGuard)
-  async trackView(
-    @Param('id') projectId: string,
-    @CurrentUser() user: any,
-  ) {
-    await this.projectService.incrementViewCount(projectId)
-    return { message: 'View tracked successfully' }
-  }
-
-  // ===========================================
-  // Get the total view count for a project
-  // ===========================================
-  @Get(':id/view-count')
-  async getViewCount(@Param('id') projectId: string) {
-    const viewCount = await this.projectService.getProjectViewCount(projectId)
-    return { projectId, viewCount }
-  }
-
-  // // =================================================
-  // // Check if the current user has viewed a project
-  // // =================================================
-  // @Get(':id/has-viewed')
-  // @UseGuards(OptionalJwtAuthGuard)
-  // async hasViewed(
-  //   @Param('id') projectId: string,
-  //   @CurrentUser() user: any,
-  // ) {
-  //   const hasViewed = await this.projectService.hasUserViewedProject(projectId, user?.id)
-  //   return { projectId, hasViewed }
-  // }
-
-  // ========================================================
-  // PROJECT LIKE CONTROLLER
-  // ========================================================
-
-  // ================================
-  // Toggle like/unlike on a project
-  // ================================
-  @Post(':id/like')
-  @UseGuards(JwtAuthGuard)
-  async toggleLike(
-    @Param('id') projectId: string,
-    @CurrentUser() user: any,
-  ) {
-    return this.projectService.toggleProjectLike(projectId, user.id)
-  }
-
-  // ==================================
-  // Get total like count for a project
-  // ==================================
-  @Get(':id/like-count')
-  async getLikeCount(@Param('id') projectId: string) {
-    const likeCount = await this.projectService.getProjectLikeCount(projectId)
-    return { projectId, likeCount }
-  }
-
-  // =========================================
-  // Check if current user has liked a project
-  // =========================================
-  @Get(':id/has-liked')
-  @UseGuards(OptionalJwtAuthGuard)
-  async hasLiked(
-    @Param('id') projectId: string,
-    @CurrentUser() user: any,
-  ) {
-    const hasLiked = await this.projectService.hasUserLikedProject(projectId, user?.id)
-    return { projectId, hasLiked }
-  }
-
-  @Get('me/likes')
-  @UseGuards(JwtAuthGuard)
-  async getLikedProjects(
-    @CurrentUser() user: any,
-  ) {
-    return this.projectService.getLikedProjectsByUserId(user.id)
   }
 }
