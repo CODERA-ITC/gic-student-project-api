@@ -48,9 +48,9 @@ export class ProjectService {
     const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
       const [author, category, department, course] = await Promise.all([
-        this.userClient.getUser(dto.authorId),
+        this.userClient.findOne(dto.authorId),
         tem.findOneBy(Category, { id: dto.categoryId }),
-        this.departmentClient.getDepartment(dto.departmentId),
+        this.departmentClient.findOne(dto.departmentId),
         this.courseClient.findOne(dto.courseId),
       ])
 
@@ -300,7 +300,7 @@ export class ProjectService {
       throw new HttpException('Member already exists', HttpStatus.BAD_REQUEST)
     }
 
-    const user = await this.userClient.getUser(memberId)
+    const user = await this.userClient.findOne(memberId)
     if (!user) {
       throw new HttpException('User doesn\'t exist', HttpStatus.BAD_REQUEST)
     }
@@ -713,9 +713,9 @@ export class ProjectService {
     console.log(pmAuthor)
     console.log(pmMember)
 
-    const author = await this.userClient.getUser(pmAuthor!.userId)
+    const author = await this.userClient.findOne(pmAuthor!.userId)
     const members = await Promise.all(
-      pmMember.map(pm => this.userClient.getUser(pm.userId)),
+      pmMember.map(pm => this.userClient.findOne(pm.userId)),
     )
 
     console.log(author)

@@ -11,7 +11,7 @@ export class DepartmentController {
   @Get()
   @ApiOperation({ summary: 'Get all departments' })
   async get() {
-    const result = await this.departmentClient.getDepartments()
+    const result = await this.departmentClient.findAll()
     return {
       success: true,
       message: 'Departments found',
@@ -22,7 +22,7 @@ export class DepartmentController {
   @Get(':id')
   @ApiOperation({ summary: 'Get department by id' })
   async getOne(@Param('id') id: string) {
-    const result = await this.departmentClient.getDepartment(id)
+    const result = await this.departmentClient.findOne(id)
     return {
       success: true,
       message: 'Department found',

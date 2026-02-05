@@ -103,7 +103,7 @@ export class UserController {
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
   findAll(@Query() pagination: PaginateUserDto, @CurrentUser() user) {
-    return this.userClient.getUsers(pagination, user)
+    return this.userClient.findAll(pagination, user)
   }
 
   @Post('refresh')
@@ -187,7 +187,7 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   getUserById(@Param('id') id: string) {
-    return this.userClient.getUser(id)
+    return this.userClient.findOne(id)
   }
 
   @Post('avatar')

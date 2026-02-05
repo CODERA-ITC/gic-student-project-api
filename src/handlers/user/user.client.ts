@@ -28,14 +28,14 @@ export class UserClient {
         this.userHost = String(configService.get('USER_SERVICE_HOST'))
     }
 
-    async getUser(userId: string): Promise<UserReponse> {
+    async findOne(userId: string): Promise<UserReponse> {
         const { data } = await firstValueFrom(
             this.http.get(`${this.userHost}/users/${userId}`),
         )
         return data
     }
 
-    async getUsers(
+    async findAll(
         params?: PaginateUserDto,
         user?: { access_token: string },
     ): Promise<UsersResponse> {

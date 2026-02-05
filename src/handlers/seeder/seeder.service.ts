@@ -100,7 +100,7 @@ export class SeederService {
     const course = (await this.courseClient.findAll()).data
 
     const tags = await this.tagRepo.find()
-    const users = (await this.userClient.getUsers()).data
+    const users = (await this.userClient.findAll()).data
 
     const createMembers = () => this.pmRepo.create([
       {

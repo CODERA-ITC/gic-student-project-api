@@ -5,6 +5,15 @@ import { firstValueFrom } from 'rxjs'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { PaginatedResponse } from 'src/common/interface/paginated-response.interface'
 
+export interface CourseResponse {
+    id: string
+    name: string
+    description: string
+    code: string
+}
+
+export type CoursesReponse = PaginatedResponse<CourseResponse>
+
 @Injectable()
 export class CourseClient {
     private readonly userHost: string
@@ -34,12 +43,3 @@ export class CourseClient {
         return data
     }
 }
-
-export interface CourseResponse {
-    id: string
-    name: string
-    description: string
-    code: string
-}
-
-export type CoursesReponse = PaginatedResponse<CourseResponse>
