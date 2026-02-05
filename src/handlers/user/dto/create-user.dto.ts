@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform, Type } from 'class-transformer'
 import { IsArray, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator'
-import { Role } from 'src/handlers/role/entities/role.entity'
 import { SocialLink } from '../entities/user.entity'
 
 export class CreateUserDto {
@@ -74,5 +73,4 @@ export class CreateUserDto {
   socialLinks: SocialLink[]
 
   refreshToken?: string | null
-  role: Role
 }
