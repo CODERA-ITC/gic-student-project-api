@@ -6,9 +6,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { ConfigService } from '@nestjs/config'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { CourseClient } from '../course/course.client'
-import { Course } from '../course/entities/course.entity'
 import { DepartmentClient } from '../department/department.client'
-import { Department } from '../department/entitites/department.entity'
 import { ImageService } from '../image/image.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
@@ -52,8 +50,8 @@ export class ProjectService {
       const [author, category, department, course] = await Promise.all([
         this.userClient.getUser(dto.authorId),
         tem.findOneBy(Category, { id: dto.categoryId }),
-        tem.findOneBy(Department, { id: dto.departmentId }),
-        tem.findOneBy(Course, { id: dto.courseId }),
+        this.departmentClient.getDepartment(dto.departmentId),
+        this.courseClient.findOne(dto.courseId),
       ])
 
       // Validate all required entities exist
@@ -139,7 +137,8 @@ export class ProjectService {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    return await this.getProjectResponse(project)
+    return project
+    // return project
   }
 
   async update(id: string, dto: UpdateProjectDto) {
@@ -228,8 +227,6 @@ export class ProjectService {
     const transformed = await Promise.all(projects.map(
       project => this.getProjectResponse(project),
     ))
-
-    console.log(transformed)
 
     return {
       data: transformed,
@@ -709,13 +706,20 @@ export class ProjectService {
   }
 
   async getProjectResponse(project: Project) {
+    console.log('hello from response')
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role === 'member')
+
+    console.log(pmAuthor)
+    console.log(pmMember)
 
     const author = await this.userClient.getUser(pmAuthor!.userId)
     const members = await Promise.all(
       pmMember.map(pm => this.userClient.getUser(pm.userId)),
     )
+
+    console.log(author)
+    console.log(members)
 
     // append avatarUrl to storage to get full url stored in bucket
     const storage = this.configService.get<string>('STORAGE_URL')
@@ -756,7 +760,9 @@ export class ProjectService {
       }),
     )
 
-    const course = await this.courseClient.getCourse(project.courseId)
+    const course = await this.courseClient.findOne(project.courseId)
+    console.log('COURSE')
+    console.log(course)
 
     const transformed = {
       id: project.id,
@@ -830,13 +836,12 @@ export class ProjectService {
         features: true,
         tags: true,
         category: true,
-        course: true,
       },
       select: {
         id: true,
         name: true,
         category: true,
-        course: true,
+        courseId: true,
         repoUrl: true,
         demoUrl: true,
         description: true,

@@ -2,9 +2,21 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
+import { PaginatedResponse } from 'src/common/interface/paginated-response.interface'
 import { PaginateUserDto } from './dto/paginate-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { User } from './entities/user.entity'
+
+export interface UserReponse {
+    id: string
+    firstName: string
+    lastName: string
+    skills: string[]
+    avatarUrl: string
+    role: string
+    email: string
+}
+
+export type UsersResponse = PaginatedResponse<UserReponse>
 
 @Injectable()
 export class UserClient {
@@ -16,7 +28,7 @@ export class UserClient {
         this.userHost = String(configService.get('USER_SERVICE_HOST'))
     }
 
-    async getUser(userId: string): Promise<User | null> {
+    async getUser(userId: string): Promise<UserReponse> {
         const { data } = await firstValueFrom(
             this.http.get(`${this.userHost}/users/${userId}`),
         )
@@ -24,9 +36,9 @@ export class UserClient {
     }
 
     async getUsers(
-        params: PaginateUserDto,
+        params?: PaginateUserDto,
         user?: { access_token: string },
-    ) {
+    ): Promise<UsersResponse> {
         const headers = user?.access_token
             ? this.getHeaders(user)
             : undefined
@@ -45,7 +57,7 @@ export class UserClient {
         userId: string,
         dto: UpdateUserDto,
         user?: { access_token: string },
-    ) {
+    ): Promise<UserReponse> {
         const headers = user?.access_token
             ? this.getHeaders(user)
             : undefined

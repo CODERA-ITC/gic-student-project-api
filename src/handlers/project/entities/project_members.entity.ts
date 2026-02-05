@@ -2,13 +2,14 @@ import { BaseEntity } from 'src/database/base.entity'
 import { Column, Entity, ManyToOne } from 'typeorm'
 import { Project } from './project.entity'
 
-@Entity('project_has_members')
+@Entity()
 export class ProjectMember extends BaseEntity {
   @ManyToOne(() => Project, project => project.members, {
     onDelete: 'CASCADE',
   })
   project: Project
 
+  @Column()
   userId: string
 
   // author, member

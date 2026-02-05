@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { CourseClient } from '../course/course.client'
 import { Category } from '../project/entities/category.entity'
 import { Project } from '../project/entities/project.entity'
 import { ProjectMember } from '../project/entities/project_members.entity'
 import { Tag } from '../project/entities/tag.entity'
+import { UserClient } from '../user/user.client'
 
 @Injectable()
 export class SeederService {
@@ -17,6 +19,8 @@ export class SeederService {
     private projectRepo: Repository<Project>,
     @InjectRepository(ProjectMember)
     private pmRepo: Repository<ProjectMember>,
+    private userClient: UserClient,
+    private courseClient: CourseClient,
   ) {}
 
   async seedCategories() {
@@ -93,21 +97,18 @@ export class SeederService {
     const catWeb = categories[0]
     const catAI = categories[1]
     const dptId = '11111111-1111-1111-1111-111111111111'
-    const cloudCourseId = 'dbe35cd5-9ae3-47e8-acb2-2a831687115d'
+    const course = (await this.courseClient.findAll()).data
 
     const tags = await this.tagRepo.find()
+    const users = (await this.userClient.getUsers()).data
 
     const createMembers = () => this.pmRepo.create([
       {
-        userId: '0168af5f-c8b9-4414-b97e-bdfd51983f96',
+        userId: users[0].id,
         role: 'author',
       },
       {
-        userId: '0e52b24c-e8d2-4b60-ae75-00d63d650160',
-        role: 'member',
-      },
-      {
-        userId: '9f133377-5886-47ab-959a-ea6cd12f3c31',
+        userId: users[1].id,
         role: 'member',
       },
     ])
@@ -117,7 +118,7 @@ export class SeederService {
         name: 'My First Project',
         description: 'A small personal project',
         category: catWeb,
-        courseId: cloudCourseId,
+        courseId: course[0].id,
         tags: [
           tags[0],
           tags[1],
@@ -164,7 +165,7 @@ export class SeederService {
         name: 'AI Chat Assistant',
         description: 'A small personal project',
         category: catAI,
-        courseId: cloudCourseId,
+        courseId: course[0].id,
         tags: [
           tags[0],
           tags[1],
@@ -214,7 +215,7 @@ export class SeederService {
         description: 'IoT-based parking management system with real-time space detection, mobile app booking, and payment integration.',
         category: catAI,
         departmentId: dptId,
-        courseId: cloudCourseId,
+        courseId: course[0].id,
         tags: [
           tags[0],
           tags[1],
@@ -263,7 +264,7 @@ export class SeederService {
         name: 'Concurrency visualizer',
         description: 'A small personal project',
         category: catWeb,
-        courseId: cloudCourseId,
+        courseId: course[0].id,
         departmentId: dptId,
         tags: [
           tags[4],
@@ -311,7 +312,7 @@ export class SeederService {
         name: 'Yakuzy simulator',
         description: 'Dame Dane',
         category: catAI,
-        courseId: cloudCourseId,
+        courseId: course[0].id,
         departmentId: dptId,
         tags: [
           tags[2],

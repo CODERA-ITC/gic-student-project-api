@@ -13,14 +13,14 @@ export class DepartmentClient {
         this.userHost = String(configService.get('USER_SERVICE_HOST'))
     }
 
-    async getDepartment(deptId: string) {
+    async getDepartment(deptId: string): Promise<DepartmentResponse> {
         const { data } = await firstValueFrom(
             this.http.get(`${this.userHost}/departments/${deptId}`),
         )
         return data
     }
 
-    async getDepartments() {
+    async getDepartments(): Promise<DepartmentsResponse> {
         const { data } = await firstValueFrom(
             this.http.get(
                 `${this.userHost}/departments`,
@@ -28,4 +28,17 @@ export class DepartmentClient {
         )
         return data
     }
+}
+
+export interface DepartmentResponse {
+    id: string
+    name: string
+    description: string
+    code: string
+}
+
+export interface DepartmentsResponse {
+    message: string
+    success: boolean
+    data: DepartmentResponse[]
 }
