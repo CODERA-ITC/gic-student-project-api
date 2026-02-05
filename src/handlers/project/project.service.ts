@@ -44,6 +44,7 @@ export class ProjectService {
   ) {}
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
+    console.log(dto)
     // tem shorts for TransactionEntityManager
     const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
@@ -101,22 +102,20 @@ export class ProjectService {
         role: 'author',
       })
 
+      const uniqueMemberIds = [...new Set(dto.memberIds)]
+      const pmMembers = uniqueMemberIds.map(id =>
+        this.projectMemberRepo.create({
+          userId: id,
+          role: 'member',
+        }),
+      )
+
       // Add author as project member
-      project.members.push(pmAuthor)
+      project.members.push(pmAuthor, ...pmMembers)
 
       // Save project with all relations
       return await tem.save(project)
     })
-
-    try {
-      await this.addMembers(project.id, dto.memberIds)
-    }
-    catch (e) {
-      throw new HttpException(
-        `Failed to add member to project: ${e}`,
-        HttpStatus.BAD_REQUEST,
-      )
-    }
 
     if (images && images.length > 0) {
       try {
@@ -249,16 +248,11 @@ export class ProjectService {
             category: true,
             tags: true,
             features: true,
+            members: true,
           },
         },
       },
     )
-
-    // const result: any = members.map((member) => {
-    //   const project = member.project
-
-    //   return this.getProjectResponse(project)
-    // })
 
     const result = await Promise.all(members.map((member) => {
       const project = member.project
@@ -271,10 +265,11 @@ export class ProjectService {
 
   // Project Member Functions
 
-  async addMember(projectId: string, memberId: string) {
+  async addMember(projectId: string, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
       select: {
+        id: true,
         members: {
           id: true,
           role: true,
@@ -290,7 +285,7 @@ export class ProjectService {
     let memberExists = false
 
     for (const pm of project.members) {
-      if (pm.userId === memberId) {
+      if (pm.userId === userId) {
         memberExists = true
         break
       }
@@ -300,14 +295,14 @@ export class ProjectService {
       throw new HttpException('Member already exists', HttpStatus.BAD_REQUEST)
     }
 
-    const user = await this.userClient.findOne(memberId)
+    const user = await this.userClient.findOne(userId)
     if (!user) {
       throw new HttpException('User doesn\'t exist', HttpStatus.BAD_REQUEST)
     }
 
     const member = this.projectMemberRepo.create()
     member.project = project
-    member.userId = user.id
+    member.userId = userId
     member.role = 'member'
 
     const result = await this.projectMemberRepo.save(member)
@@ -706,20 +701,15 @@ export class ProjectService {
   }
 
   async getProjectResponse(project: Project) {
-    console.log('hello from response')
+    console.log('hello from project response')
+    console.log(project)
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role === 'member')
-
-    console.log(pmAuthor)
-    console.log(pmMember)
 
     const author = await this.userClient.findOne(pmAuthor!.userId)
     const members = await Promise.all(
       pmMember.map(pm => this.userClient.findOne(pm.userId)),
     )
-
-    console.log(author)
-    console.log(members)
 
     // append avatarUrl to storage to get full url stored in bucket
     const storage = this.configService.get<string>('STORAGE_URL')
