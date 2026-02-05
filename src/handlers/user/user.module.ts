@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
@@ -12,10 +13,9 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard'
 import { User } from './entities/user.entity'
 import { GitHubStrategy } from './strategies/github.strategy'
 import { GoogleStrategy } from './strategies/google.strategy'
+import { UserClient } from './user.client'
 import { UserController } from './user.controller'
 import { UserService } from './user.service'
-import { HttpModule } from '@nestjs/axios'
-import { UserClient } from './user.client'
 
 @Module({
   imports: [TypeOrmModule.forFeature([
@@ -24,10 +24,7 @@ import { UserClient } from './user.client'
     Department,
     RealStudent,
     SecurityQuestion,
-  ]),
-    PassportModule,
-    SecurityQuestionsModule,
-    HttpModule],
+  ]), PassportModule, SecurityQuestionsModule, HttpModule],
   controllers: [UserController],
   providers: [
     UserService,
@@ -36,7 +33,8 @@ import { UserClient } from './user.client'
     JwtAuthGuard,
     GoogleStrategy,
     GitHubStrategy,
-    UserClient],
+    UserClient,
+  ],
   exports: [UserService, AuthService, UserClient],
 })
-export class UserModule { }
+export class UserModule {}

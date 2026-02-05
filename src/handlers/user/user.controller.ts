@@ -21,7 +21,6 @@ import { ConfigService } from '@nestjs/config'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
-import { GitHubOauthGuard } from './auth/github-oauth.guards'
 import { JwtAuthGuard } from './auth/jwt-auth.guard'
 import { OptionalJwtAuthGuard } from './auth/optional-jwt-auth.guard'
 import { RolesGuard } from './auth/roles.guard'
@@ -32,6 +31,7 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { LoginDto } from './dto/login.dto'
 import { PaginateUserDto } from './dto/paginate-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { UserClient } from './user.client'
 import { UserService } from './user.service'
 
 @ApiTags('auth')
@@ -41,6 +41,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly userClient: UserClient,
   ) {}
 
   @Post('signup')
@@ -102,7 +103,7 @@ export class UserController {
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
   findAll(@Query() pagination: PaginateUserDto, @CurrentUser() user) {
-    return this.userService.paginate(pagination, user)
+    return this.userClient.getUsers(pagination, user)
   }
 
   @Post('refresh')
@@ -159,51 +160,6 @@ export class UserController {
     return this.userService.findUserById(user.userId)
   }
 
-  // @Get('google/callback')
-  // @UseGuards(GoogleOauthGuard)
-  // async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-  //   const googleUser = req.user as any
-  //   const tokens = await this.authService.handleGoogleLogin(googleUser)
-
-  //   res.cookie('access_token', tokens.access_token, {
-  //     maxAge: 2592000000,
-  //     sameSite: 'none',
-  //     secure: true,
-  //     domain: 'localhost',
-  //     path: '/', // cookie will attach to whatever hostname the backend is served on
-  //   })
-
-  //   const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-  //   return res
-  //     .status(HttpStatus.OK)
-  //     .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
-  // }
-
-  // Redirect user to GitHub Login Page
-  @Get('github')
-  @UseGuards(GitHubOauthGuard)
-  async authGitHub() {}
-
-  // @Get('github/callback')
-  // @UseGuards(GitHubOauthGuard)
-  // async githubAuthCallBack(@Req() req: Request, @Res() res: Response) {
-  //   const githubUser = req.user as any
-  //   const tokens = await this.authService.handleGitHubLogin(githubUser)
-
-  //   res.cookie('access_token', tokens.access_token, {
-  //     maxAge: 2592000000,
-  //     sameSite: 'none',
-  //     secure: true,
-  //     domain: 'localhost', // in prod change to frontend real domain
-  //     path: '/', // cookie will attach to whatever hostname the backend is served on
-  //   })
-
-  //   const frontendUrl: string = this.configService.getOrThrow('FRONTEND_HOST')
-  //   return res
-  //     .status(HttpStatus.OK)
-  //     .redirect(`${frontendUrl}/student/dashboard?token=${tokens.access_token}`)
-  // }
-
   @Get('search')
   @ApiOperation({ summary: 'Search students by name' })
   async searchUser(@Query('q') q: string) {
@@ -231,7 +187,7 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   getUserById(@Param('id') id: string) {
-    return this.userService.findUserById(id)
+    return this.userClient.getUser(id)
   }
 
   @Post('avatar')

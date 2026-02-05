@@ -5,26 +5,26 @@ import { firstValueFrom } from 'rxjs'
 
 @Injectable()
 export class DepartmentClient {
-    private readonly deptHostService: string
+    private readonly userHost: string
     constructor(
         private readonly configService: ConfigService,
-        private readonly http: HttpService
+        private readonly http: HttpService,
     ) {
-        this.deptHostService = String(configService.get('DEPT_SERVICE_HOST'))
+        this.userHost = String(configService.get('USER_SERVICE_HOST'))
     }
+
     async getDepartment(deptId: string) {
         const { data } = await firstValueFrom(
-            this.http.get(`${this.deptHostService}/${deptId}`)
+            this.http.get(`${this.userHost}/departments/${deptId}`),
         )
         return data
     }
 
-    async getDepartments(deptIds: string[]) {
+    async getDepartments() {
         const { data } = await firstValueFrom(
-            this.http.post(
-                `${this.deptHostService}/batch`,
-                { deptIds }
-            )
+            this.http.get(
+                `${this.userHost}/departments`,
+            ),
         )
         return data
     }

@@ -1,5 +1,4 @@
 import { BaseEntity } from 'src/database/base.entity'
-import { User } from 'src/handlers/user/entities/user.entity'
 import { Column, Entity, ManyToOne } from 'typeorm'
 import { Project } from './project.entity'
 
@@ -10,8 +9,7 @@ export class ProjectMember extends BaseEntity {
   })
   project: Project
 
-  @ManyToOne(() => User, user => user.projects)
-  member: User
+  userId: string
 
   // author, member
   @Column({ default: 'member' })

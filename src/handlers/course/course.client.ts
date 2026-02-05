@@ -2,29 +2,33 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
+import { PaginationDto } from 'src/common/dto/pagination.dto'
 
 @Injectable()
 export class CourseClient {
-    private readonly courseHostService: string
+    private readonly userHost: string
     constructor(
         private readonly configService: ConfigService,
-        private readonly http: HttpService
+        private readonly http: HttpService,
     ) {
-        this.courseHostService = String(configService.get('COURSE_SERVICE_HOST'))
+        this.userHost = String(configService.get('USER_SERVICE_HOST'))
     }
+
     async getCourse(courseId: string) {
         const { data } = await firstValueFrom(
-            this.http.get(`${this.courseHostService}/${courseId}`)
+            this.http.get(`${this.userHost}/${courseId}`),
         )
         return data
     }
 
-    async getDepartments(courseIds: string[]) {
+    async getCourses(params: PaginationDto) {
         const { data } = await firstValueFrom(
-            this.http.post(
-                `${this.courseHostService}/batch`,
-                { courseIds }
-            )
+            this.http.get(
+                `${this.userHost}/courses`,
+                {
+                    params,
+                },
+            ),
         )
         return data
     }

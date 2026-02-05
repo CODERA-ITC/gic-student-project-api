@@ -1,6 +1,4 @@
 import { BaseEntity } from 'src/database/base.entity'
-import { Course } from 'src/handlers/course/entities/course.entity'
-import { Department } from 'src/handlers/department/entitites/department.entity'
 import { Image } from 'src/handlers/image/entities/image.entity'
 import {
   Column,
@@ -68,12 +66,6 @@ export class Project extends BaseEntity {
   @JoinTable()
   tags: Tag[]
 
-  @ManyToOne(() => Department, department => department.projects, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  department: Department
-
   @OneToMany(() => Image, image => image.project, {
     cascade: true,
     orphanedRowAction: 'delete',
@@ -114,10 +106,9 @@ export class Project extends BaseEntity {
   @Column({ nullable: true })
   demoUrl: string
 
-  @ManyToOne(
-    () => Course,
-    course => course.projects,
-    { onDelete: 'SET NULL' },
-  )
-  course: Course
+  @Column({ nullable: true })
+  courseId: string
+
+  @Column({ nullable: true })
+  departmentId: string
 }

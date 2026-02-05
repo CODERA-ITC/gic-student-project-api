@@ -5,12 +5,14 @@ import type { UpdateProjectDto } from './dto/update-project.dto'
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
+import { CourseClient } from '../course/course.client'
 import { Course } from '../course/entities/course.entity'
+import { DepartmentClient } from '../department/department.client'
 import { Department } from '../department/entitites/department.entity'
 import { ImageService } from '../image/image.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
-import { User } from '../user/entities/user.entity'
+import { UserClient } from '../user/user.client'
 import { parseProjectPaginationDto, ProjectPaginateDto } from './dto/paginate-project.dto'
 import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/update-feature.dto'
 import { Category } from './entities/category.entity'
@@ -27,8 +29,6 @@ export class ProjectService {
     private projectRepo: Repository<Project>,
     @InjectRepository(ProjectMember)
     private projectMemberRepo: Repository<ProjectMember>,
-    @InjectRepository(User)
-    private userRepo: Repository<User>,
     @InjectRepository(Feature)
     private featureRepo: Repository<Feature>,
     @InjectRepository(Tag)
@@ -40,6 +40,9 @@ export class ProjectService {
     private notificationService: NotificationService,
     private imageService: ImageService,
     private configService: ConfigService,
+    private userClient: UserClient,
+    private departmentClient: DepartmentClient,
+    private courseClient: CourseClient,
   ) {}
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
@@ -47,7 +50,7 @@ export class ProjectService {
     const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
       const [author, category, department, course] = await Promise.all([
-        tem.findOneBy(User, { id: dto.authorId }),
+        this.userClient.getUser(dto.authorId),
         tem.findOneBy(Category, { id: dto.categoryId }),
         tem.findOneBy(Department, { id: dto.departmentId }),
         tem.findOneBy(Course, { id: dto.courseId }),
@@ -86,8 +89,8 @@ export class ProjectService {
       const project = this.projectRepo.create({
         ...dto,
         category,
-        course,
-        department,
+        courseId: course.id,
+        departmentId: department.id,
         members: [],
         visibility: 'public', // default should be private in prod
         status: 'draft',
@@ -96,7 +99,7 @@ export class ProjectService {
       })
 
       const pmAuthor = this.projectMemberRepo.create({
-        member: author,
+        userId: author.id,
         role: 'author',
       })
 
@@ -200,10 +203,8 @@ export class ProjectService {
       .leftJoinAndSelect('p.category', 'category') // if you have category relation
       .leftJoinAndSelect('p.images', 'images')
       .leftJoinAndSelect('p.members', 'pm')
-      .leftJoinAndSelect('pm.member', 'member')
       .leftJoinAndSelect('p.tags', 'tags')
       .leftJoinAndSelect('p.features', 'features')
-      .leftJoinAndSelect('p.course', 'course')
     // Filter by category
     if (params.categoryId) {
       qb.andWhere('p.categoryId = :catId', { catId: params.categoryId })
@@ -228,6 +229,8 @@ export class ProjectService {
       project => this.getProjectResponse(project),
     ))
 
+    console.log(transformed)
+
     return {
       data: transformed,
       page,
@@ -241,21 +244,14 @@ export class ProjectService {
     const members = await this.projectMemberRepo.find(
       {
         where: {
-          member: {
-            id: userId,
-          },
+          userId,
         },
         relations: {
-          member: true, // user
           project: {
             images: true,
             category: true,
             tags: true,
             features: true,
-            course: true,
-            members: {
-              member: true,
-            },
           },
         },
       },
@@ -281,15 +277,11 @@ export class ProjectService {
   async addMember(projectId: string, memberId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: { members: { member: true } },
       select: {
         members: {
           id: true,
           role: true,
-          member: {
-            id: true,
-            email: true,
-          },
+          userId: true,
         },
       },
     })
@@ -301,7 +293,7 @@ export class ProjectService {
     let memberExists = false
 
     for (const pm of project.members) {
-      if (pm.member.id === memberId) {
+      if (pm.userId === memberId) {
         memberExists = true
         break
       }
@@ -311,14 +303,14 @@ export class ProjectService {
       throw new HttpException('Member already exists', HttpStatus.BAD_REQUEST)
     }
 
-    const user = await this.userRepo.findOneBy({ id: memberId })
+    const user = await this.userClient.getUser(memberId)
     if (!user) {
       throw new HttpException('User doesn\'t exist', HttpStatus.BAD_REQUEST)
     }
 
     const member = this.projectMemberRepo.create()
     member.project = project
-    member.member = user
+    member.userId = user.id
     member.role = 'member'
 
     const result = await this.projectMemberRepo.save(member)
@@ -349,7 +341,7 @@ export class ProjectService {
 
     await this.projectMemberRepo.delete({
       project: { id: projectId },
-      member: { id: memberId },
+      userId: memberId,
     })
 
     return { message: 'Member removed' }
@@ -517,7 +509,7 @@ export class ProjectService {
     }
 
     try {
-      const memberIds = project.members.map(m => m.member.id)
+      const memberIds = project.members.map(m => m.userId)
       const notificationDto: CreateNotificationDto = {
         name: 'Project Accepted',
         description: `Your '${project.name}' prroposal has been accepted!`,
@@ -557,7 +549,7 @@ export class ProjectService {
     }
 
     try {
-      const memberIds = project.members.map(m => m.member.id)
+      const memberIds = project.members.map(m => m.userId)
       const notificationDto: CreateNotificationDto = {
         name: 'Project Rejected',
         description: `Your '${project.name}' prroposal has been rejected! Contact lecturer for further informations`,
@@ -696,10 +688,7 @@ export class ProjectService {
           category: true,
           tags: true,
           features: true,
-          course: true,
-          members: {
-            member: true,
-          },
+          members: true,
         },
       },
     })
@@ -722,6 +711,12 @@ export class ProjectService {
   async getProjectResponse(project: Project) {
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role === 'member')
+
+    const author = await this.userClient.getUser(pmAuthor!.userId)
+    const members = await Promise.all(
+      pmMember.map(pm => this.userClient.getUser(pm.userId)),
+    )
+
     // append avatarUrl to storage to get full url stored in bucket
     const storage = this.configService.get<string>('STORAGE_URL')
     const frontend = this.configService.get<string>('FRONTEND_HOST_URL')
@@ -761,16 +756,18 @@ export class ProjectService {
       }),
     )
 
+    const course = await this.courseClient.getCourse(project.courseId)
+
     const transformed = {
       id: project.id,
       name: project.name,
       description: project.description,
       category: project.category,
       course: {
-        id: project.course.id,
-        name: project.course.name,
-        code: project.course.code,
-        description: project.course.description,
+        id: project.courseId,
+        name: course.name,
+        code: course.code,
+        description: course.description,
       },
       startDate: project.startDate,
       highlighted: project.highlighted,
@@ -785,20 +782,20 @@ export class ProjectService {
       duration: project.duration,
       images,
       author: {
-        id: pmAuthor?.member.id,
-        email: pmAuthor?.member.email,
-        firstName: pmAuthor?.member.firstName,
-        lastName: pmAuthor?.member.lastName,
-        role: pmAuthor?.member.role,
-        avatar: getPictureUrl(pmAuthor?.member.avatarUrl),
+        id: author?.id,
+        email: author?.email,
+        firstName: author?.firstName,
+        lastName: author?.lastName,
+        role: author?.role,
+        avatar: getPictureUrl(author?.avatarUrl),
       },
-      members: pmMember.map(pm => ({
-        id: pm.member.id,
-        email: pm.member.email,
-        firstName: pm.member.firstName,
-        lastName: pm.member.lastName,
-        role: pm.role,
-        avatar: getPictureUrl(pm.member.avatarUrl),
+      members: members.map(member => ({
+        id: member?.id,
+        email: member?.email,
+        firstName: member?.firstName,
+        lastName: member?.lastName,
+        role: member?.role,
+        avatar: getPictureUrl(member?.avatarUrl),
       })),
       features: project.features.map(f => ({
         id: f.id,
@@ -829,11 +826,7 @@ export class ProjectService {
     return {
       relations: {
         images: true,
-        members: {
-          member: {
-            role: true,
-          },
-        },
+        members: true,
         features: true,
         tags: true,
         category: true,
@@ -862,14 +855,7 @@ export class ProjectService {
         members: {
           id: true,
           role: true,
-          member: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-            role: true,
-          },
+          userId: true,
         },
         tags: {
           id: true,

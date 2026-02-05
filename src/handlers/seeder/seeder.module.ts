@@ -8,11 +8,10 @@ import { ProjectMember } from '../project/entities/project_members.entity'
 import { Tag } from '../project/entities/tag.entity'
 import { Role } from '../role/entities/role.entity'
 import { User } from '../user/entities/user.entity'
-import { SeederController } from './seeder.controller'
 import { SeederService } from './seeder.service'
 
 @Module({
-  controllers: [SeederController],
+  controllers: [],
   providers: [SeederService],
   imports: [TypeOrmModule.forFeature([
     Department,
@@ -26,14 +25,9 @@ import { SeederService } from './seeder.service'
   ])],
 })
 export class SeederModule implements OnModuleInit {
-  constructor(private readonly seederService: SeederService) { }
+  constructor(private readonly seederService: SeederService) {}
   async onModuleInit() {
-    await this.seederService.seedCourses()
     await this.seederService.seedCategories()
-    await this.seederService.seedDepartment()
-    await this.seederService.seedRole()
-    await this.seederService.seedUser()
-    await this.seederService.seedTeachers()
     await this.seederService.seedTags()
     await this.seederService.seedProjects()
   }

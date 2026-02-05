@@ -5,7 +5,6 @@ import { Course } from 'src/handlers/course/entities/course.entity'
 import { Department } from 'src/handlers/department/entitites/department.entity'
 import { Notification } from 'src/handlers/notification/entities/notification.entity'
 import { ProjectLike } from 'src/handlers/project/entities/project-like.entity'
-import { ProjectMember } from 'src/handlers/project/entities/project_members.entity'
 import { Role } from 'src/handlers/role/entities/role.entity'
 import { SecurityQuestion } from 'src/handlers/security_questions/entities/security_question.entity'
 import {
@@ -74,16 +73,6 @@ export class User extends BaseEntity {
 
   @ManyToOne(() => Role, role => role.users)
   role: Role
-
-  @OneToMany(
-    () => ProjectMember,
-    pm => pm.member,
-    {
-      cascade: true,
-      orphanedRowAction: 'delete',
-    },
-  )
-  projects: ProjectMember[]
 
   @ManyToMany(() => Notification, notification => notification.users)
   @JoinTable()

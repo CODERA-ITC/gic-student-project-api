@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { Department } from '../department/entitites/department.entity'
+import { CourseModule } from '../course/course.module'
+import { DepartmentModule } from '../department/department.module'
 import { Image } from '../image/entities/image.entity'
 import { ImageModule } from '../image/image.module'
 import { NotificationModule } from '../notification/notification.module'
-import { User } from '../user/entities/user.entity'
+import { UserModule } from '../user/user.module'
 import { CategoryController } from './category.controller'
 import { CategoryService } from './category.service'
 import { Category } from './entities/category.entity'
@@ -25,13 +26,11 @@ import { TagService } from './tag.service'
     Project,
     Category,
     Tag,
-    Department,
     Feature,
     Image,
     ProjectMember,
-    User,
     ProjectLike,
-  ]), NotificationModule, ImageModule],
+  ]), NotificationModule, ImageModule, UserModule, DepartmentModule, CourseModule],
   exports: [ProjectService],
 })
 export class ProjectModule {}
