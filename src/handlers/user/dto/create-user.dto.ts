@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform, Type } from 'class-transformer'
 import { IsArray, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator'
-import { SocialLink } from '../entities/user.entity'
 
 export class CreateUserDto {
   @ApiProperty({ example: 'John' })
@@ -73,4 +72,9 @@ export class CreateUserDto {
   socialLinks: SocialLink[]
 
   refreshToken?: string | null
+}
+
+export class SocialLink {
+  name: string
+  url: string
 }

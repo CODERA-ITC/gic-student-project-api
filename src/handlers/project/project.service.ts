@@ -8,7 +8,6 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { CourseClient } from '../course/course.client'
 import { DepartmentClient } from '../department/department.client'
 import { ImageService } from '../image/image.service'
-import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { UserClient } from '../user/user.client'
 import { parseProjectPaginationDto, ProjectPaginateDto } from './dto/paginate-project.dto'
@@ -19,6 +18,8 @@ import { ProjectLike } from './entities/project-like.entity'
 import { ProjectMember } from './entities/project-members.entity'
 import { Project } from './entities/project.entity'
 import { Tag } from './entities/tag.entity'
+
+// TODO FIX NOTIFICATION
 
 @Injectable()
 export class ProjectService {
@@ -355,10 +356,6 @@ export class ProjectService {
     }
   }
 
-  // ==============================================================================
-  // Project Feature Service
-  // ==============================================================================
-
   async createFeature(projectId: string, dto: CreateFeatureDto): Promise<Feature> {
     const project = await this.projectRepo.findOneBy({ id: projectId })
     if (!project) {
@@ -476,21 +473,22 @@ export class ProjectService {
 
     project.status = 'pending'
 
-    try {
-      const notificationDto: CreateNotificationDto = {
-        name: `${project.name}`,
-        description: `${project.description}`,
-        status: 'pending',
-        read: false,
-      }
+    // TODO Fix notification
+    // try {
+    //   const notificationDto: CreateNotificationDto = {
+    //     name: `${project.name}`,
+    //     description: `${project.description}`,
+    //     status: 'pending',
+    //     read: false,
+    //   }
 
-      const notification = await this.notificationService.notifyTeachers(notificationDto)
+    //   const notification = await this.notificationService.notifyTeachers(notificationDto)
 
-      project.notificationId = notification.id
-    }
-    catch (error) {
-      console.error('Failed to send notification to teachers: ', error)
-    }
+    //   project.notificationId = notification.id
+    // }
+    // catch (error) {
+    //   console.error('Failed to send notification to teachers: ', error)
+    // }
 
     return await this.projectRepo.save(project)
   }
@@ -507,31 +505,32 @@ export class ProjectService {
     project.reviewedBy = teacherId
     await this.projectRepo.save(project)
 
-    if (project.notificationId) {
-      try {
-        await this.notificationService.updateStatus(project.notificationId, 'accepted')
-      }
-      catch (error) {
-        console.error('Failed to update notification status', error)
-      }
-    }
+    // TODO FIX NOTIFICATION
+    // if (project.notificationId) {
+    //   try {
+    //     await this.notificationService.updateStatus(project.notificationId, 'accepted')
+    //   }
+    //   catch (error) {
+    //     console.error('Failed to update notification status', error)
+    //   }
+    // }
 
-    try {
-      const memberIds = project.members.map(m => m.userId)
-      const notificationDto: CreateNotificationDto = {
-        name: 'Project Accepted',
-        description: `Your '${project.name}' prroposal has been accepted!`,
-        status: 'accepted',
-        read: false,
-      }
+    // try {
+    //   const memberIds = project.members.map(m => m.userId)
+    //   const notificationDto: CreateNotificationDto = {
+    //     name: 'Project Accepted',
+    //     description: `Your '${project.name}' prroposal has been accepted!`,
+    //     status: 'accepted',
+    //     read: false,
+    //   }
 
-      for (const memberId of memberIds) {
-        await this.notificationService.notifyStudent(memberId, notificationDto)
-      }
-    }
-    catch (error) {
-      console.error('Failed to notify project members: ', error)
-    }
+    //   for (const memberId of memberIds) {
+    //     await this.notificationService.notifyStudent(memberId, notificationDto)
+    //   }
+    // }
+    // catch (error) {
+    //   console.error('Failed to notify project members: ', error)
+    // }
 
     return this.getProjectResponse(project)
   }
@@ -547,31 +546,32 @@ export class ProjectService {
     project.reviewedBy = teacherId
     await this.projectRepo.save(project)
 
-    if (project.notificationId) {
-      try {
-        await this.notificationService.updateStatus(project.notificationId, 'rejected')
-      }
-      catch (error) {
-        console.error('Failed to update notification status', error)
-      }
-    }
+    // TODO FIX NOTIFICATION
+    // if (project.notificationId) {
+    //   try {
+    //     await this.notificationService.updateStatus(project.notificationId, 'rejected')
+    //   }
+    //   catch (error) {
+    //     console.error('Failed to update notification status', error)
+    //   }
+    // }
 
-    try {
-      const memberIds = project.members.map(m => m.userId)
-      const notificationDto: CreateNotificationDto = {
-        name: 'Project Rejected',
-        description: `Your '${project.name}' prroposal has been rejected! Contact lecturer for further informations`,
-        status: 'rejected',
-        read: false,
-      }
+    // try {
+    //   const memberIds = project.members.map(m => m.userId)
+    //   const notificationDto: CreateNotificationDto = {
+    //     name: 'Project Rejected',
+    //     description: `Your '${project.name}' prroposal has been rejected! Contact lecturer for further informations`,
+    //     status: 'rejected',
+    //     read: false,
+    //   }
 
-      for (const memberId of memberIds) {
-        await this.notificationService.notifyStudent(memberId, notificationDto)
-      }
-    }
-    catch (error) {
-      console.error('Failed to notify project members: ', error)
-    }
+    //   for (const memberId of memberIds) {
+    //     await this.notificationService.notifyStudent(memberId, notificationDto)
+    //   }
+    // }
+    // catch (error) {
+    //   console.error('Failed to notify project members: ', error)
+    // }
 
     return this.getProjectResponse(project)
   }
@@ -619,7 +619,7 @@ export class ProjectService {
     // Check if user already liked this project
     const existingLike = await this.projectLikeRepo.findOne({
       where: {
-        user: { id: userId },
+        userId,
         project: { id: projectId },
       },
     })
@@ -639,7 +639,7 @@ export class ProjectService {
     }
     else {
       const projectLike = this.projectLikeRepo.create({
-        user: { id: userId },
+        userId,
         project: { id: projectId },
       })
       const result = await this.projectLikeRepo.save(projectLike)
@@ -678,7 +678,7 @@ export class ProjectService {
     }
     const like = await this.projectLikeRepo.findOne({
       where: {
-        user: { id: userId },
+        userId,
         project: { id: projectId },
       },
     })
@@ -688,7 +688,7 @@ export class ProjectService {
   async getLikedProjectsByUserId(userId: string) {
     const likedProjects = await this.projectLikeRepo.find({
       where: {
-        user: { id: userId },
+        userId,
       },
       relations: {
         project: {

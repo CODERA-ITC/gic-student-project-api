@@ -2,17 +2,19 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Observable, Subject } from 'rxjs'
 import { Repository } from 'typeorm'
-import { User } from '../user/entities/user.entity'
+import { UserClient } from '../user/user.client'
 import { CreateNotificationDto } from './dto/create-notification.dto'
 import { Notification } from './entities/notification.entity'
 
+// TODO
+// query for Teacher and Student using UserClient
+// currently notifying teachers and students are unsafe to use
 @Injectable()
 export class NotificationService implements OnModuleDestroy {
   constructor(
     @InjectRepository(Notification)
     private notificationRepo: Repository<Notification>,
-    @InjectRepository(User)
-    private userRepo: Repository<User>,
+    private userClient: UserClient,
   ) {}
 
   // Stream = where all of the notifications will get sent through
@@ -29,22 +31,24 @@ export class NotificationService implements OnModuleDestroy {
     return this.teacherStream.asObservable()
   }
 
+  // Should notify teacher by courseId
   async notifyTeachers(event: CreateNotificationDto) {
-    const teachers = await this.userRepo
-      .createQueryBuilder('user')
-      .innerJoin('user.role', 'role')
-      .where('role.name = :roleName', { roleName: 'Teacher' })
-      .getMany()
-
-    const notification = this.notificationRepo.create({
-      ...event,
-      users: teachers,
+    // currently unsafe
+    const teachers = (await this.userClient.findAll()).data
+    /// mock
+    const events = teachers.map((teacher) => {
+      return {
+        event,
+        userId: teacher.id,
+      }
     })
-    await this.notificationRepo.save(notification)
+    const notifications = this.notificationRepo.create(events)
+
+    await this.notificationRepo.save(notifications)
     this.teacherStream.next(event)
 
-    console.log('NOTIFIED: ', notification)
-    return notification
+    console.log('NOTIFIED: ', notifications.length)
+    return notifications
   }
 
   removeTeacherConnection() {
@@ -62,7 +66,7 @@ export class NotificationService implements OnModuleDestroy {
   }
 
   async notifyStudent(studentId: string, event: CreateNotificationDto) {
-    const student = await this.userRepo.findOne({ where: { id: studentId } })
+    const student = await this.userClient.findOneOrNull(studentId)
     if (!student) {
       this.getOrCreateStudentSubject(studentId).next(event)
       throw new Error(`Student with id ${studentId} not found`)
@@ -77,7 +81,7 @@ export class NotificationService implements OnModuleDestroy {
 
     // const savedNotification = await this.notificationRepo.save(notification);
 
-    notification.users.push(student)
+    notification.userId = studentId
     await this.notificationRepo.save(notification)
 
     this.getOrCreateStudentSubject(studentId).next(event)
@@ -107,11 +111,7 @@ export class NotificationService implements OnModuleDestroy {
 
   // Will be mainly used by teacher or admin
   async notifyAllStudents(event: CreateNotificationDto) {
-    const students = await this.userRepo
-      .createQueryBuilder('user')
-      .innerJoin('user.role', 'role')
-      .where('role.name = :roleName', { roleName: 'Student' })
-      .getMany()
+    const students = (await this.userClient.findAll()).data
 
     if (students.length > 0) {
       const notification = this.notificationRepo.create({
@@ -133,8 +133,7 @@ export class NotificationService implements OnModuleDestroy {
   async getUnreadNotification(userId: string) {
     return this.notificationRepo
       .createQueryBuilder('notification')
-      .innerJoin('notification.users', 'user')
-      .where('user.id = :userId', { userId })
+      .where('userId = :userId', { userId })
       .andWhere('notification.read = :read', { read: false })
       .orderBy('notification.createdAt', 'DESC')
       .getMany()
@@ -143,8 +142,7 @@ export class NotificationService implements OnModuleDestroy {
   async getUserNotification(userId: string, limit = 50) {
     return this.notificationRepo
       .createQueryBuilder('notification')
-      .innerJoin('notification.users', 'user')
-      .where('user.id = :userId', { userId })
+      .where('userId = :userId', { userId })
       .orderBy('notification.createdAt', 'DESC')
       .limit(limit)
       .getMany()
