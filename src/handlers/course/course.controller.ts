@@ -15,14 +15,4 @@ export class CourseController {
 	findOne(@Param('id') id: string) {
 		return this.courseClient.findOne(id)
 	}
-
-	// @Roles(['TEACHER'])
-	// @Get('submissions')
-	// @UseGuards(JwtAuthGuard, RolesGuard)
-	// getProjectsByCourse(
-	// 	@CurrentUser() teacher: any,
-	// 	@Query() params: PaginationDto,
-	// ) {
-	// 	return this.courseService.getProjectsForReview(teacher.id, params)
-	// }
 }

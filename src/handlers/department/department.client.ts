@@ -33,6 +33,18 @@ export class DepartmentClient {
         return data
     }
 
+    async findOneOrNull(deptId: string): Promise<DepartmentResponse | null> {
+        try {
+            const { data } = await firstValueFrom(
+                this.http.get(`${this.userHost}/departments/${deptId}`),
+            )
+            return data
+        }
+        catch (e) {
+            return null
+        }
+    }
+
     async findAll(): Promise<DepartmentsResponse> {
         const { data } = await firstValueFrom(
             this.http.get(

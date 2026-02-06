@@ -31,6 +31,18 @@ export class CourseClient {
         return data
     }
 
+    async findOneOrNull(courseId: string): Promise<CourseResponse | null> {
+        try {
+            const { data } = await firstValueFrom(
+                this.http.get(`${this.userHost}/courses/${courseId}`),
+            )
+            return data
+        }
+        catch (e) {
+            return null
+        }
+    }
+
     async findAll(params?: PaginationDto): Promise<CoursesReponse> {
         const { data } = await firstValueFrom(
             this.http.get(
