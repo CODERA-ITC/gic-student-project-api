@@ -95,7 +95,7 @@ export class ProjectController {
     return this.projectService.create(createProjectDto, files)
   }
 
-  @Post('submit/:id')
+  @Post(':id/submit')
   submitProject(@Param('id') id: string) {
     return this.projectService.submitProjectForReview(id)
   }
@@ -130,21 +130,11 @@ export class ProjectController {
   }
 
   @Roles(['TEACHER'])
-  @Patch('accept/:id')
+  @Patch(':id/accept')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async acceptProject(@Param('id') projectId: string, @Req() req: any) {
     const teacherId = req.user?.id
     return this.projectService.acceptProject(projectId, teacherId)
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
-    return this.projectService.update(id, dto)
-  }
-
-  @Delete(':id')
-  delete(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
-    return this.projectService.delete(id)
   }
 
   @Patch(':id/features/:featureId')
@@ -155,6 +145,16 @@ export class ProjectController {
   @Patch(':id/features/:featureId/status')
   updateFeatureStatus(@Param('projectId') projectId: string, @Param('featureId') featureId: string, @Body() dto: UpdateFeatureStatusDto) {
     return this.projectService.updateFeatureStatus(featureId, dto)
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
+    return this.projectService.update(id, dto)
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
+    return this.projectService.delete(id)
   }
 
   @Delete(':id/features/:featureId')
