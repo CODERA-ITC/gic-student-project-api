@@ -765,7 +765,7 @@ export class ProjectService {
       }),
     )
 
-    const course = await this.courseClient.findOne(project.courseId)
+    const course = await this.courseClient.findOneOrNull(project.courseId)
 
     const transformed = {
       id: project.id,
@@ -774,9 +774,9 @@ export class ProjectService {
       category: project.category,
       course: {
         id: project.courseId,
-        name: course.name,
-        code: course.code,
-        description: course.description,
+        name: course?.name,
+        code: course?.code,
+        description: course?.description,
       },
       startDate: project.startDate,
       highlighted: project.highlighted,
