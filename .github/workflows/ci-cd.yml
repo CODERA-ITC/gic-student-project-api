@@ -41,8 +41,8 @@ jobs:
         run: |
           echo "STAGE=Deployment" >> $GITHUB_ENV
           cd $PROJECT_PATH
-          docker compose stop app
-          docker compose up --build -d app
+          docker compose stop project_service
+          docker compose up --build -d project_service
 
 
       - name: Set status
