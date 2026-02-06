@@ -11,7 +11,7 @@ import {
 import { Category } from './category.entity'
 import { Feature } from './feature.entity'
 import { ProjectLike } from './project-like.entity'
-import { ProjectMember } from './project_members.entity'
+import { ProjectMember } from './project-members.entity'
 import { Tag } from './tag.entity'
 
 @Entity('projects')

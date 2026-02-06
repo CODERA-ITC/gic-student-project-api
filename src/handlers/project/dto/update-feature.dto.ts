@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types'
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDate, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator'
+import { IsDateString, IsEnum, IsOptional } from 'class-validator'
 import { CreateFeatureDto } from './create-feature.dto'
 
 export class UpdateFeatureDto extends PartialType(CreateFeatureDto) {

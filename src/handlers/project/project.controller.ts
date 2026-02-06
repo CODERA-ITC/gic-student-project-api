@@ -19,7 +19,7 @@ import { OptionalJwtAuthGuard } from '../user/auth/optional-jwt-auth.guard'
 import { RolesGuard } from '../user/auth/roles.guard'
 import { CurrentUser } from '../user/decorator/current-user.decorator'
 import { Roles } from '../user/decorator/roles.decorator'
-import { AddProjectMemberDto } from './dto/add-member.dto'
+import { AddProjectMemberDto, RemoveProjectMemberDto } from './dto/add-member.dto'
 import { CreateFeatureDto } from './dto/create-feature.dto'
 import { CreateProjectDto } from './dto/create-project.dto'
 import { ProjectPaginateDto } from './dto/paginate-project.dto'
@@ -102,7 +102,7 @@ export class ProjectController {
 
   @Post(':id/members')
   addMembers(@Param('id') projectId: string, @Body() dto: AddProjectMemberDto) {
-    return this.projectService.addMembers(projectId, dto.memberIds)
+    return this.projectService.addMembers(projectId, dto.userIds)
   }
 
   @Post(':id/features')
@@ -160,5 +160,10 @@ export class ProjectController {
   @Delete(':id/features/:featureId')
   deleteFeature(@Param('id') projectId: string, @Param('featureId') featureId: string) {
     return this.projectService.deleteFeature(featureId)
+  }
+
+  @Delete(':id/members')
+  removeMembers(@Param('id') projectId: string, @Body() dto: RemoveProjectMemberDto) {
+    return this.projectService.removeMember(projectId, dto.userId)
   }
 }

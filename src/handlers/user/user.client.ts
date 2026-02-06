@@ -35,6 +35,18 @@ export class UserClient {
         return data
     }
 
+    async findOneOrNull(userId: string): Promise<UserReponse | null> {
+        try {
+            const { data } = await firstValueFrom(
+                this.http.get(`${this.userHost}/users/${userId}`),
+            )
+            return data
+        }
+        catch (e) {
+            return null
+        }
+    }
+
     async findAll(
         params?: PaginateUserDto,
         user?: { access_token: string },

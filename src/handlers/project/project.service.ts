@@ -16,8 +16,8 @@ import { FeatureStatus, UpdateFeatureDto, UpdateFeatureStatusDto } from './dto/u
 import { Category } from './entities/category.entity'
 import { Feature } from './entities/feature.entity'
 import { ProjectLike } from './entities/project-like.entity'
+import { ProjectMember } from './entities/project-members.entity'
 import { Project } from './entities/project.entity'
-import { ProjectMember } from './entities/project_members.entity'
 import { Tag } from './entities/tag.entity'
 
 @Injectable()
@@ -44,7 +44,6 @@ export class ProjectService {
   ) {}
 
   async create(dto: CreateProjectDto, images: Express.Multer.File[]): Promise<any> {
-    console.log(dto)
     // tem shorts for TransactionEntityManager
     const project = await this.entityManager.transaction(async (tem) => {
       // Fetch related entities in parallel
@@ -263,8 +262,7 @@ export class ProjectService {
     return result
   }
 
-  // Project Member Functions
-
+  // May need to find better impl to check authorId
   async addMember(projectId: string, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -295,7 +293,7 @@ export class ProjectService {
       throw new HttpException('Member already exists', HttpStatus.BAD_REQUEST)
     }
 
-    const user = await this.userClient.findOne(userId)
+    const user = await this.userClient.findOneOrNull(userId)
     if (!user) {
       throw new HttpException('User doesn\'t exist', HttpStatus.BAD_REQUEST)
     }
@@ -309,34 +307,52 @@ export class ProjectService {
     return result
   }
 
-  async addMembers(projectId: string, memberIds: string[]) {
-    const results = await Promise.allSettled(
-      memberIds.map(id => this.addMember(projectId, id)),
-    )
+  // userIds are the ids of the members
+  async addMembers(projectId: string, userIds: string[]) {
+    return this.entityManager.transaction(async (manager) => {
+      const repo = manager.getRepository(ProjectMember)
 
-    return {
-      success: results
-        .filter(r => r.status === 'fulfilled')
-        .map(r => r.value.project)[0],
+      // 1. Normalize input
+      const uniqueUserIds = [...new Set(userIds)]
 
-      failed: results
-        .filter(r => r.status === 'rejected')
-        .map(r => r.reason),
-    }
+      // 2. Build rows
+      const rows = uniqueUserIds.map(userId => ({
+        project: { id: projectId },
+        userId,
+        role: 'member',
+      }))
+
+      // 3. Bulk insert with conflict ignore (Postgres)
+      const result = await repo
+        .createQueryBuilder()
+        .insert()
+        .into(ProjectMember)
+        .values(rows)
+        .orIgnore() // <- ignores duplicates safely
+        .execute()
+
+      return {
+        attempted: uniqueUserIds.length,
+        inserted: result.identifiers.length,
+      }
+    })
   }
 
-  async removeMember(projectId: string, authorId: string, memberId: string) {
-    // cannot remove the author himself
-    if (authorId === memberId) {
-      throw new BadRequestException('Author cannot remove himself')
-    }
-
-    await this.projectMemberRepo.delete({
-      project: { id: projectId },
-      userId: memberId,
+  async removeMember(projectId: string, userId: string) {
+    const member = await this.projectMemberRepo.findOneOrFail({
+      where: {
+        project: { id: projectId },
+        userId,
+        // role: 'member',
+      },
     })
 
-    return { message: 'Member removed' }
+    const result = await this.projectMemberRepo.remove(member)
+
+    return {
+      message: 'Member removed',
+      data: result,
+    }
   }
 
   // ==============================================================================
@@ -701,15 +717,14 @@ export class ProjectService {
   }
 
   async getProjectResponse(project: Project) {
-    console.log('hello from project response')
-    console.log(project)
     const pmAuthor = project.members.find(m => m.role === 'author')
     const pmMember = project.members.filter(m => m.role === 'member')
 
     const author = await this.userClient.findOne(pmAuthor!.userId)
-    const members = await Promise.all(
-      pmMember.map(pm => this.userClient.findOne(pm.userId)),
+    let members = await Promise.all(
+      pmMember.map(pm => this.userClient.findOneOrNull(pm.userId)),
     )
+    members = members.filter(m => m !== null)
 
     // append avatarUrl to storage to get full url stored in bucket
     const storage = this.configService.get<string>('STORAGE_URL')
@@ -751,8 +766,6 @@ export class ProjectService {
     )
 
     const course = await this.courseClient.findOne(project.courseId)
-    console.log('COURSE')
-    console.log(course)
 
     const transformed = {
       id: project.id,
