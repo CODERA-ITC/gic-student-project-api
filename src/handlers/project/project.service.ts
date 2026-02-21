@@ -103,7 +103,16 @@ export class ProjectService {
       })
 
       const uniqueMemberIds = [...new Set(dto.memberIds)]
-      const pmMembers = uniqueMemberIds.map(id =>
+      const existingMemberIds: string[] = []
+
+      for (const id of uniqueMemberIds) {
+        const member = await this.userClient.findOneOrNull(id)
+        if (member) {
+          existingMemberIds.push(member.id)
+        }
+      }
+
+      const pmMembers = existingMemberIds.map(id =>
         this.projectMemberRepo.create({
           userId: id,
           role: 'member',
