@@ -1,4 +1,4 @@
-import type { EntityManager, Repository } from 'typeorm'
+import type { EntityManager, FindOptionsRelationByString, FindOptionsRelations, FindOptionsSelect, Repository } from 'typeorm'
 import type { CreateFeatureDto } from './dto/create-feature.dto'
 import type { CreateProjectDto } from './dto/create-project.dto'
 import type { UpdateProjectDto } from './dto/update-project.dto'
@@ -145,7 +145,9 @@ export class ProjectService {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND)
     }
 
-    return project
+    const response = await this.getProjectResponse(project)
+
+    return response
     // return project
   }
 
@@ -841,44 +843,48 @@ export class ProjectService {
   }
 
   private getProjectResponseOptions() {
-    return {
-      relations: {
-        images: true,
-        members: true,
-        features: true,
-        tags: true,
-        category: true,
+    const relations: FindOptionsRelations<Project> = {
+      images: true,
+      members: true,
+      features: true,
+      tags: true,
+      category: true,
+    }
+
+    const select: FindOptionsSelect<Project> = {
+      id: true,
+      name: true,
+      category: true,
+      courseId: true,
+      repoUrl: true,
+      demoUrl: true,
+      description: true,
+      viewCount: true,
+      likeCount: true,
+      technologies: true,
+      academicYear: true,
+      highlighted: true,
+      duration: true,
+      visibility: true,
+      status: true,
+      images: {
+        id: true,
+        originalUrl: true, // Change from url to original_url
       },
-      select: {
+      members: {
+        id: true,
+        role: true,
+        userId: true,
+      },
+      tags: {
         id: true,
         name: true,
-        category: true,
-        courseId: true,
-        repoUrl: true,
-        demoUrl: true,
-        description: true,
-        viewCount: true,
-        likeCount: true,
-        technologies: true,
-        academicYear: true,
-        highlighted: true,
-        duration: true,
-        visibility: true,
-        status: true,
-        images: {
-          id: true,
-          originalUrl: true, // Change from url to original_url
-        },
-        members: {
-          id: true,
-          role: true,
-          userId: true,
-        },
-        tags: {
-          id: true,
-          name: true,
-        },
       },
+    }
+
+    return {
+      relations,
+      select,
     }
   }
 }
