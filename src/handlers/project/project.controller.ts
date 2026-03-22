@@ -153,7 +153,7 @@ export class ProjectController {
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
+  delete(@Param('id') id: string) {
     return this.projectService.delete(id)
   }
 

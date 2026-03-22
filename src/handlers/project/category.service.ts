@@ -32,7 +32,9 @@ export class CategoryService {
 
   async update(id: string, @Body() dto: CreateCategoryDto) {
     try {
-      return await this.categoryRepo.save({ id, ...dto })
+      const category = await this.categoryRepo.findOneOrFail({ where: { id } })
+      const updated = this.categoryRepo.merge(category, dto)
+      return await this.categoryRepo.save(updated)
     }
     catch (e) {
       throw new NotFoundException('Category not found')

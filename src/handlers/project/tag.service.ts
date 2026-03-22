@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { PaginationDto } from 'src/common/dto/pagination.dto'
 import { Repository } from 'typeorm'
@@ -46,38 +46,22 @@ export class TagService {
     }
   }
 
-  // ================================
-  //      Project Tag Service
-  // ================================
+  async createTag(dto: CreateTagDto) {
+    try {
+      const result = await this.tagRepo.insert(dto)
 
-  async createTag(projectId: string, dto: CreateTagDto): Promise<Tag> {
-    const project = await this.projectRepo.findOneBy({ id: projectId })
-    if (!project) {
-      throw new NotFoundException('Project Not found')
-    }
-
-    let tag = await this.tagRepo.findOne({
-      where: { name: dto.name },
-      relations: ['projects'],
-    })
-
-    if (tag) {
-      if (!tag.projects.some(p => p.id === projectId)) {
-        tag.projects.push(project)
-        return await this.tagRepo.save(tag)
+      return {
+        ...dto,
+        ...result[0],
       }
-      return tag
     }
-
-    tag = this.tagRepo.create({
-      name: dto.name,
-      projects: [project],
-    })
-    return await this.tagRepo.save(tag)
+    catch (e) {
+      throw new BadRequestException('Tag may already exist')
+    }
   }
 
-  async deleteTag(tagId: string) {
-    const tag = await this.tagRepo.findOne({ where: { id: tagId } })
+  async deleteTag(id: string) {
+    const tag = await this.tagRepo.findOne({ where: { id } })
     if (!tag) {
       throw new NotFoundException('Tag not found')
     }
@@ -93,5 +77,16 @@ export class TagService {
       throw new NotFoundException('Tag not found')
     }
     return tag
+  }
+
+  async update(id: string, dto: CreateTagDto) {
+    try {
+      const tag = await this.tagRepo.findOneOrFail({ where: { id } })
+      const updated = this.tagRepo.merge(tag, dto)
+      return await this.tagRepo.save(updated)
+    }
+    catch (e) {
+      throw new NotFoundException('Tag not found')
+    }
   }
 }
