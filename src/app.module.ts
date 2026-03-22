@@ -9,6 +9,7 @@ import { CourseModule } from './handlers/course/course.module'
 import { DepartmentModule } from './handlers/department/department.module'
 import { ImageModule } from './handlers/image/image.module'
 import { NotificationModule } from './handlers/notification/notification.module'
+import { CategoryController } from './handlers/project/category.controller'
 import { ProjectModule } from './handlers/project/project.module'
 import { SeederModule } from './handlers/seeder/seeder.module'
 import { JwtStrategy } from './handlers/user/strategies/jwt.strategy'
@@ -37,7 +38,6 @@ import { UserModule } from './handlers/user/user.module'
     SeederModule,
     NotificationModule,
     ImageModule,
-    CourseModule,
   ],
 
   controllers: [AppController],
