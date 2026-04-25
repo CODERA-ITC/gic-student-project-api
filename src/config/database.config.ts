@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common'
-import { ConfigModule, ConfigService } from '@nestjs/config'
-import { TypeOrmModule } from '@nestjs/typeorm'
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -13,7 +13,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
         port: configService.get('DATABASE_PORT'),
         username: configService.get('DATABASE_USER'),
         password: configService.get('DATABASE_PASSWORD'),
-        database: configService.get<string>('DATABASE_NAME'),
+        // database: configService.get<string>('DATABASE_NAME'),
+        database: `${configService.get<string>('DATABASE_NAME')}-${configService.get<string>('NODE_ENV')}`,
         ssl:
           configService.get('ENVIRONMENT') === 'development'
             ? false
